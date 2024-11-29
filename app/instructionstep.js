@@ -8,7 +8,7 @@ export function InstructionStep({ label, stepNr, children }) {
   const contentRef = useRef();
 
   return (
-    <div className="relative m-1 border-solid border-2 p-2 rounded-md">
+    <div className="relative bg-[#025392]  m-1 border-solid border-2 p-2 rounded-md">
       <div
         className="z-40 bg-[#025392] absolute left-[-1rem] top-[0rem] text-center border-solid border-2 p-1 rounded-full w-9 transition-[top] ease-in-out duration-900"
         style={open ? { top: "0.5rem" } : { top: "0rem" }}
