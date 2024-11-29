@@ -52,12 +52,11 @@ export default function Home() {
 
   return (
     <div>
-      <div className="fixed w-full bg-white">
-        <Comparison />
-      </div>
-
-      <div className="grid grid-rows-[1fr_100px] grid-cols-[1fr_2fr_1fr] items-center justify-items-center min-h-screen p-20 pb-9 gap-0 bg-gray-200 text-[#025392] font-[family-name:oswald]">
-        <div className="flex flex-col row-start-1 col-start-2 w-full items-center text-center sticky top-10 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
+      <div className="grid grid-rows-[5rem_1fr_100px] grid-cols-[1fr_2fr_1fr] items-center justify-items-center min-h-screen pb-9 gap-0 bg-gray-200 text-[#025392] font-[family-name:oswald]">
+        <div className="fixed w-full bg-white row-start-1 row-end-3 col-start-1 col-end-3 ">
+          <Comparison />
+        </div>
+        <div className="flex flex-col row-start-2 col-start-2 w-full items-center text-center sticky top-10 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
           <Image
             className="w-full max-w-xl h-auto"
             src="/stineultras1.svg"
@@ -122,8 +121,8 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <div className="row-start-2 col-start-1 col-end-4 w-[100%] grid grid-cols-3 grid-cols-[50px_1fr_50px] gap-0 flex-wrap items-center justify-center">
-          <a className="relative col-start-2 items-center gap-0 text-4xl font-[600] text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] ">
+        <div className="row-start-3 col-start-1 col-end-4 w-[100%] grid grid-cols-3 grid-cols-[50px_1fr_50px] gap-0 flex-wrap items-center justify-center">
+          <a className="relative sm:col-start-2 sm:col-end-2 col-start-1 col-end-3 items-center gap-0 text-4xl font-[600] text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] ">
             Stine ist scheiße. Mach es dir zumindest ein bisschen hübscher.
           </a>
         </div>
