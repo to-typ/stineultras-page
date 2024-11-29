@@ -52,11 +52,11 @@ export default function Home() {
 
   return (
     <div>
-      <div className="grid grid-rows-[5rem_1fr_100px] grid-cols-[1fr_2fr_1fr] items-center justify-items-center min-h-screen pb-9 gap-0 bg-gray-200 text-[#025392] font-[family-name:oswald]">
-        <div className="fixed w-full bg-white row-start-1 row-end-3 col-start-1 col-end-3 ">
+      <div className="grid sm:grid-rows-[5rem_1fr_100px] grid-rows-[10rem_17rem_100px] grid-cols-[1fr_2fr_1fr] items-center justify-items-center min-h-screen pb-9 gap-0 bg-white text-[#025392] font-[family-name:oswald]">
+        <div className="fixed sm:w-full w-[110%] sm:border-y-0 border-y-8 border-[#025392] sm:top-0 top-[12rem] bg-white row-start-1 row-end-3 row-start-2 col-start-1 col-end-3 ">
           <Comparison />
         </div>
-        <div className="flex flex-col row-start-2 col-start-2 w-full items-center text-center sticky top-10 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
+        <div className="flex flex-col sm:row-start-2 row-start-1 col-start-2 w-full items-center text-center sticky top-10 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
           <Image
             className="w-full max-w-xl h-auto"
             src="/stineultras1.svg"
@@ -68,7 +68,7 @@ export default function Home() {
           <br></br>
         </div>
         <main className="flex flex-col w-full items-center justify-center gap-0 row-start-1 col-start-2">
-          <div className="top-[90%] bg-gradient-to-b from-[#025392] to-[#0271bb] rounded-md border-2 border-[#025392] left-0 w-full h-auto text-center items-center justify-center z-30 absolute p-1.5 text-blue-50 text-black">
+          <div className="sm:top-[90%] top-[66%] bg-gradient-to-b from-[#025392] to-[#0271bb] rounded-md border-2 border-[#025392] left-0 w-full h-auto text-center items-center justify-center z-30 absolute p-1.5 text-blue-50 text-black">
             <h1 className="m-4 text-3xl font-extrabold">Anleitung:</h1>
             <div>
               <button
