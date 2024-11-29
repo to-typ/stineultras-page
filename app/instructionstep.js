@@ -8,7 +8,7 @@ export function InstructionStep({ label, stepNr, children }) {
   const contentRef = useRef();
 
   return (
-    <div className="relative bg-[#025392]  m-1 border-solid border-2 p-2 rounded-md">
+    <div className="relative m-1 bg-[#025392] border-solid border-2 p-2 rounded-md">
       <div
         className="z-40 bg-[#025392] absolute left-[-1rem] top-[0rem] text-center border-solid border-2 p-1 rounded-full w-9 transition-[top] ease-in-out duration-900"
         style={open ? { top: "0.5rem" } : { top: "0rem" }}
@@ -44,7 +44,7 @@ export function InstructionStep({ label, stepNr, children }) {
 
 export function NoInstruction(props) {
   return (
-    <div className="relative m-1 grid grid-cols-[8rem_1fr_8rem] border-solid border-2 p-2 h-auto items-center rounded-md">
+    <div className="relative m-1 grid grid-cols-[8rem_1fr_8rem] border-solid border-2 p-2 h-auto items-center rounded-md bg-[#025392]">
       <svg className="fill-white h-10 w-10 self-center" viewBox="0 0 270 270">
         <path
           d="M262.846,237.792L137.021,19.858c-1.072-1.856-3.053-3-5.196-3s-4.125,1.144-5.196,3L0.804,237.792
@@ -133,6 +133,90 @@ export function ChromePCSteps() {
           Dieses Theme ändern das Aussehen von STiNE.{" "}
         </p>
       </InstructionStep>
+    </div>
+  );
+}
+
+export function SafariSteps() {
+  return (
+    <div className="relative">
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>
+              Dowloade die{" "}
+              <a
+                href="https://apps.apple.com/de/app/stine-ultras/id6738353951"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:underline"
+              >
+                <img
+                  className="inline-block h-[20px] mb-[2px]"
+                  src="/betterstine.svg"
+                ></img>{" "}
+                STiNE Ultras App
+              </a>
+              <br></br>
+              {" (Alle weiteren Schritte werden auch in der App erklärt) "}
+            </div>
+          </div>
+        }
+        stepNr={1}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <a
+          href="https://apps.apple.com/us/app/stine-ultras/id6738353951?itscg=30200&itsct=apps_box_badge&mttnsubad=6738353951"
+          className="inline-block mt-1"
+        >
+          <img
+            src="/appstore.svg"
+            alt="Download on the App Store"
+            className="w-[184.5px] h-[61.5px] align-middle object-contain"
+          />
+        </a>{" "}
+        <p className="inline-block align-middle">
+          Alle weiteren Schritte werden auch in der App erklärt.{" "}
+        </p>
+      </InstructionStep>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>
+              Dowloade das{" "}
+              <a
+                href="https://chromewebstore.google.com/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:underline"
+              >
+                <img
+                  className="inline-block h-[20px] mb-[2px]"
+                  src="https://lh3.googleusercontent.com/2K8pc_5-2DkPam9b3oAWoITZ7IuIz68A5a8Ssg2_MNNHTPWPOPSBVTFdTmeVu9hi8GJxpKbvTekgwpeyGV6vXyBKH80=s60"
+                ></img>{" "}
+                Stylus Plugin
+              </a>
+            </div>
+          </div>
+        }
+        stepNr={1}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img
+          className="inline-block h-[80px] mr-4"
+          src="/install-stylus.png"
+        ></img>{" "}
+        <p className="inline-block">
+          Mit dieser Browser Extension lässt sich das Aussehen von Websiten
+          verändern.{" "}
+        </p>
+      </InstructionStep>
+      <NoInstruction>
+        <p>
+          Eine angepasste Version für Mobile Geräte ist aktuell noch nicht in
+          Arbeit
+        </p>
+      </NoInstruction>
     </div>
   );
 }
