@@ -7,6 +7,7 @@ import {
   InstructionStep,
   NoInstruction,
   ChromePCSteps,
+  SafariSteps,
 } from "./instructionstep.js";
 import Link from "next/link";
 
@@ -27,26 +28,8 @@ export default function Home() {
           </NoInstruction>
         </>
       );
-    } else if (browser == "safariMac") {
-      setContent(
-        <>
-          <NoInstruction>
-            <p>
-              Aktuell noch nicht für Safari auf Mac verfügbar, wir arbeiten dran
-            </p>
-          </NoInstruction>
-        </>
-      );
-    } else if (browser == "safariiOS") {
-      setContent(
-        <>
-          <NoInstruction>
-            <p>
-              Aktuell noch nicht für Safari auf iOS verfügbar, wir arbeiten dran
-            </p>
-          </NoInstruction>
-        </>
-      );
+    } else if (browser == "safari") {
+      setContent(<SafariSteps />);
     }
   };
 
@@ -84,16 +67,10 @@ export default function Home() {
                 Chrome/Mobile
               </button>
               <button
-                onClick={() => handleButton("safariMac")}
+                onClick={() => handleButton("safari")}
                 className="m-1 border-solid border-2 p-2 text-xl"
               >
-                Safari/Mac
-              </button>
-              <button
-                onClick={() => handleButton("safariiOS")}
-                className="m-1 border-solid border-2 p-2 text-xl"
-              >
-                Safari/iOS
+                Safari
               </button>
             </div>
             <div className="flex w-full relative grid grid-cols-[1fr_2fr_1fr] items-center justify-center">
