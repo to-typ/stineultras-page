@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect , useState } from "react";
 import {
   ReactCompareSlider,
   ReactCompareSliderImage,
@@ -8,6 +8,9 @@ import {
 
 export default function Comparison() {
   const reactCompareSliderRef = useReactCompareSliderRef();
+  
+  const [start, setStart] = useState(true);
+  const transitionStyle = start ? "1s cubic-bezier(0,0,1,1)" : "none";
 
   useEffect(() => {
     const normalTransition = async () => {
@@ -30,13 +33,14 @@ export default function Comparison() {
         }, 750)
       );
     };
+    setStart(false);
     normalTransition();
   }, []);
 
   return (
     <ReactCompareSlider
       ref={reactCompareSliderRef}
-      transition="1s cubic-bezier(0,0,1,1)"
+      transition="{transitionStyle}
       position={0}
       handle={
         <ReactCompareSliderHandle
