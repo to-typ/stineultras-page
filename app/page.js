@@ -51,7 +51,7 @@ export default function Home() {
           <br></br>
         </div>
         <main className="flex flex-col w-full items-center justify-center gap-0 row-start-1 col-start-2">
-          <div className="sm:top-[90%] top-[55%] bg-gradient-to-b from-[#025392] to-[#0271bb] rounded-md border-2 border-[#025392] left-0 w-full h-auto text-center items-center justify-center z-30 absolute p-1.5 text-blue-50 text-black">
+          <div className="sm:top-[90%] top-[29rem] bg-gradient-to-b from-[#025392] to-[#0271bb] rounded-md border-2 border-[#025392] left-0 w-full h-auto text-center items-center justify-center z-30 absolute p-1.5 text-blue-50 text-black">
             <h1 className="m-4 text-3xl font-extrabold">Anleitung:</h1>
             <div>
               <button
