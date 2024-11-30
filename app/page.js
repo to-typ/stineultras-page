@@ -98,8 +98,8 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <div className="row-start-3 col-start-1 col-end-4 w-[100%] grid grid-cols-3 grid-cols-[50px_1fr_50px] gap-0 flex-wrap items-center justify-center">
-          <a className="relative sm:col-start-2 sm:col-end-2 col-start-1 col-end-3 items-center gap-0 text-4xl font-[600] text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] ">
+        <div className="row-start-3 col-start-1 col-end-4 w-full flex justify-center">
+          <a className="flex relative text-4xl font-[600] text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] ">
             Stine ist scheiße. Mach es dir zumindest ein bisschen hübscher.
           </a>
         </div>
