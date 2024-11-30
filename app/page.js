@@ -22,7 +22,7 @@ export default function Home() {
         <>
           <NoInstruction>
             <p>
-              Nicht für Chrome auf Mobilen Geräten verfügbar,<br></br> da es
+              Nicht für Chrome auf Mobilen Geräten verfügbar, da es
               keine Browser Extensions in Chrome auf Mobilgeräten gibt.
             </p>
           </NoInstruction>
