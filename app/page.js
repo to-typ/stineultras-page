@@ -98,7 +98,7 @@ export default function Home() {
             </div>
           </div>
         </main>
-        <div className="row-start-3 col-start-1 col-end-4 w-full h-full sm:h-auto flex sticky sm:static  justify-center">
+        <div className="row-start-3 col-start-1 col-end-4 w-full h-full sm:h-auto flex sticky sm:static top-[11.5rem] justify-center">
           <a className="flex relative sm:text-4xl text-xl font-[600]  text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)]">
             Stine ist scheiße.<br className="sm:hidden"></br> Mach es dir
             zumindest ein bisschen hübscher.
