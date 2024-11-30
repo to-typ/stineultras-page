@@ -45,8 +45,8 @@ export default function Comparison() {
           }}
         />
       }
-      itemOne={<ReactCompareSliderImage src="/oldStine.png" alt="Stine Old" />}
-      itemTwo={<ReactCompareSliderImage src="/newStine.png" alt="Stine New" />}
+      itemOne={<ReactCompareSliderImage src="/newStine.png" alt="Stine New" />}
+      itemTwo={<ReactCompareSliderImage src="/oldStine.png" alt="Stine Old" />}
     />
   );
 }
