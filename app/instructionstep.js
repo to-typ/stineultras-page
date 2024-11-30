@@ -44,7 +44,7 @@ export function InstructionStep({ label, stepNr, children }) {
 
 export function NoInstruction(props) {
   return (
-    <div className="relative m-1 grid grid-cols-[8rem_1fr_8rem] border-solid border-2 p-2 h-auto items-center rounded-md bg-[#025392]">
+    <div className="relative m-1 grid grid-cols-[3rem_1fr_3rem] border-solid border-2 p-2 h-auto items-center rounded-md bg-[#025392]">
       <svg className="fill-white h-10 w-10 self-center" viewBox="0 0 270 270">
         <path
           d="M262.846,237.792L137.021,19.858c-1.072-1.856-3.053-3-5.196-3s-4.125,1.144-5.196,3L0.804,237.792
