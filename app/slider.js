@@ -40,7 +40,7 @@ export default function Comparison() {
   return (
     <ReactCompareSlider
       ref={reactCompareSliderRef}
-      transition="{transitionStyle}
+      transition={transitionStyle}
       position={0}
       handle={
         <ReactCompareSliderHandle
