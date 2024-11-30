@@ -39,9 +39,9 @@ export default function Home() {
         <div className="fixed sm:w-full w-[110%] sm:border-y-0 border-y-8 border-[#025392] sm:top-0 top-[12rem] bg-white row-start-1 row-end-3 row-start-2 col-start-1 col-end-3 ">
           <Comparison />
         </div>
-        <div className="flex flex-col sm:row-start-2 row-start-1 col-start-2 w-full items-center text-center sticky top-10 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
+        <div className="flex flex-col sm:row-start-2 row-start-1 col-start-2 w-full items-center text-center sticky sm:top-10 top-2 mb-16 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)] z-10">
           <Image
-            className="w-full max-w-xl h-auto"
+            className="sm:w-full w-[150%] max-w-xl h-auto"
             src="/stineultras1.svg"
             alt="stineultras"
             width={100}
@@ -73,9 +73,9 @@ export default function Home() {
                 Safari
               </button>
             </div>
-            <div className="flex w-full relative grid grid-cols-[1fr_2fr_1fr] items-center justify-center">
+            <div className="flex w-full relative grid sm:grid-cols-[1fr_2fr_1fr] grid-cols-[1fr] sm:grid-rows-[1fr] grid-rows-[1fr_1fr] items-center justify-center">
               <div className="m-1 col-start-2">{content}</div>
-              <div className="m-1 col-start-3 absolute text-right bottom-0 right-0">
+              <div className="m-1 sm:col-start-3 col-start-2 sm:absolute text-center sm:text-right sm:bottom-0 sm:right-0">
                 <Link href="/credits" className="m-1">
                   Credits
                 </Link>
@@ -86,7 +86,7 @@ export default function Home() {
                 <br></br>
                 <a
                   href="https://apps.apple.com/us/app/stine-ultras/id6738353951?itscg=30200&itsct=apps_box_badge&mttnsubad=6738353951"
-                  className="float-right mt-1"
+                  className="sm:float-right mt-1 flex justify-center"
                 >
                   <img
                     src="/appstore.svg"
