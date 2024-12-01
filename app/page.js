@@ -63,7 +63,7 @@ export default function Home() {
                 className="m-1 border-solid border-2 p-2 text-xl"
                 style={
                   browser == "chromePC"
-                    ? { backgroundColor: "transparent" }
+                    ? { backgroundColor: "#0271bb" }
                     : { backgroundColor: "#025392" }
                 }
               >
@@ -74,7 +74,7 @@ export default function Home() {
                 className="m-1 border-solid border-2 p-2 text-xl"
                 style={
                   browser == "chromeMobile"
-                    ? { backgroundColor: "transparent" }
+                    ? { backgroundColor: "#0271bb" }
                     : { backgroundColor: "#025392" }
                 }
               >
@@ -85,7 +85,7 @@ export default function Home() {
                 className="m-1 border-solid border-2 p-2 text-xl"
                 style={
                   browser == "safari"
-                    ? { backgroundColor: "transparent" }
+                    ? { backgroundColor: "#0271bb" }
                     : { backgroundColor: "#025392" }
                 }
               >
