@@ -38,7 +38,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div className="bg-bg-pattern">
       <div className="grid sm:grid-rows-[5rem_1fr_100px] grid-rows-[10rem_1.4rem_10rem] grid-cols-[1fr_2fr_1fr] items-center justify-items-center min-h-screen pb-9 gap-0 bg-white text-[#025392] font-[family-name:oswald]">
         <div className="fixed sm:w-full w-[110%] sm:border-y-0 border-y-8 border-[#025392] sm:top-0 top-[16rem] bg-white row-start-1 row-end-3 row-start-2 col-start-1 col-end-3 ">
           <Comparison />
