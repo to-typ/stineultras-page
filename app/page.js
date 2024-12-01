@@ -13,10 +13,12 @@ import Link from "next/link";
 
 export default function Home() {
   const [content, setContent] = useState(<ChromePCSteps />);
+  const [browser, setBrowser] = useState("chromePC");
 
   const handleButton = (browser) => {
     if (browser == "chromePC") {
       setContent(<ChromePCSteps />);
+      setBrowser("chromePC");
     } else if (browser == "chromeMobile") {
       setContent(
         <>
@@ -28,8 +30,10 @@ export default function Home() {
           </NoInstruction>
         </>
       );
+      setBrowser("chromeMobile");
     } else if (browser == "safari") {
       setContent(<SafariSteps />);
+      setBrowser("safari");
     }
   };
 
@@ -57,18 +61,33 @@ export default function Home() {
               <button
                 onClick={() => handleButton("chromePC")}
                 className="m-1 border-solid border-2 p-2 text-xl"
+                style={
+                  browser == "chromePC"
+                    ? { backgroundColor: "transparent" }
+                    : { backgroundColor: "#025392" }
+                }
               >
                 Chrome/PC
               </button>
               <button
                 onClick={() => handleButton("chromeMobile")}
                 className="m-1 border-solid border-2 p-2 text-xl"
+                style={
+                  browser == "chromeMobile"
+                    ? { backgroundColor: "transparent" }
+                    : { backgroundColor: "#025392" }
+                }
               >
                 Chrome/Mobile
               </button>
               <button
                 onClick={() => handleButton("safari")}
                 className="m-1 border-solid border-2 p-2 text-xl"
+                style={
+                  browser == "safari"
+                    ? { backgroundColor: "transparent" }
+                    : { backgroundColor: "#025392" }
+                }
               >
                 Safari
               </button>
@@ -99,7 +118,7 @@ export default function Home() {
           </div>
         </main>
         <div className="row-start-3 col-start-1 col-end-4 w-full h-full sm:h-auto flex sticky sm:static top-[11.5rem] justify-center">
-          <a className="flex relative sm:text-4xl text-xl font-[600]  text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)]">
+          <a className="flex relative sm:text-4xl text-xl font-[600] text-center z-10 drop-shadow-[0_0_10px_rgba(99,99,99,0.8)]">
             Stine ist scheiße.<br className="sm:hidden"></br> Mach es dir
             zumindest ein bisschen hübscher.
           </a>
