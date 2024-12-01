@@ -32,8 +32,8 @@ export default function Comparison() {
           resolve(true);
         }, 750)
       );
-    };
     setStart(false);
+    };
     normalTransition();
   }, []);
 
