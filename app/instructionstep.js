@@ -179,38 +179,6 @@ export function SafariSteps() {
           Alle weiteren Schritte werden auch in der App erklärt.{" "}
         </p>
       </InstructionStep>
-      <InstructionStep
-        label={
-          <div className="grid grid-cols-[1fr_40px]">
-            <div>
-              Dowloade das{" "}
-              <a
-                href="https://chromewebstore.google.com/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-300 hover:underline"
-              >
-                <img
-                  className="inline-block h-[20px] mb-[2px]"
-                  src="https://lh3.googleusercontent.com/2K8pc_5-2DkPam9b3oAWoITZ7IuIz68A5a8Ssg2_MNNHTPWPOPSBVTFdTmeVu9hi8GJxpKbvTekgwpeyGV6vXyBKH80=s60"
-                ></img>{" "}
-                Stylus Plugin
-              </a>
-            </div>
-          </div>
-        }
-        stepNr={1}
-        className="m-1 border-solid border-2 p-1 rounded-md h-20"
-      >
-        <img
-          className="inline-block h-[80px] mr-4"
-          src="/install-stylus.png"
-        ></img>{" "}
-        <p className="inline-block">
-          Mit dieser Browser Extension lässt sich das Aussehen von Websiten
-          verändern.{" "}
-        </p>
-      </InstructionStep>
       <NoInstruction>
         <p>
           Eine angepasste Version für Mobile Geräte ist aktuell noch nicht in
