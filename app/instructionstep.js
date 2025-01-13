@@ -42,6 +42,17 @@ export function InstructionStep({ label, stepNr, children }) {
   );
 }
 
+export function InstructionStepNoExtend({ label, stepNr }) {
+  return (
+    <div className="relative m-1 bg-[#025392] border-solid border-2 p-2 rounded-md">
+      <div className="z-40 bg-[#025392] absolute left-[-1rem] top-[0rem] text-center border-solid border-2 p-1 rounded-full w-9 transition-[top] ease-in-out duration-900">
+        {stepNr}
+      </div>
+      <button className="w-full">{label}</button>
+    </div>
+  );
+}
+
 export function NoInstruction(props) {
   return (
     <div className="relative m-1 grid grid-cols-[3rem_1fr_3rem] border-solid border-2 p-2 h-auto items-center rounded-md bg-[#025392]">
@@ -140,7 +151,7 @@ export function ChromePCSteps() {
 export function SafariSteps() {
   return (
     <div className="relative">
-      <InstructionStep
+      <InstructionStepNoExtend
         label={
           <div className="grid grid-cols-[1fr_40px]">
             <div>
@@ -165,24 +176,104 @@ export function SafariSteps() {
         stepNr={1}
         className="m-1 border-solid border-2 p-1 rounded-md h-20"
       >
-        <a
-          href="https://apps.apple.com/us/app/stine-ultras/id6738353951?itscg=30200&itsct=apps_box_badge&mttnsubad=6738353951"
-          className="inline-block mt-1"
-        >
-          <img
-            src="/appstore.svg"
-            alt="Download on the App Store"
-            className="w-[184.5px] h-[61.5px] align-middle object-contain"
-          />
-        </a>{" "}
-        <p className="inline-block align-middle">
-          Alle weiteren Schritte werden auch in der App erklärt.{" "}
-        </p>
+        {/** 
+        <div className="items-center">
+          <a
+            href="https://apps.apple.com/us/app/stine-ultras/id6738353951?itscg=30200&itsct=apps_box_badge&mttnsubad=6738353951"
+            className="inline-block mt-1"
+          >
+            <img
+              src="/appstore.svg"
+              alt="Download on the App Store"
+              className="w-[184.5px] h-[61.5px] align-middle object-contain"
+            />
+          </a>{" "}
+          <p className="inline-block align-middle">
+            Alle weiteren Schritte werden auch in der App erklärt.{" "}
+          </p>
+        </div>*/}
+      </InstructionStepNoExtend>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>Öffne die Safari Settings</div>
+          </div>
+        }
+        stepNr={2}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img className="inline-block h-[80px] mr-4" src="/step2s.png"></img>{" "}
+      </InstructionStep>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>Gehe auf "Erweiterungen"</div>
+          </div>
+        }
+        stepNr={3}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img className="inline-block h-[80px] mr-4" src="/step3s.png"></img>{" "}
+      </InstructionStep>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>Finde und aktiviere die "STiNE Ultras"-Erweiterung</div>
+          </div>
+        }
+        stepNr={4}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img className="inline-block h-[80px] mr-4" src="/step4s1.png"></img>{" "}
+        <img className="inline-block h-[80px] mr-4" src="/step4s2.png"></img>{" "}
+      </InstructionStep>
+      <InstructionStepNoExtend
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>
+              Gehe auf{" "}
+              <a
+                href="https://stine.uni-hambrg.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-300 hover:underline"
+              >
+                stine.uni-hamburg.de
+              </a>
+              .
+            </div>
+          </div>
+        }
+        stepNr={5}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      ></InstructionStepNoExtend>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>Geh auf "Erweiterungen" -{">"} "Erweiterungen verwalten"</div>
+          </div>
+        }
+        stepNr={6}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img className="inline-block h-[80px] mr-4" src="/step6s1.png"></img>{" "}
+        <img className="inline-block h-[80px] mr-4" src="/step6s2.png"></img>{" "}
+      </InstructionStep>
+      <InstructionStep
+        label={
+          <div className="grid grid-cols-[1fr_40px]">
+            <div>Aktiviere "STiNE Ultras"</div>
+          </div>
+        }
+        stepNr={7}
+        className="m-1 border-solid border-2 p-1 rounded-md h-20"
+      >
+        <img className="inline-block h-[80px] mr-4" src="/step7s.png"></img>{" "}
       </InstructionStep>
       <NoInstruction>
         <p>
-          Eine angepasste Version für Mobile Geräte ist aktuell noch nicht in
-          Arbeit
+          Eine angepasste Version für Mobile Geräte ist in Planung, aber aktuell
+          noch nicht in Arbeit
         </p>
       </NoInstruction>
     </div>
