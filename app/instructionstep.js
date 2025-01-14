@@ -48,7 +48,7 @@ export function InstructionStepNoExtend({ label, stepNr }) {
       <div className="z-40 bg-[#025392] absolute left-[-1rem] top-[0rem] text-center border-solid border-2 p-1 rounded-full w-9 transition-[top] ease-in-out duration-900">
         {stepNr}
       </div>
-      <button className="w-full">{label}</button>
+      <div>{label}</div>
     </div>
   );
 }
@@ -175,24 +175,7 @@ export function SafariSteps() {
         }
         stepNr={1}
         className="m-1 border-solid border-2 p-1 rounded-md h-20"
-      >
-        {/** 
-        <div className="items-center">
-          <a
-            href="https://apps.apple.com/us/app/stine-ultras/id6738353951?itscg=30200&itsct=apps_box_badge&mttnsubad=6738353951"
-            className="inline-block mt-1"
-          >
-            <img
-              src="/appstore.svg"
-              alt="Download on the App Store"
-              className="w-[184.5px] h-[61.5px] align-middle object-contain"
-            />
-          </a>{" "}
-          <p className="inline-block align-middle">
-            Alle weiteren Schritte werden auch in der App erklärt.{" "}
-          </p>
-        </div>*/}
-      </InstructionStepNoExtend>
+      ></InstructionStepNoExtend>
       <InstructionStep
         label={
           <div className="grid grid-cols-[1fr_40px]">
