@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   title: "STiNE Ultras",
   description: "Modern & Updated Theme for STiNE - STiNE Ultras",
   applicationName: "STiNE Ultras",
+  icons: [
+    {
+      url: "/icons/betterstine.svg",
+      sizes: "512x512",
+      type: "image/svg+xml",
+    },
+  ],
   authors: [
     {
       name: "Ben",
