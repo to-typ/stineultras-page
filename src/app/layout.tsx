@@ -67,8 +67,7 @@ export default function RootLayout({
         <div className="flex-grow">{children}</div>
         <div>
           <div className="text-white text-center text-lg sm:text-xl font-semibold">
-            <p>STiNE ist scheiße!</p>
-            <p>Mach es dir zumindest etwas hübscher.</p>
+            <p>STiNE ist scheiße! Mach es dir zumindest etwas hübscher.</p>
           </div>
         </div>
         <footer className="bg-ocean w-full">
