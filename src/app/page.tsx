@@ -16,7 +16,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="flex flex-col w-screen">
+      <main className="flex flex-col w-full">
         <div className="sticky top-0">
           <div className="flex flex-col items-center gap-4 sm:hidden drop-shadow-primary pb-4 bg-white pt-4">
             <Image src={logo} alt="STiNE Ultras" className="w-4/5" />
