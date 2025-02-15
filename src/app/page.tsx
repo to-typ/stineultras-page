@@ -56,7 +56,7 @@ export default function Home() {
 
   return (
     <>
-      <main className="flex flex-col w-full">
+      <main className="flex flex-col w-full relative">
         <div className="sticky top-0">
           <header
             className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 ${
