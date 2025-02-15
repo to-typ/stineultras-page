@@ -38,10 +38,13 @@ export default function Home() {
       if (instructionsRef.current) {
         const scrollPosition =
           instructionsRef.current.offsetTop - window.innerHeight * 0.9;
-        window.scrollTo({
-          top: scrollPosition,
-          behavior: "smooth",
-        });
+        const currentScrollPosition = window.scrollY;
+        if (scrollPosition > currentScrollPosition) {
+          window.scrollTo({
+            top: scrollPosition,
+            behavior: "smooth",
+          });
+        }
       }
     }, 5000);
 
