@@ -8,6 +8,8 @@ import installStylus from "/public/instructions/chrome/install-stylus.png";
 import installTheme from "/public/instructions/chrome/install-theme.png";
 import installTheme2 from "/public/instructions/chrome/install-theme-2.png";
 
+import attentionSign from "/public/icons/attention-sign.svg";
+
 export default function ChromeInstructions() {
   return (
     <div className="w-full flex flex-col justify-center items-center gap-4">
@@ -80,6 +82,15 @@ export default function ChromeInstructions() {
               STiNE
             </a>{" "}
             – Fertig!
+          </p>
+        }
+      />
+      <InstructionStep
+        step={attentionSign}
+        short={
+          <p>
+            Chrome-Extensions sind aktuell leider nicht auf mobilen Geräten
+            verfügbar.
           </p>
         }
       />

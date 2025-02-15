@@ -3,9 +3,10 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
 import { JSX, useRef, useState, useEffect } from "react";
+import Image, { StaticImageData } from "next/image";
 
 interface InstructionStepProps {
-  step: number;
+  step: number | StaticImageData;
   short: string | JSX.Element;
   children?: string | JSX.Element | JSX.Element[];
 }
@@ -35,8 +36,15 @@ export default function InstructionStep({
     <div
       className="w-[95%] md:w-4/5 xl:w-3/5 relative rounded border-2 border-white py-2 pl-5 pr-3 text-white"
       onClick={() => setIsOpen(!isOpen)}>
-      <div className="absolute top-1 -left-4 bg-ocean border-2 border-white text-white font-semibold rounded-full size-8 flex items-center justify-center text-center">
-        {step}
+      <div
+        className={`absolute top-1 -left-4 bg-ocean ${
+          typeof step === "number" ? "border-white border-2" : ""
+        }  text-white font-semibold rounded-full size-8 flex items-center justify-center text-center`}>
+        {typeof step === "number" ? (
+          step
+        ) : (
+          <Image src={step} alt="Step" className="size-8 -translate-x-[1px]" />
+        )}
       </div>
       <div className="flex justify-between items-center">
         <div className="flex items-center justify-center w-full">{short}</div>
