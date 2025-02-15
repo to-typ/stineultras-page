@@ -2,6 +2,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+
+import betterStine from "/public/icons/betterstine.svg";
+import logoWhite from "/public/stineultras-white.svg";
+import Link from "next/link";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -28,17 +33,27 @@ export default function Contact() {
   };
 
   return (
-    <div className="flex justify-center items-center ">
-      <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white">
-        <h2 className="text-2xl">Kontakt</h2>
-        <p className="mb-6">
-          Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}
-          <a href="mailto:kontakt@stineultras.de" className="underline">
-            kontakt@stineultras.de
-          </a>
-          , mit!
-        </p>
-        {/* <form onSubmit={handleSubmit}>
+    <div>
+      <header
+        className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 h-24 py-4`}>
+        <div className="flex items-center gap-6">
+          <Link href="/">
+            <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+          </Link>
+          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
+        </div>
+      </header>
+      <div className="flex justify-center items-center ">
+        <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white">
+          <h2 className="text-2xl">Kontakt</h2>
+          <p className="mb-6">
+            Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}
+            <a href="mailto:kontakt@stineultras.de" className="underline">
+              kontakt@stineultras.de
+            </a>
+            , mit!
+          </p>
+          {/* <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="name" className="block mb-2">
               Name
@@ -86,6 +101,7 @@ export default function Contact() {
             Send
           </button>
         </form> */}
+        </div>
       </div>
     </div>
   );
