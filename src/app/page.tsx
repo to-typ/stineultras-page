@@ -6,7 +6,7 @@ import Image from "next/image";
 import logo from "/public/stineultras.svg";
 import logoWhite from "/public/stineultras-white.svg";
 import betterStine from "/public/icons/betterstine.svg";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import ChromeInstructions from "@/components/instructions/chrome";
 import FirefoxInstructions from "@/components/instructions/firefox";
 import SafariInstructions from "@/components/instructions/safari";
@@ -17,6 +17,7 @@ const browser = ["Chrome", "Firefox", "Safari"];
 export default function Home() {
   const [selectedBrowser, setSelectedBrowser] = useState<string | null>(null);
   const [shouldFadeOut, setShouldFadeOut] = useState(false);
+  const instructionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
@@ -31,6 +32,23 @@ export default function Home() {
     setTimeout(() => {
       setShouldFadeOut(true);
     }, 3000);
+
+    // Einmaliges Scrollen nach 5 Sekunden
+    const scrollTimeout = setTimeout(() => {
+      if (instructionsRef.current) {
+        const scrollPosition =
+          instructionsRef.current.offsetTop - window.innerHeight * 0.9;
+        window.scrollTo({
+          top: scrollPosition,
+          behavior: "smooth",
+        });
+      }
+    }, 5000);
+
+    // Cleanup
+    return () => {
+      clearTimeout(scrollTimeout);
+    };
   }, []);
 
   return (
@@ -76,7 +94,9 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center gap-6 p-4 sm:p-8 bg-ocean rounded-t-lg z-20 will-change-transform">
+        <div
+          className="flex flex-col items-center justify-center gap-6 p-4 sm:p-8 bg-ocean rounded-t-lg z-20 will-change-transform"
+          ref={instructionsRef}>
           <h2 className="font-extrabold text-3xl text-white">Anleitungen</h2>
           <div className="flex gap-3">
             {browser.map((browser) => (
