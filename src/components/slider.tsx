@@ -11,6 +11,7 @@ import {
 export default function Slider() {
   const reactCompareSliderRef = useReactCompareSliderRef();
   const [transition, setTransition] = useState("1s cubic-bezier(0, 0, 1, 1)");
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     if (reactCompareSliderRef.current) {
@@ -23,6 +24,8 @@ export default function Slider() {
         setTransition("none");
       }, 1500);
     }
+
+    setIsMobile(window.innerWidth < 768);
   }, [reactCompareSliderRef]);
 
   return (
@@ -33,8 +36,8 @@ export default function Slider() {
       handle={
         <ReactCompareSliderHandle
           buttonStyle={{
-            width: window.innerWidth < 768 ? "40px" : "56px",
-            height: window.innerWidth < 768 ? "40px" : "56px",
+            width: isMobile ? "40px" : "56px",
+            height: isMobile ? "40px" : "56px",
           }}
         />
       }
