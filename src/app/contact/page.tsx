@@ -44,7 +44,7 @@ export default function Contact() {
         </div>
       </header>
       <div className="flex justify-center items-center ">
-        <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white">
+        <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white text-center">
           <h2 className="text-2xl">Kontakt</h2>
           <p className="mb-6">
             Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}
