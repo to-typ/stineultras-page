@@ -12,8 +12,9 @@ export default function Credits() {
         <div className="flex items-center gap-6">
           <Link href="/">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+
+            <Image src={logoWhite} alt="STiNE Ultras" height={64} />
           </Link>
-          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
         </div>
       </header>
       <div className="flex flex-col items-end justify-end gap-4 text-white absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2">

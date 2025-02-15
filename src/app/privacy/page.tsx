@@ -12,8 +12,9 @@ export default function Privacy() {
         <div className="flex items-center gap-6">
           <Link href="/">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+
+            <Image src={logoWhite} alt="STiNE Ultras" height={64} />
           </Link>
-          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
         </div>
       </header>
       <div className="text-white flex flex-col m-8 gap-6">
