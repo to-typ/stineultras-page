@@ -33,8 +33,8 @@ export default function Contact() {
         <h2 className="text-2xl">Kontakt</h2>
         <p className="mb-6">
           Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}
-          <a href="mailto:contact@stineultras.de" className="underline">
-            contact@stineultras.de
+          <a href="mailto:kontakt@stineultras.de" className="underline">
+            kontakt@stineultras.de
           </a>
           , mit!
         </p>
