@@ -16,6 +16,7 @@ const browser = ["Chrome", "Firefox", "Safari"];
 
 export default function Home() {
   const [selectedBrowser, setSelectedBrowser] = useState<string | null>(null);
+  const [shouldFadeOut, setShouldFadeOut] = useState(false);
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
@@ -26,13 +27,27 @@ export default function Home() {
     } else if (userAgent.includes("Safari")) {
       setSelectedBrowser("Safari");
     }
+
+    setTimeout(() => {
+      setShouldFadeOut(true);
+    }, 3000);
   }, []);
 
   return (
     <>
       <main className="flex flex-col w-full">
         <div className="sticky top-0">
-          <header className="bg-ocean text-white flex p-4 gap-6 items-center justify-between">
+          <header
+            className={`bg-ocean text-white flex gap-6 items-center justify-between `}
+            style={{
+              height: shouldFadeOut ? "96px" : "0px",
+              paddingTop: shouldFadeOut ? "1rem" : "0",
+              paddingBottom: shouldFadeOut ? "1rem" : "0",
+              paddingLeft: "1rem",
+              paddingRight: "1rem",
+              transitionProperty: "height, padding",
+              transitionDuration: "1000ms",
+            }}>
             <div className="flex items-center gap-6">
               <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
               <Image src={logoWhite} alt="STiNE Ultras" height={64} />
@@ -47,7 +62,12 @@ export default function Home() {
           </div>
           <div className="relative">
             <Slider />
-            <div className="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 sm:flex drop-shadow-primary pointer-events-none">
+            <div
+              className={`hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 sm:flex drop-shadow-primary pointer-events-none ${
+                shouldFadeOut
+                  ? "opacity-0 duration-[3000ms] transition-opacity"
+                  : ""
+              }`}>
               <Image src={logo} alt="STiNE Ultras" className="w-[40vw]" />
               <div className="text-ocean text-center text-4xl font-semibold">
                 <p>STiNE ist scheiße!</p>

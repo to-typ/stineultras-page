@@ -30,13 +30,7 @@ export default function Slider() {
       ref={reactCompareSliderRef}
       position={0}
       transition={transition}
-      handle={
-        <ReactCompareSliderHandle
-          style={{
-            height: "165%",
-          }}
-        />
-      }
+      handle={<ReactCompareSliderHandle />}
       itemOne={<ReactCompareSliderImage src="/newStine.png" alt="Stine New" />}
       itemTwo={<ReactCompareSliderImage src="/oldStine.png" alt="Stine Old" />}
     />
