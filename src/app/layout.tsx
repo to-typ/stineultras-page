@@ -63,6 +63,12 @@ export default function RootLayout({
       <body
         className={`${oswald.className} antialiased bg-ocean flex flex-col min-h-screen`}>
         <div className="flex-grow">{children}</div>
+        <div>
+          <div className="text-white text-center text-lg sm:text-xl font-semibold">
+            <p>STiNE ist scheiße!</p>
+            <p>Mach es dir zumindest etwas hübscher.</p>
+          </div>
+        </div>
         <footer className="bg-ocean w-full">
           <div className="flex gap-2 text-white items-center justify-center p-4">
             <Link href="/contact" className="hover:underline">

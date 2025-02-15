@@ -56,22 +56,17 @@ export default function Home() {
       <main className="flex flex-col w-full">
         <div className="sticky top-0">
           <header
-            className={`bg-ocean text-white flex gap-6 items-center justify-between `}
-            style={{
-              height: shouldFadeOut ? "96px" : "0px",
-              paddingTop: shouldFadeOut ? "1rem" : "0",
-              paddingBottom: shouldFadeOut ? "1rem" : "0",
-              paddingLeft: "1rem",
-              paddingRight: "1rem",
-              transitionProperty: "height, padding",
-              transitionDuration: "1000ms",
-            }}>
+            className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 ${
+              shouldFadeOut
+                ? "h-24 py-4 duration-1000 transition-[height,padding]"
+                : "py-4 sm:py-0 sm:h-0"
+            }`}>
             <div className="flex items-center gap-6">
               <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
               <Image src={logoWhite} alt="STiNE Ultras" height={64} />
             </div>
           </header>
-          <div className="flex flex-col items-center gap-4 sm:hidden drop-shadow-primary pb-4 bg-white pt-4">
+          <div className="flex-col items-center gap-4 hidden drop-shadow-primary pb-4 bg-white pt-4">
             <Image src={logo} alt="STiNE Ultras" className="w-4/5" />
             <div className="text-ocean text-center text-xl font-semibold">
               <p>STiNE ist scheiße!</p>

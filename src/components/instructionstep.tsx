@@ -47,7 +47,9 @@ export default function InstructionStep({
         )}
       </div>
       <div className="flex justify-between items-center">
-        <div className="flex items-center justify-center w-full">{short}</div>
+        <div className="flex items-center justify-center text-center w-full">
+          {short}
+        </div>
         {children && (
           <button className="text-white flex justify-center items-center rounded px-2 py-1">
             <FontAwesomeIcon

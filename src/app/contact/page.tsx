@@ -32,8 +32,7 @@ export default function Contact() {
       <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white">
         <h2 className="text-2xl">Kontakt</h2>
         <p className="mb-6">
-          Teile uns gerne Anmerkungen, Vorschläge oder Kritik, entweder über
-          dieses Formular oder direkt an{" "}
+          Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}
           <a href="mailto:contact@stineultras.de" className="underline">
             contact@stineultras.de
           </a>
