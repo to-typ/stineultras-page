@@ -14,3 +14,11 @@
     opacity: 0;
   }
 }
+
+@media (max-width: 768px) {
+  .__rcs-handle-arrow {
+    border-right-width: 8px !important;
+    border-top-width: 6px !important;
+    border-bottom-width: 6px !important;
+  }
+}

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Oswald } from "next/font/google";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -60,6 +61,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Analytics />
       <body
         className={`${oswald.className} antialiased bg-ocean flex flex-col min-h-screen`}>
         <div className="flex-grow">{children}</div>
