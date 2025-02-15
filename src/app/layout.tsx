@@ -65,6 +65,9 @@ export default function RootLayout({
         <div className="flex-grow">{children}</div>
         <footer className="bg-ocean w-full">
           <div className="flex gap-2 text-white items-center justify-center p-4">
+            <Link href="/contact" className="hover:underline">
+              Kontakt
+            </Link>
             <Link href="/credits" className="hover:underline">
               Credits
             </Link>

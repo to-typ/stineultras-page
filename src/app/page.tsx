@@ -20,12 +20,12 @@ export default function Home() {
 
   useEffect(() => {
     const userAgent = navigator.userAgent;
-    if (userAgent.includes("Chrome")) {
-      setSelectedBrowser("Chrome");
-    } else if (userAgent.includes("Firefox")) {
+    if (userAgent.includes("Firefox")) {
       setSelectedBrowser("Firefox");
     } else if (userAgent.includes("Safari")) {
       setSelectedBrowser("Safari");
+    } else {
+      setSelectedBrowser("Chrome");
     }
 
     setTimeout(() => {

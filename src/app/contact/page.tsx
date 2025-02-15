@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState } from "react";
@@ -38,7 +39,7 @@ export default function Contact() {
           </a>
           , mit!
         </p>
-        <form onSubmit={handleSubmit}>
+        {/* <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="name" className="block mb-2">
               Name
@@ -85,7 +86,7 @@ export default function Contact() {
             className="w-full p-2 rounded bg-blue-500 hover:bg-blue-600">
             Send
           </button>
-        </form>
+        </form> */}
       </div>
     </div>
   );
