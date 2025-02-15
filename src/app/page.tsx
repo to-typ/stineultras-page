@@ -8,16 +8,31 @@ import { useState } from "react";
 import ChromeInstructions from "@/components/instructions/chrome";
 import FirefoxInstructions from "@/components/instructions/firefox";
 import SafariInstructions from "@/components/instructions/safari";
+import { useEffect } from "react";
 
 const browser = ["Chrome", "Firefox", "Safari"];
 
 export default function Home() {
   const [selectedBrowser, setSelectedBrowser] = useState<string | null>(null);
 
+  useEffect(() => {
+    const userAgent = navigator.userAgent;
+    if (userAgent.includes("Chrome")) {
+      setSelectedBrowser("Chrome");
+    } else if (userAgent.includes("Firefox")) {
+      setSelectedBrowser("Firefox");
+    } else if (userAgent.includes("Safari")) {
+      setSelectedBrowser("Safari");
+    }
+  }, []);
+
   return (
     <>
       <main className="flex flex-col w-full">
         <div className="sticky top-0">
+          <header className="bg-ocean text-white text-center p-4">
+            <h1 className="text-4xl font-extrabold">STiNE Ultras</h1>
+          </header>
           <div className="flex flex-col items-center gap-4 sm:hidden drop-shadow-primary pb-4 bg-white pt-4">
             <Image src={logo} alt="STiNE Ultras" className="w-4/5" />
             <div className="text-ocean text-center text-xl font-semibold">
