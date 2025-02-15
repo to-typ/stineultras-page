@@ -4,6 +4,8 @@ import Slider from "@/components/slider";
 import Image from "next/image";
 
 import logo from "/public/stineultras.svg";
+import logoWhite from "/public/stineultras-white.svg";
+import betterStine from "/public/icons/betterstine.svg";
 import { useState } from "react";
 import ChromeInstructions from "@/components/instructions/chrome";
 import FirefoxInstructions from "@/components/instructions/firefox";
@@ -30,8 +32,11 @@ export default function Home() {
     <>
       <main className="flex flex-col w-full">
         <div className="sticky top-0">
-          <header className="bg-ocean text-white text-center p-4">
-            <h1 className="text-4xl font-extrabold">STiNE Ultras</h1>
+          <header className="bg-ocean text-white flex p-4 gap-6 items-center justify-between">
+            <div className="flex items-center gap-6">
+              <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+              <Image src={logoWhite} alt="STiNE Ultras" height={64} />
+            </div>
           </header>
           <div className="flex flex-col items-center gap-4 sm:hidden drop-shadow-primary pb-4 bg-white pt-4">
             <Image src={logo} alt="STiNE Ultras" className="w-4/5" />
@@ -42,8 +47,12 @@ export default function Home() {
           </div>
           <div className="relative">
             <Slider />
-            <div className="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4 sm:flex drop-shadow-primary pointer-events-none">
+            <div className="hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8 sm:flex drop-shadow-primary pointer-events-none">
               <Image src={logo} alt="STiNE Ultras" className="w-[40vw]" />
+              <div className="text-ocean text-center text-4xl font-semibold">
+                <p>STiNE ist scheiße!</p>
+                <p>Mach es dir zumindest etwas hübscher.</p>
+              </div>
             </div>
           </div>
         </div>
