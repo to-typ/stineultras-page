@@ -10,7 +10,7 @@ const oswald = Oswald({
 
 export const metadata: Metadata = {
   title: "STiNE Ultras",
-  description: "Modern & Updated Theme for STiNE - STiNE Ultras",
+  description: "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
   applicationName: "STiNE Ultras",
   icons: [
     {
