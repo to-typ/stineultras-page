@@ -61,6 +61,13 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "STiNE Ultras",
+    description:
+      "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
+    images: ["https://stineultras.de/preview.png"],
+  },
 };
 
 export default function RootLayout({
