@@ -47,15 +47,17 @@ export const metadata: Metadata = {
   appleWebApp: true,
   openGraph: {
     title: "STiNE Ultras",
-    description: "Modern & Updated Theme for STiNE - STiNE Ultras",
+    description:
+      "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
     url: "https://stineultras.de",
     type: "website",
     images: [
       {
-        url: "https://stineultras.de/icons/betterstine.svg",
-        width: 800,
-        height: 600,
-        alt: "STiNE Ultras Logo",
+        url: "https://stineultras.de/preview.png",
+        width: 3456,
+        height: 1576,
+        type: "image/png",
+        alt: "STiNE Ultras Preview",
       },
     ],
   },
