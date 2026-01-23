@@ -3,8 +3,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function deleteDB(data: any) {
-    if (data == null || data.type == null) {
+type DeleteDBData = {
+    type: 'termin' | 'uebungsgruppe' | 'veranstaltung';
+} | null;
+
+async function deleteDB(data: DeleteDBData) {
+    if (data == null ) {
         return await prisma.$transaction([
             prisma.termin.deleteMany({}),
             prisma.uebungsgruppe.deleteMany({}),
