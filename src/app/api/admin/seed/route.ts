@@ -4,6 +4,7 @@ import { PrismaClient, VeranstaltungsTyp  } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seedDB(data: any) {
+    const input = data;
     const v1 = await prisma.veranstaltung.create({
         data: {
             name: 'Stine Ultras 2024',
