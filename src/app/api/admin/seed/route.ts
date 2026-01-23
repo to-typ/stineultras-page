@@ -3,8 +3,8 @@ import { PrismaClient, VeranstaltungsTyp  } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function seedDB(data: any) {
-    const input = data;
+async function seedDB(/*data: any*/) {
+    //const input = data;
     const v1 = await prisma.veranstaltung.create({
         data: {
             name: 'Stine Ultras 2024',
@@ -37,6 +37,6 @@ async function seedDB(data: any) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const seeded = await seedDB(body);
+  const seeded = await seedDB(/*body*/);
   return NextResponse.json(seeded);
 }
