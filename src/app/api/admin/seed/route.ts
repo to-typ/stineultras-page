@@ -35,7 +35,7 @@ async function seedDB(/*data: any*/) {
     return { veranstaltung: v1, uebungsgruppe: u1, termin: t1 };
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(/*req: NextRequest*/) {
   //const body = await req.json();
   const seeded = await seedDB(/*body*/);
   return NextResponse.json(seeded);
