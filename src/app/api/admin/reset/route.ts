@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function deleteDB(data: any) {
-    if (data == null) {
+    if (data == null || data.type == null) {
         return await prisma.$transaction([
             prisma.termin.deleteMany({}),
             prisma.uebungsgruppe.deleteMany({}),
