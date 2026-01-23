@@ -13,12 +13,23 @@ export default function Admin() {
       body: JSON.stringify({}),
     });
   }
+
   const reset = async () => {
     await fetch('/api/admin/reset', {
       method: 'POST',
       body: JSON.stringify(""),
     });
   }
+
+  const crawl = async () => {
+    const response = await fetch('/api/admin/crawl', {
+      method: 'POST',
+      body: JSON.stringify("start"),
+    });
+    const result = await response.json();
+    alert(JSON.stringify(result, null, 2));
+  }
+  
   return (
     <>
       <header
@@ -33,6 +44,7 @@ export default function Admin() {
       <div className="text-white flex flex-col m-8 gap-6">
         <input type="button" value="Datenbank zurücksetzen" onClick={reset} className="bg-red-600 p-4 rounded-lg hover:bg-red-700 cursor-pointer"/>
         <input type="button" value="Seed-Daten neu einfügen" onClick={seed} className="bg-green-600 p-4 rounded-lg hover:bg-green-700 cursor-pointer"/>
+        <input type="button" value="Daten von STiNE crawlen" onClick={crawl} className="bg-blue-600 p-4 rounded-lg hover:bg-blue-700 cursor-pointer"/>
       </div>
     </>
   );
