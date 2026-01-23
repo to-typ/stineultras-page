@@ -4,24 +4,64 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 const stineURL = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AyWhCKzswcs-c6Byp9xtolWBxvzFmFk0QpruFGBmRNFjlPz43J2ag0L5ha5-89vKhj2PvYDbIdNHfyXlIqS0Cb3gY7vrV-05CVsDJOmjltPkq6ijPzRVeUo9twJDU4IjTtgSJ0Afq0Cv4ClqOyuTKiMzzHYRORro8iznXvXszKJ~RxZSouhqsq~klyQ__';
-//const stineURL2 = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AgU3X1UUAinOcL-DaZPn1ePv26foiY5unP9D1ZU~QNBdXg9xjH8OUX5UwazdRFi0gOauyJJxXioJn7iQY1xdhRGIUPa1HDXKnMPiDCfIpjtM6DIfBr7tp2hmtAkTKnViz5tTpahxjT7IzWQ~3-PS5AxlZR1hsr~Kl6frzH8bl0O5DNEd-T47e8MBRGPt40yY6-MPfEVzbyZ~zsqo_';
+const stineURL2 = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AgU3X1UUAinOcL-DaZPn1ePv26foiY5unP9D1ZU~QNBdXg9xjH8OUX5UwazdRFi0gOauyJJxXioJn7iQY1xdhRGIUPa1HDXKnMPiDCfIpjtM6DIfBr7tp2hmtAkTKnViz5tTpahxjT7IzWQ~3-PS5AxlZR1hsr~Kl6frzH8bl0O5DNEd-T47e8MBRGPt40yY6-MPfEVzbyZ~zsqo_';
 const stineURL3 = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000725,-N0,-N394275065814747,-N394275065800748,-N0,-N0,-N0';
-async function crawl(data: string) {
+const stineURL4 = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000725,-N0,-N394345008718797,-N394345008706798,-N0,-N0,-N0';
+const stineBaseURL = 'https://www.stine.uni-hamburg.de';
+async function crawl(data: string, url: string) {
     if (data === null || data === undefined || data === '') {
         return;
     } else {
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
         const website = async () => {
-            return await fetch(stineURL3, {
+            return await fetch(url, {
                 method: 'GET',
             });
         }
         const response = await website();
         const html = await response.text();
-        // if (html.includes('auditRegistrationList')) {
-        //     return {sublinks: findSublinks(html)};
-        // } else {
-        //     return {events: findEvents(html)};
-        // }
+        if (html.includes('auditRegistrationList')) {
+            return crawl("x", stineBaseURL + findSublinks(html)[0].href);
+        } else {
+            return crawl("x", stineBaseURL + findEvents(html)[0].url);
+        }
+    }
+}
+
+async function crawlEvent(data: string, url: string) {
+    if (data === null || data === undefined || data === '') {
+        return;
+    } else {
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
+        const website = async () => {
+            return await fetch(url, {
+                method: 'GET',
+            });
+        }
+        const response = await website();
+        const html = await response.text();
+        const getEventDataResult = getEventData(html);
+        if (getEventDataResult?.type === "Übung") {
+            return crawlSubEvent("x", stineBaseURL + findSublinks(html)[0].href);
+        } else {
+            return findDates(html);
+        }
+    }
+}
+
+async function crawlSubEvent(data: string, url: string) {
+    if (data === null || data === undefined || data === '') {
+        return;
+    } else {
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
+        const website = async () => {
+            return await fetch(url, {
+                method: 'GET',
+            });
+        }
+        const response = await website();
+        const html = await response.text();
+        return findDates(html);
     }
 }
 
@@ -63,6 +103,20 @@ function findEvents(html: string): Array<{name: string, url: string}> {
         });
     }
     return events;
+}
+
+function getEventData(html: string): {type: string, name: string} | null {
+    const typeRegex = /<span class="courseType">([^<]*)<\/span>/;
+    const nameRegex = /<h1 class="courseName">([^<]*)<\/h1>/;
+    const typeMatch = typeRegex.exec(html);
+    const nameMatch = nameRegex.exec(html);
+    if (typeMatch && nameMatch) {
+        return {
+            type: typeMatch[1].trim(),
+            name: nameMatch[1].trim()
+        };
+    }
+    return null;
 }
 
 function findDates(html: string): Array<{date: string, time: string, location: string}> {
@@ -123,6 +177,6 @@ function findSubgroups(html: string): Array<{name: string, href: string}> {
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    const deleted = await crawl(body);
+    const deleted = await crawl(body, stineURL);
     return NextResponse.json(deleted);
 }
