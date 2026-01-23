@@ -37,14 +37,15 @@ export default function Contact() {
       <header
         className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 h-24 py-4`}>
         <div className="flex items-center gap-6">
-          <Link href="/">
+          <Link href="/" className="flex items-center gap-6">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+
+            <Image src={logoWhite} alt="STiNE Ultras" height={64} />
           </Link>
-          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
         </div>
       </header>
       <div className="flex justify-center items-center ">
-        <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white">
+        <div className="p-8 rounded-lg w-full max-w-lg mt-12 text-white text-center">
           <h2 className="text-2xl">Kontakt</h2>
           <p className="mb-6">
             Teile uns gerne Anmerkungen, Vorschläge oder Kritik, über{" "}

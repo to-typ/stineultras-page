@@ -10,10 +10,10 @@ export default function Privacy() {
       <header
         className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 h-24 py-4`}>
         <div className="flex items-center gap-6">
-          <Link href="/">
+          <Link href="/" className="flex items-center gap-6">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+            <Image src={logoWhite} alt="STiNE Ultras" height={64} />
           </Link>
-          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
         </div>
       </header>
       <div className="text-white flex flex-col m-8 gap-6">
