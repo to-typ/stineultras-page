@@ -16,7 +16,7 @@ export default function Admin() {
   const reset = async () => {
     await fetch('/api/admin/reset', {
       method: 'POST',
-      body: JSON.stringify({}),
+      body: JSON.stringify(""),
     });
   }
   return (
