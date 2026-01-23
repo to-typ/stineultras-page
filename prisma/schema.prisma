@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//================
+model Veranstaltung {
+  id          Int               @id @default(autoincrement())
+  name        String
+  typ         VeranstaltungsTyp
+  lehrende    String
+  termine     Termin[]          
+  uebungen    Uebungsgruppe[]
+}
+
+model Termin {
+  id               Int            @id @default(autoincrement())
+  nummer           Int 
+  raum             String
+  tag              DateTime
+  startZeit        DateTime       @db.Time
+  endZeit          DateTime       @db.Time
+  veranstaltungsId Int?           
+  veranstaltung    Veranstaltung? @relation(fields: [veranstaltungsId], references: [id])
+  uebungsId        Int?           
+  uebung           Uebungsgruppe? @relation(fields: [uebungsId], references: [id])
+}
+
+model Uebungsgruppe {
+  id               Int           @id @default(autoincrement())
+  name             String     
+  veranstaltungsId Int           @unique
+  veranstaltung    Veranstaltung @relation(fields: [veranstaltungsId], references: [id])
+  termine          Termin[]      
+}
+
+//================
+// Types
+//================
+enum VeranstaltungsTyp {
+  VORLESUNG
+  TUTORIUM
+  UEBUNG
+  ARBEITSGRUPPE
+}
