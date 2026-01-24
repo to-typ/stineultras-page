@@ -28,8 +28,22 @@ export default function Admin() {
     });
     const result = await response.json();
     alert(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
+    const jobIdInput = document.getElementById('jobId') as HTMLInputElement;
+    jobIdInput.value = result.jobId;
   }
-  
+
+  const status = async () => {
+    const jobIdInput = document.getElementById('jobId') as HTMLInputElement;
+    const jobId = jobIdInput.value;
+    const response = await fetch(`/api/admin/crawl?jobId=${jobId}`, {
+      method: 'GET',  
+    });
+    const result = await response.json();
+    alert(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
+  }
+
   return (
     <>
       <header
@@ -45,6 +59,8 @@ export default function Admin() {
         <input type="button" value="Datenbank zurücksetzen" onClick={reset} className="bg-red-600 p-4 rounded-lg hover:bg-red-700 cursor-pointer"/>
         <input type="button" value="Seed-Daten neu einfügen" onClick={seed} className="bg-green-600 p-4 rounded-lg hover:bg-green-700 cursor-pointer"/>
         <input type="button" value="Daten von STiNE crawlen" onClick={crawl} className="bg-blue-600 p-4 rounded-lg hover:bg-blue-700 cursor-pointer"/>
+        <input type="text" placeholder="Job ID" id="jobId" className="p-4 rounded-lg text-black"/>
+        <input type="button" value="Crawl-Status prüfen" onClick={status} className="bg-yellow-600 p-4 rounded-lg hover:bg-yellow-700 cursor-pointer"/>
       </div>
     </>
   );
