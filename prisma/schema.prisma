@@ -17,7 +17,9 @@ datasource db {
 //================
 model Veranstaltung {
   id          Int               @id @default(autoincrement())
+  stineId     String
   name        String
+  stineName   String
   typ         VeranstaltungsTyp
   lehrende    String
   termine     Termin[]          

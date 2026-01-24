@@ -8,7 +8,9 @@ async function main() {
   const v1 = await prisma.veranstaltung.create({
     data: {
         name: 'Stine Ultras 2024',
+        stineId: '64.128',
         typ: VeranstaltungsTyp.UEBUNG,
+        stineName: 'SU-Üb',
         lehrende: 'Max Mustermann',
     },
   });
