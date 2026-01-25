@@ -15,16 +15,19 @@ export default function Admin() {
   }
 
   const reset = async () => {
-    await fetch('/api/admin/reset', {
+    const response = await fetch('/api/admin/reset', {
       method: 'POST',
       body: JSON.stringify(""),
     });
+    const result = await response.json();
+    console.log(JSON.stringify(result, null, 2));
+    alert(JSON.stringify(result, null, 2));
   }
 
   const crawl = async () => {
     const response = await fetch('/api/admin/crawl', {
       method: 'POST',
-      body: JSON.stringify({semester: "WiSe 25/26"}),
+      body: JSON.stringify({semester: 'WiSe 25/26'}),
     });
     const result = await response.json();
     alert(JSON.stringify(result, null, 2));
