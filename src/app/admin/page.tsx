@@ -24,7 +24,7 @@ export default function Admin() {
   const crawl = async () => {
     const response = await fetch('/api/admin/crawl', {
       method: 'POST',
-      body: JSON.stringify("start"),
+      body: JSON.stringify({semester: "WiSe 25/26"}),
     });
     const result = await response.json();
     alert(JSON.stringify(result, null, 2));
