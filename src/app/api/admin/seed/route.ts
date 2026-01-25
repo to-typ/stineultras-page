@@ -4,6 +4,12 @@ import { PrismaClient, VeranstaltungsTyp  } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function seedDB() {
+    const s1 = await prisma.semester.create({
+        data: {
+            name: 'WiSe 24/25', 
+        },
+    });
+    
     const v1 = await prisma.veranstaltung.create({
         data: {
             name: 'Stine Ultras 2024',
@@ -11,6 +17,7 @@ async function seedDB() {
             typ: VeranstaltungsTyp.UEBUNG,
             stineName: 'SU-Üb',
             lehrende: 'Max Mustermann',
+            semester: {connect: { id: s1.id }},
         },
     });
 

@@ -5,6 +5,12 @@ const { PrismaClient, VeranstaltungsTyp } = pkg;
 const prisma = new PrismaClient();
 
 async function main() {
+  const s1 = await prisma.semester.create({
+    data: {
+        name: 'WiSe 24/25', 
+    },
+  });
+
   const v1 = await prisma.veranstaltung.create({
     data: {
         name: 'Stine Ultras 2024',
@@ -12,9 +18,9 @@ async function main() {
         typ: VeranstaltungsTyp.UEBUNG,
         stineName: 'SU-Üb',
         lehrende: 'Max Mustermann',
+        semester: {connect: { id: s1.id }},
     },
   });
-
 
   const u1 = await prisma.uebungsgruppe.create({
     data: {

@@ -24,6 +24,8 @@ model Veranstaltung {
   lehrende    String
   termine     Termin[]          
   uebungen    Uebungsgruppe[]
+  semesterId  Int
+  semester    Semester          @relation(fields: [semesterId], references: [id])
 }
 
 model Termin {
@@ -42,9 +44,15 @@ model Termin {
 model Uebungsgruppe {
   id               Int           @id @default(autoincrement())
   name             String     
-  veranstaltungsId Int           @unique
+  veranstaltungsId Int           
   veranstaltung    Veranstaltung @relation(fields: [veranstaltungsId], references: [id])
   termine          Termin[]      
+}
+
+model Semester {
+  id              Int             @id @default(autoincrement())
+  name            String
+  veranstaltungen Veranstaltung[]
 }
 
 //================
@@ -55,4 +63,5 @@ enum VeranstaltungsTyp {
   TUTORIUM
   UEBUNG
   ARBEITSGRUPPE
+  UNDEFINED
 }
