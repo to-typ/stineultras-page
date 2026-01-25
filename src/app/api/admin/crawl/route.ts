@@ -391,8 +391,7 @@ export async function POST(req: NextRequest) {
                 job.status = 'running';
                 jobs.set(jobId, job);
             }
-            
-            const crawled = await crawlSemester(body.semester);
+            const crawled = await crawlSemester(body);
             
             const completedJob = jobs.get(jobId);
             if (completedJob) {
