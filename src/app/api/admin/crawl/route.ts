@@ -36,6 +36,7 @@ const stineURL2526 = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPN
 
 async function crawlSemester(semester: string) {
     if (semester === null || semester === undefined || semester === '') {
+        console.log(`Crawling menu: null semester`);
         return null;
     } else {
         let url = '';
@@ -58,9 +59,11 @@ async function crawlSemester(semester: string) {
 
 async function crawlMenu(url: string, semesterId: number): Promise<any> {
     if (url === null || url === undefined || url === '') {
+        console.log(`Crawling menu: null url`);
         return null;
     } else {
         await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
+        console.log(`Crawling menu: ${url}`);
 
         const website = async () => {
             return await fetch(url, {
@@ -71,6 +74,13 @@ async function crawlMenu(url: string, semesterId: number): Promise<any> {
         const html = await response.text();
         
         if (html.includes('auditRegistrationList')) {
+            if (html.includes('Veranstaltungen / Module')) {
+                const veranstaltungen = findVeranstaltungen(html);
+                let results = [];
+                for (const veranstaltung of veranstaltungen) {
+                    results.push(await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId));
+                }
+            }
             const submenuLinks = findSubmenus(html);
             let results = [];
             for (const submenu of submenuLinks) {
@@ -90,9 +100,11 @@ async function crawlMenu(url: string, semesterId: number): Promise<any> {
 
 async function crawlVeranstaltung(url: string, semesterId: number) {
     if (url === null || url === undefined || url === '') {
+        console.log(`Crawling event: null url`);
         return null;
     } else {
         await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
+        console.log(`Crawling event: ${url}`);
         const website = async () => {
             return await fetch(url, {
                 method: 'GET',
@@ -322,13 +334,13 @@ function getUebungsgruppeData(html: string): {name: string}  {
 
 function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: string, name: string, stineName: string, person: string}  {
     const typeRegex = /Veranstaltungsart:[\s\S]*?<div[^>]*>\s*([^\n<]+)/;
-    const nameRegex = /<h1[^>]*>\s*([\d-]+)\s+([^<]+?)\s*<\/h1>/;
+    const nameRegex = /<h1[^>]*>\s*([\d-\.]+)\s+(.*?)\s*<\/h1>/;
     const personRegex = /<span[^>]*id="dozenten"[^>]*>([^<]*)<\/span>/;
     const stineNameRegex = /Anzeige im Stundenplan: [\s\S]*?<div[^>]*>\s*([^\n<]+)/;
     const typeMatch = typeRegex.exec(html);
-    const nameMatch = nameRegex.exec(html);
-    const personMatch = personRegex.exec(html);
-    const stineNameMatch = stineNameRegex.exec(html);
+    let nameMatch = nameRegex.exec(html);
+    let personMatch = personRegex.exec(html);
+    let stineNameMatch = stineNameRegex.exec(html);
 
     let type;
     switch (typeMatch ? typeMatch[1].trim() : '') {
@@ -338,11 +350,57 @@ function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: 
         case 'Übung':
             type = VeranstaltungsTyp.UEBUNG;
             break;
+        case 'Ringvorlesung':
+            type = VeranstaltungsTyp.RINGVORLESUNG;
+            break;
+        case 'Arbeitsgruppe':
+            type = VeranstaltungsTyp.ARBEITSGRUPPE;
+            break;
+        case 'Tutorium':
+            type = VeranstaltungsTyp.TUTORIUM;
+            break;
+        case 'Seminar':
+            type = VeranstaltungsTyp.SEMINAR;
+            break;
+        case 'Projekt':
+            type = VeranstaltungsTyp.PROJEKT;
+            break;
+        case 'ABK-Kurse':
+            type = VeranstaltungsTyp.ABK_KURSE;
+            break;
+        case 'Vorlesung + Übung':
+            type = VeranstaltungsTyp.VORLESUNG_UEBUNG;
+            break;
+        case 'Wissenschaftlicher Grundlagenkurs':
+            type = VeranstaltungsTyp.WISSENSCHAFTLICHER_GRUNDLAGENKURS;
+            break;
+        case 'Grundkurs':
+            type = VeranstaltungsTyp.GRUNDKURS;
+            break;
+        case 'Sprachlehrveranstaltung':
+            type = VeranstaltungsTyp.SPRACHLEHRVERANSTALTUNG;
+            break;
+        case 'Kolloquium':
+            type = VeranstaltungsTyp.KOLLOQUIUM;
+            break;
+        case 'Forschungskolloquium':
+            type = VeranstaltungsTyp.FORSCHUNGSKOLLOQUIUM;
+            break;
         default:
             type = VeranstaltungsTyp.UNDEFINED;
             break;
     }
 
+    if (!nameMatch) {
+        nameMatch = ['', '', ''] as any;
+    }
+    if(!personMatch) {
+        personMatch = ['', ''] as any;
+    }
+    if(!stineNameMatch) {
+        stineNameMatch = ['', ''] as any;
+    }
+    
     if (typeMatch && nameMatch && personMatch && stineNameMatch) {
         return {
             type: type,
