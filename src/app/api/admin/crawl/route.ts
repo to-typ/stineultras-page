@@ -60,7 +60,7 @@ async function crawlMenu(url: string, semesterId: number): Promise<any> {
     if (url === null || url === undefined || url === '') {
         return null;
     } else {
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
+        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
 
         const website = async () => {
             return await fetch(url, {
@@ -92,7 +92,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
     if (url === null || url === undefined || url === '') {
         return null;
     } else {
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
+        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
         const website = async () => {
             return await fetch(url, {
                 method: 'GET',
@@ -129,7 +129,7 @@ async function crawlUebungsgruppe(url: string, eventId: number) {
     if (url === null || url === undefined || url === '') {
         return null;
     } else {
-        await new Promise(r => setTimeout(r, 2000 + Math.random() * 3000)); 
+        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
         const website = async () => {
             return await fetch(url, {
                 method: 'GET',
