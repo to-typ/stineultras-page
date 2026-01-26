@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { VeranstaltungsTyp, PrismaClient, Prisma } from "@prisma/client";
+import { VeranstaltungsTyp, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,7 +7,6 @@ type JobStatus = 'pending' | 'running' | 'completed' | 'error';
 type Job = {
     id: string;
     status: JobStatus;
-    result?: any;
     error?: string;
     createdAt: Date;
     completedAt?: Date;
@@ -45,6 +44,7 @@ async function crawlSemester(semester: string) {
                 url = stineURL2526;
         }
         if (url === '') {
+            console.log(`Crawling menu: no url for semester ${semester}`);
             return;
         }
 
@@ -57,12 +57,12 @@ async function crawlSemester(semester: string) {
     }
 }
 
-async function crawlMenu(url: string, semesterId: number): Promise<any> {
+async function crawlMenu(url: string, semesterId: number): Promise<Object> {
     if (url === null || url === undefined || url === '') {
         console.log(`Crawling menu: null url`);
-        return null;
+        return {};
     } else {
-        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000)); 
         console.log(`Crawling menu: ${url}`);
 
         const website = async () => {
@@ -76,20 +76,20 @@ async function crawlMenu(url: string, semesterId: number): Promise<any> {
         if (html.includes('auditRegistrationList')) {
             if (html.includes('Veranstaltungen / Module')) {
                 const veranstaltungen = findVeranstaltungen(html);
-                let results = [];
+                const results = [];
                 for (const veranstaltung of veranstaltungen) {
                     results.push(await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId));
                 }
             }
             const submenuLinks = findSubmenus(html);
-            let results = [];
+            const results = [];
             for (const submenu of submenuLinks) {
                 results.push(await crawlMenu(stineBaseURL + submenu.href, semesterId));
             }
             return { submenus: results };
         } else {
             const veranstaltungen = findVeranstaltungen(html);
-            let results = [];
+            const results = [];
             for (const veranstaltung of veranstaltungen) {
                 results.push(await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId));
             }
@@ -103,7 +103,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
         console.log(`Crawling event: null url`);
         return null;
     } else {
-        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000)); 
         console.log(`Crawling event: ${url}`);
         const website = async () => {
             return await fetch(url, {
@@ -125,7 +125,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
         });
         if (eventData.type === VeranstaltungsTyp.UEBUNG) {
             const subgroups = findUebungsgruppen(html);
-            let results = [];
+            const results = [];
             for (const subgroup of subgroups) {
                 results.push(await crawlUebungsgruppe(stineBaseURL + subgroup.href, result.id));
             }
@@ -141,7 +141,7 @@ async function crawlUebungsgruppe(url: string, eventId: number) {
     if (url === null || url === undefined || url === '') {
         return null;
     } else {
-        await new Promise(r => setTimeout(r, 3000 + Math.random() * 4000)); 
+        await new Promise(r => setTimeout(r, 2000 + Math.random() * 1000)); 
         const website = async () => {
             return await fetch(url, {
                 method: 'GET',
@@ -386,36 +386,124 @@ function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: 
         case 'Forschungskolloquium':
             type = VeranstaltungsTyp.FORSCHUNGSKOLLOQUIUM;
             break;
+        case 'Oberseminar':
+            type = VeranstaltungsTyp.OBERSEMINAR;
+            break;
+        case 'Hauptseminar':
+            type = VeranstaltungsTyp.HAUPTSEMINAR;
+            break;
+        case 'Proseminar':
+            type = VeranstaltungsTyp.PROSEMINAR;
+            break;
+        case 'Projektseminar':
+            type = VeranstaltungsTyp.PROJEKTSEMINAR;
+            break;
+        case 'Infoveranstaltung':
+            type = VeranstaltungsTyp.INFOVERANSTALTUNG;
+            break;
+        case 'Anleitung':
+            type = VeranstaltungsTyp.ANLEITUNG;
+            break;
+        case 'Orientierungseinheit':
+            type = VeranstaltungsTyp.ORIENTIERUNGSEINHEIT;
+            break;
+        case 'Praktikum mit integriertem Seminar':
+            type = VeranstaltungsTyp.PRAKTIKUM_MIT_INTEGRIERTEM_SEMINAR;
+            break;
+        case 'Praktikum':
+            type = VeranstaltungsTyp.PRAKTIKUM;
+            break;
+        case 'Seminar + Übung + Vorlesung':
+            type = VeranstaltungsTyp.SEMINAR_UEBUNG_VORLESUNG;
+            break;
+        case 'Seminar + Übung':
+            type = VeranstaltungsTyp.SEMINAR_UEBUNG;
+            break;
+        case 'Integrierte Veranstaltung':
+            type = VeranstaltungsTyp.INTEGRIERTE_VERANSTALTUNG;
+            break;
+        case 'Einführungsvorlesung':
+            type = VeranstaltungsTyp.EINFUEHRUNGSVORLESUNG;
+            break;
+        case 'Einführungskurs':
+            type = VeranstaltungsTyp.EINFUEHRUNGSKURS;
+            break;
+        case 'Lektürekurs':
+            type = VeranstaltungsTyp.LEKTUEREKURS;
+            break;
+        case 'Lektüreseminar':
+            type = VeranstaltungsTyp.LEKTUERESEMINAR;
+            break;
+        case 'Stilübung':
+            type = VeranstaltungsTyp.STILUEBUNG;
+            break;
+        case 'Blocklehrveranstaltung':
+            type = VeranstaltungsTyp.BLOCKLEHRVERANSTALTUNG;
+            break;
+        case 'Musikalische Praxis':
+            type = VeranstaltungsTyp.MUSIKALISCHE_PRAXIS;
+            break;
+        case 'Lehrgang':
+            type = VeranstaltungsTyp.LEHRGANG;
+            break;
+        case 'Exkursion':
+            type = VeranstaltungsTyp.EXKURSION;
+            break;
+        case 'Vertiefungsseminar':
+            type = VeranstaltungsTyp.VERTIEFUNGSSEMINAR;
+            break;
+        case 'Selbststudium':
+            type = VeranstaltungsTyp.SELBSTSTUDIUM;
+            break;
+        case 'Mittelseminar':
+            type = VeranstaltungsTyp.MITTELSEMINAR;
+            break;
+        case 'Mittelseminar + Übung':
+            type = VeranstaltungsTyp.MITTELSEMINAR_UEBUNG;
+            break;
+        case 'Forschungsseminar':
+            type = VeranstaltungsTyp.FORSCHUNGSSEMINAR;
+            break;
+        case 'Praxisbegleitseminar':
+            type = VeranstaltungsTyp.PRAXISBEGLEITSEMINAR;
+            break;
+        case 'Berufspraktische Übung':
+            type = VeranstaltungsTyp.BERUFSPRAKTISCHE_UEBUNG;
+            break;
+        case 'Seminar + Exkursion':
+            type = VeranstaltungsTyp.SEMINAR_EXKURSION;
+            break;
+        case 'Sprachkurs':
+            type = VeranstaltungsTyp.SPRACHKURS;
+            break;
         default:
             type = VeranstaltungsTyp.UNDEFINED;
             break;
     }
 
-    if (!nameMatch) {
-        nameMatch = ['', '', ''] as any;
+    let stineId = '';
+    let name = '';
+    if (nameMatch) {
+        stineId = nameMatch[1].trim();
+        name = nameMatch[2].trim();
     }
-    if(!personMatch) {
-        personMatch = ['', ''] as any;
+
+    let person = '';
+    if (personMatch) {
+        person = personMatch[1].trim();
     }
-    if(!stineNameMatch) {
-        stineNameMatch = ['', ''] as any;
+
+    let stineName = '';
+    if (stineNameMatch) {
+        stineName = stineNameMatch[1].trim();
     }
     
-    if (typeMatch && nameMatch && personMatch && stineNameMatch) {
-        return {
-            type: type,
-            stineId: nameMatch[1].trim(),
-            name: nameMatch[2].trim(),
-            stineName: stineNameMatch[1].trim(),
-            person: personMatch[1].trim()
-        };
-    } 
     return {
-        type: VeranstaltungsTyp.UNDEFINED,
-        stineId: "",
-        name: "",
-        stineName: "",
-        person: ""
+        type: type,
+        stineId: stineId,
+        name: name,
+        stineName: stineName,
+        person: person
     };
 }
 
@@ -449,12 +537,12 @@ export async function POST(req: NextRequest) {
                 job.status = 'running';
                 jobs.set(jobId, job);
             }
-            const crawled = await crawlSemester(body);
+            console.log(`Starting crawl job ${jobId} for semester ${body.semester}`);
+            const crawled = await crawlSemester(body.semester);
             
             const completedJob = jobs.get(jobId);
             if (completedJob) {
                 completedJob.status = 'completed';
-                completedJob.result = crawled;
                 completedJob.completedAt = new Date();
                 jobs.set(jobId, completedJob);
             }
