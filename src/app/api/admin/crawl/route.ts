@@ -334,7 +334,7 @@ function getUebungsgruppeData(html: string): {name: string}  {
 
 function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: string, name: string, stineName: string, person: string}  {
     const typeRegex = /Veranstaltungsart:[\s\S]*?<div[^>]*>\s*([^\n<]+)/;
-    const nameRegex = /<h1[^>]*>\s*([\d-\.]+)\s+(.*?)\s*<\/h1>/;
+    const nameRegex = /<h1[^>]*>\s*([\d-\.\w]+)\s+(?:\(\d+\s+LP\)\s+)?(.*?)\s*<\/h1>/;
     const personRegex = /<span[^>]*id="dozenten"[^>]*>([^<]*)<\/span>/;
     const stineNameRegex = /Anzeige im Stundenplan: [\s\S]*?<div[^>]*>\s*([^\n<]+)/;
     const typeMatch = typeRegex.exec(html);
@@ -342,144 +342,7 @@ function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: 
     let personMatch = personRegex.exec(html);
     let stineNameMatch = stineNameRegex.exec(html);
 
-    let type;
-    switch (typeMatch ? typeMatch[1].trim() : '') {
-        case 'Vorlesung':
-            type = VeranstaltungsTyp.VORLESUNG;
-            break;
-        case 'Übung':
-            type = VeranstaltungsTyp.UEBUNG;
-            break;
-        case 'Ringvorlesung':
-            type = VeranstaltungsTyp.RINGVORLESUNG;
-            break;
-        case 'Arbeitsgruppe':
-            type = VeranstaltungsTyp.ARBEITSGRUPPE;
-            break;
-        case 'Tutorium':
-            type = VeranstaltungsTyp.TUTORIUM;
-            break;
-        case 'Seminar':
-            type = VeranstaltungsTyp.SEMINAR;
-            break;
-        case 'Projekt':
-            type = VeranstaltungsTyp.PROJEKT;
-            break;
-        case 'ABK-Kurse':
-            type = VeranstaltungsTyp.ABK_KURSE;
-            break;
-        case 'Vorlesung + Übung':
-            type = VeranstaltungsTyp.VORLESUNG_UEBUNG;
-            break;
-        case 'Wissenschaftlicher Grundlagenkurs':
-            type = VeranstaltungsTyp.WISSENSCHAFTLICHER_GRUNDLAGENKURS;
-            break;
-        case 'Grundkurs':
-            type = VeranstaltungsTyp.GRUNDKURS;
-            break;
-        case 'Sprachlehrveranstaltung':
-            type = VeranstaltungsTyp.SPRACHLEHRVERANSTALTUNG;
-            break;
-        case 'Kolloquium':
-            type = VeranstaltungsTyp.KOLLOQUIUM;
-            break;
-        case 'Forschungskolloquium':
-            type = VeranstaltungsTyp.FORSCHUNGSKOLLOQUIUM;
-            break;
-        case 'Oberseminar':
-            type = VeranstaltungsTyp.OBERSEMINAR;
-            break;
-        case 'Hauptseminar':
-            type = VeranstaltungsTyp.HAUPTSEMINAR;
-            break;
-        case 'Proseminar':
-            type = VeranstaltungsTyp.PROSEMINAR;
-            break;
-        case 'Projektseminar':
-            type = VeranstaltungsTyp.PROJEKTSEMINAR;
-            break;
-        case 'Infoveranstaltung':
-            type = VeranstaltungsTyp.INFOVERANSTALTUNG;
-            break;
-        case 'Anleitung':
-            type = VeranstaltungsTyp.ANLEITUNG;
-            break;
-        case 'Orientierungseinheit':
-            type = VeranstaltungsTyp.ORIENTIERUNGSEINHEIT;
-            break;
-        case 'Praktikum mit integriertem Seminar':
-            type = VeranstaltungsTyp.PRAKTIKUM_MIT_INTEGRIERTEM_SEMINAR;
-            break;
-        case 'Praktikum':
-            type = VeranstaltungsTyp.PRAKTIKUM;
-            break;
-        case 'Seminar + Übung + Vorlesung':
-            type = VeranstaltungsTyp.SEMINAR_UEBUNG_VORLESUNG;
-            break;
-        case 'Seminar + Übung':
-            type = VeranstaltungsTyp.SEMINAR_UEBUNG;
-            break;
-        case 'Integrierte Veranstaltung':
-            type = VeranstaltungsTyp.INTEGRIERTE_VERANSTALTUNG;
-            break;
-        case 'Einführungsvorlesung':
-            type = VeranstaltungsTyp.EINFUEHRUNGSVORLESUNG;
-            break;
-        case 'Einführungskurs':
-            type = VeranstaltungsTyp.EINFUEHRUNGSKURS;
-            break;
-        case 'Lektürekurs':
-            type = VeranstaltungsTyp.LEKTUEREKURS;
-            break;
-        case 'Lektüreseminar':
-            type = VeranstaltungsTyp.LEKTUERESEMINAR;
-            break;
-        case 'Stilübung':
-            type = VeranstaltungsTyp.STILUEBUNG;
-            break;
-        case 'Blocklehrveranstaltung':
-            type = VeranstaltungsTyp.BLOCKLEHRVERANSTALTUNG;
-            break;
-        case 'Musikalische Praxis':
-            type = VeranstaltungsTyp.MUSIKALISCHE_PRAXIS;
-            break;
-        case 'Lehrgang':
-            type = VeranstaltungsTyp.LEHRGANG;
-            break;
-        case 'Exkursion':
-            type = VeranstaltungsTyp.EXKURSION;
-            break;
-        case 'Vertiefungsseminar':
-            type = VeranstaltungsTyp.VERTIEFUNGSSEMINAR;
-            break;
-        case 'Selbststudium':
-            type = VeranstaltungsTyp.SELBSTSTUDIUM;
-            break;
-        case 'Mittelseminar':
-            type = VeranstaltungsTyp.MITTELSEMINAR;
-            break;
-        case 'Mittelseminar + Übung':
-            type = VeranstaltungsTyp.MITTELSEMINAR_UEBUNG;
-            break;
-        case 'Forschungsseminar':
-            type = VeranstaltungsTyp.FORSCHUNGSSEMINAR;
-            break;
-        case 'Praxisbegleitseminar':
-            type = VeranstaltungsTyp.PRAXISBEGLEITSEMINAR;
-            break;
-        case 'Berufspraktische Übung':
-            type = VeranstaltungsTyp.BERUFSPRAKTISCHE_UEBUNG;
-            break;
-        case 'Seminar + Exkursion':
-            type = VeranstaltungsTyp.SEMINAR_EXKURSION;
-            break;
-        case 'Sprachkurs':
-            type = VeranstaltungsTyp.SPRACHKURS;
-            break;
-        default:
-            type = VeranstaltungsTyp.UNDEFINED;
-            break;
-    }
+    const type = typeMatch ? mapVeranstaltungsTyp(typeMatch[1].trim()) : VeranstaltungsTyp.UNDEFINED;
 
     let stineId = '';
     let name = '';
@@ -506,6 +369,109 @@ function getVeranstaltungData(html: string): {type: VeranstaltungsTyp, stineId: 
         person: person
     };
 }
+
+function mapVeranstaltungsTyp(type: string): VeranstaltungsTyp {
+  switch (type) {
+    case "ABK-Kurse": return VeranstaltungsTyp.ABK_KURSE;
+    case "Anleitung": return VeranstaltungsTyp.ANLEITUNG;
+    case "Arbeitsgemeinschaften": return VeranstaltungsTyp.ARBEITSGEMEINSCHAFTEN;
+    case "Begleitseminar": return VeranstaltungsTyp.BEGLEITSEMINAR;
+    case "Berufspraktische Übung": return VeranstaltungsTyp.BERUFSPRAKTISCHE_UEBUNG;
+    case "Blocklehrveranstaltung": return VeranstaltungsTyp.BLOCKLEHRVERANSTALTUNG;
+    case "Blockpraktikum": return VeranstaltungsTyp.BLOCKPRAKTIKUM;
+    case "EDV-Tutorien": return VeranstaltungsTyp.EDV_TUTORIEN;
+    case "Einführungskurs": return VeranstaltungsTyp.EINFUEHRUNGSKURS;
+    case "Einführungsvorlesung": return VeranstaltungsTyp.EINFUEHRUNGSVORLESUNG;
+    case "Ergänzende Sprachlehrveranstaltung": return VeranstaltungsTyp.ERGAENZENDE_SPRACHLEHRVERANSTALTUNG;
+    case "Examenskolloquium": return VeranstaltungsTyp.EXAMENSKOLLOQUIUM;
+    case "Exkursion": return VeranstaltungsTyp.EXKURSION;
+    case "Exkursion/Praktikum": return VeranstaltungsTyp.EXKURSION_PRAKTIKUM;
+    case "Förderkurs": return VeranstaltungsTyp.FOERDERKURS;
+    case "Forschungskolloquium": return VeranstaltungsTyp.FORSCHUNGSKOLLOQUIUM;
+    case "Forschungsseminar": return VeranstaltungsTyp.FORSCHUNGSSEMINAR;
+    case "Geländepraktikum": return VeranstaltungsTyp.GELAENDEPRAKTIKUM;
+    case "Geländepraktikum und Seminar": return VeranstaltungsTyp.GELAENDEPRAKTIKUM_UND_SEMINAR;
+    case "Geländeübung": return VeranstaltungsTyp.GELAENDEUEBUNG;
+    case "Geländeübung und Seminar": return VeranstaltungsTyp.GELAENDEUEBUNG_UND_SEMINAR;
+    case "Große Exkursion": return VeranstaltungsTyp.GROSSE_EXKURSION;
+    case "Großvorlesung": return VeranstaltungsTyp.GROSSVORLESUNG;
+    case "Grundkurs": return VeranstaltungsTyp.GRUNDKURS;
+    case "Halbtags-/Ganztagspraktikum": return VeranstaltungsTyp.HALBTAGS_GANZTAGS_PRAKTIKUM;
+    case "Hauptseminar": return VeranstaltungsTyp.HAUPTSEMINAR;
+    case "Hauptseminar/Vorlesung + Übung": return VeranstaltungsTyp.HAUPTSEMINAR_VORLESUNG_UEBUNG;
+    case "Infoveranstaltung": return VeranstaltungsTyp.INFOVERANSTALTUNG;
+    case "Integrierte Veranstaltung": return VeranstaltungsTyp.INTEGRIERTE_VERANSTALTUNG;
+    case "Intensivkurs": return VeranstaltungsTyp.INTENSIVKURS;
+    case "Interaktive Lehrveranstaltung": return VeranstaltungsTyp.INTERAKTIVE_LEHRVERANSTALTUNG;
+    case "Kleine Exkursion": return VeranstaltungsTyp.KLEINE_EXKURSION;
+    case "Kolloquium": return VeranstaltungsTyp.KOLLOQUIUM;
+    case "Kompaktkurs": return VeranstaltungsTyp.KOMPAKTKURS;
+    case "Kurspraktikum": return VeranstaltungsTyp.KURSPRAKTIKUM;
+    case "Laborpraktikum": return VeranstaltungsTyp.LABORPRAKTIKUM;
+    case "Lehrgang": return VeranstaltungsTyp.LEHRGANG;
+    case "Lektürekurs": return VeranstaltungsTyp.LEKTUEREKURS;
+    case "Lektüreseminar": return VeranstaltungsTyp.LEKTUERESEMINAR;
+    case "Lesung": return VeranstaltungsTyp.LESUNG;
+    case "Mittelseminar": return VeranstaltungsTyp.MITTELSEMINAR;
+    case "Mittelseminar/Übung": return VeranstaltungsTyp.MITTELSEMINAR_UEBUNG;
+    case "Mittelseminar/Übung/Vorleseung": return VeranstaltungsTyp.MITTELSEMINAR_UEBUNG_VORLESUNG;
+    case "Musikalische Praxis": return VeranstaltungsTyp.MUSIKALISCHE_PRAXIS;
+    case "Oberseminar": return VeranstaltungsTyp.OBERSEMINAR;
+    case "Orientierungseinheit": return VeranstaltungsTyp.ORIENTIERUNGSEINHEIT;
+    case "Praktikum": return VeranstaltungsTyp.PRAKTIKUM;
+    case "Praktikum mit integriertem Seminar": return VeranstaltungsTyp.PRAKTIKUM_MIT_SEMINAR;
+    case "Praktikumsseminar": return VeranstaltungsTyp.PRAKTIKUMSSEMINAR;
+    case "Praxisbegleitseminar": return VeranstaltungsTyp.PRAXISBEGLEITSEMINAR;
+    case "Praxisbezogene Einführung": return VeranstaltungsTyp.PRAXISBEZOGENE_EINFUEHRUNG;
+    case "Projekt": return VeranstaltungsTyp.PROJEKT;
+    case "Projekt + Seminar": return VeranstaltungsTyp.PROJEKT_SEMINAR;
+    case "Projekt I": return VeranstaltungsTyp.PROJEKT_I;
+    case "Projekt I/II": return VeranstaltungsTyp.PROJEKT_I_II;
+    case "Projekt II": return VeranstaltungsTyp.PROJEKT_II;
+    case "Projektseminar": return VeranstaltungsTyp.PROJEKTSEMINAR;
+    case "Propädeutikum": return VeranstaltungsTyp.PROPAEDEUTIKUM;
+    case "Proseminar": return VeranstaltungsTyp.PROSEMINAR;
+    case "Prüfung": return VeranstaltungsTyp.PRUEFUNG;
+    case "Ringvorlesung": return VeranstaltungsTyp.RINGVORLESUNG;
+    case "Selbststudium": return VeranstaltungsTyp.SELBSTSTUDIUM;
+    case "Seminar": return VeranstaltungsTyp.SEMINAR;
+    case "Seminar I": return VeranstaltungsTyp.SEMINAR_I;
+    case "Seminar Ia": return VeranstaltungsTyp.SEMINAR_IA;
+    case "Seminar Ib": return VeranstaltungsTyp.SEMINAR_IB;
+    case "Seminar II": return VeranstaltungsTyp.SEMINAR_II;
+    case "Seminar III": return VeranstaltungsTyp.SEMINAR_III;
+    case "Seminar/Exkursion": return VeranstaltungsTyp.SEMINAR_EXKURSION;
+    case "Seminar/Übung": return VeranstaltungsTyp.SEMINAR_UEBUNG;
+    case "Seminar/Übung/Vorlesung": return VeranstaltungsTyp.SEMINAR_UEBUNG_VORLESUNG;
+    case "Seminar/Vorlesung": return VeranstaltungsTyp.SEMINAR_VORLESUNG;
+    case "Sicht-/Hörtermin": return VeranstaltungsTyp.SICHT_HOERTERMIN;
+    case "Sportkurs": return VeranstaltungsTyp.SPORTKURS;
+    case "Sprachkurs": return VeranstaltungsTyp.SPRACHKURS;
+    case "Sprachlehrveranstaltung": return VeranstaltungsTyp.SPRACHLEHRVERANSTALTUNG;
+    case "Sprachlehrveranstaltung I": return VeranstaltungsTyp.SPRACHLEHRVERANSTALTUNG_I;
+    case "Sprachlehrveranstaltung II": return VeranstaltungsTyp.SPRACHLEHRVERANSTALTUNG_II;
+    case "Stilübung": return VeranstaltungsTyp.STILUEBUNG;
+    case "Studie": return VeranstaltungsTyp.STUDIE;
+    case "Translatorische Lehrveranstaltung": return VeranstaltungsTyp.TRANSLATORISCHE_LEHRVERANSTALTUNG;
+    case "Translatorische Übung I": return VeranstaltungsTyp.TRANSLATORISCHE_UEBUNG_I;
+    case "Translatorische Übung II": return VeranstaltungsTyp.TRANSLATORISCHE_UEBUNG_II;
+    case "Tutorium": return VeranstaltungsTyp.TUTORIUM;
+    case "Übung": return VeranstaltungsTyp.UEBUNG;
+    case "Übung/Praktikum": return VeranstaltungsTyp.UEBUNG_PRAKTIKUM;
+    case "Vertiefungsseminar": return VeranstaltungsTyp.VERTIEFUNGSSEMINAR;
+    case "Vorlesung": return VeranstaltungsTyp.VORLESUNG;
+    case "Vorlesung + Seminar": return VeranstaltungsTyp.VORLESUNG_SEMINAR;
+    case "Vorlesung + Tutorium": return VeranstaltungsTyp.VORLESUNG_TUTORIUM;
+    case "Vorlesung + Übung": return VeranstaltungsTyp.VORLESUNG_UEBUNG;
+    case "Vorlesung/Seminar/Hauptseminar": return VeranstaltungsTyp.VORLESUNG_SEMINAR_HAUPTSEMINAR;
+    case "Wissenschaftlicher Grundlagenkurs": return VeranstaltungsTyp.WISSENSCHAFTLICHER_GRUNDLAGENKURS;
+    case "Wissenschaftliches Praktikum": return VeranstaltungsTyp.WISSENSCHAFTLICHES_PRAKTIKUM;
+    case "Workshop": return VeranstaltungsTyp.WORKSHOP;
+
+    default: return VeranstaltungsTyp.UNDEFINED;
+  }
+}
+
 
 //--------------------------------------------------
 //   _____                            _       
@@ -538,7 +504,9 @@ export async function POST(req: NextRequest) {
                 jobs.set(jobId, job);
             }
             console.log(`Starting crawl job ${jobId} for semester ${body.semester}`);
-            const crawled = await crawlSemester(body.semester);
+            const tu = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000605,-N0,-N393775100880865,-N393775100816866,-N0,-N0,-N3,-AWzn6VBNwRzZVQjVA7dZjWNLs4gVAeul9HoHXVULBeD7FRzW5O-UtWN7dmDWgOqNwfBmPYDn97UUdmSLgv-PlHdo8QSKs3zHw3vZQOu5feWpleNfdYqlFVBRH4BGbxjiNc-PleqaZrqP5WNZIWYK64zPeQMeN4BUsONZ9mqwAxfPaVUUBmfUDPUWJmQmaQzoYCfGeVWWlvuA6QDPMCYmlvIWqfdLCHBUCVWou7NR3cSpvfzL8mBKHVYWkVNc6fgHTCWLEHdcAOWHpmMoBWDWIvZPvCfZFWDPhPYW8OjPh4Dc9QDGJmNWKHdU3eMLIfZ5AfUHTVDKQvkZzxjH-fjmoVf6LHuaZrMUA4DAjHdo0ODGFcdAjVBHdWYZ73fZavq6YvkZ7mScwxBwh3BApedUzcqc-3uoVVUUHYfLFRWoKRqK6cBRCRB6UmUWMRuPMQZctcoH-RzwlmNAuYz96mBLeWBUjQIUAYUmwxNHoVdUMWBKAf-LErDG37YB-cdVwYUp5HfGIVSRvvSHePSa9xNoIvQBZWQWs3SPzcoLUxqUuedHK4YetOoHSQNm-4oPCxNPFmZWxcDKYYBooeQolegWWcWHmQ-7deWmerDGTxjejcdKamqwoWolAOjL6RYPTOYwg3QRfPWiAcMPMvuKEHgHovMpjfZHbVBHDmYZlfDHWYvZ8cSmofBWgrMKxvuPgmIporDyjRqUhVNLB3W5-PjHBPf6pfvZ7cDASeqRLPBUyOURaHfoemBmCeD6S7UUqxzo-';
+            const crawled = await crawlVeranstaltung(tu, 6)
+            //const crawled = await crawlSemester(body.semester);
             
             const completedJob = jobs.get(jobId);
             if (completedJob) {
