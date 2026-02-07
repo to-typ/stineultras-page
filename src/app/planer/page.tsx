@@ -24,11 +24,13 @@ enum Visibility {
 export type Event = {
     id: number;
     name: string;
+    shortname: string;
     active: Visibility;
     bgcolor: string;
     textcolor: string;
     events: {
         name: string;
+        shortname: string;
         active: Visibility;
         dates: {
             day: string;
@@ -39,28 +41,28 @@ export type Event = {
 };
 
 const dummyEvents: Event[] = [
-    { id: 1, name: "Mathe", active: Visibility.Visible, bgcolor: "#3b82f6", textcolor: "#1e3a8a",
+    { id: 1, name: "Mathe", shortname: "Math", active: Visibility.Visible, bgcolor: "#3b82f6", textcolor: "#1e3a8a",
         events: [
-        {name: "Vorlesung", dates: [
+        {name: "Vorlesung", shortname: "Vorl", dates: [
             {day: "Mo", start: "8:00", end: "8:45"}, 
             {day: "Mo", start: "11:00", end: "12:00"}, 
             {day: "Mi", start: "8:00", end: "10:00"}], 
         active: Visibility.Visible},
-        {name: "Übung", dates: [
+        {name: "Übung", shortname: "Übg", dates: [
             {day: "Fr", start: "8:00", end: "10:00"},
             {day: "Mo", start: "8:45", end: "10:00"}],
         active: Visibility.Visible}
     ]},
-    { id: 2, name: "Sport", active: Visibility.Hidden, bgcolor: "#ef4444", textcolor: "#7f1d1d",
+    { id: 2, name: "Sport", shortname: "Sport", active: Visibility.Hidden, bgcolor: "#ef4444", textcolor: "#7f1d1d",
         events: [
-        {name: "Training", dates: [
+        {name: "Training", shortname: "Train", dates: [
             {day: "Di", start: "14:00", end: "16:00"}, 
             {day: "Do", start: "14:00", end: "16:00"}], 
         active: Visibility.Hidden}
     ]},
-    { id: 3, name: "Klausurvorbereitung", active: Visibility.Visible, bgcolor: "#22c55e", textcolor: "#166534",
+    { id: 3, name: "Klausurvorbereitung", shortname: "Klausur", active: Visibility.Visible, bgcolor: "#22c55e", textcolor: "#166534",
         events: [
-        {name: "Lernen", dates: [
+        {name: "Lernen", shortname: "Lern", dates: [
             {day: "Mo", start: "8:00", end: "12:00"}],
         active: Visibility.Visible}
     ]},
@@ -112,11 +114,13 @@ export default function Planer() {
         const newEvent: Event = {
             id: Math.max(...events.map(e => e.id), 0) + 1,
             name: newEventName,
+            shortname: newEventName.length > 10 ? newEventName.slice(0, 10) + "..." : newEventName,
             active: Visibility.Visible,
             bgcolor: newEventColor,
             textcolor: textColor,
             events: newEventDates.map(d => ({
                 name: d.type,
+                shortname: newEventName.length > 10 ? newEventName.slice(0, 10) + "..." : newEventName,
                 active: Visibility.Visible,
                 dates: [{
                     day: d.day,
@@ -210,6 +214,7 @@ export default function Planer() {
                     textcolor: textColor,
                     events: editingEventDates.map(d => ({
                         name: d.type,
+                        shortname: editingEventName.length > 10 ? editingEventName.slice(0, 10) + "..." : editingEventName,
                         active: Visibility.Visible,
                         dates: [{day: d.day, start: d.start, end: d.end}]
                     }))
@@ -283,7 +288,7 @@ export default function Planer() {
                 .flatMap(subEv =>
                     subEv.dates.map(d => ({
                         id: ev.id,
-                        text: subEv.name,
+                        text: subEv.shortname,
                         day: d.day,
                         start: d.start,
                         end: d.end,
@@ -335,12 +340,14 @@ export default function Planer() {
                                                 {
                                                     id: ev.veranstaltung.id,
                                                     name: ev.veranstaltung.name,
+                                                    shortname: ev.veranstaltung.stineName,
                                                     active: Visibility.Visible,
                                                     bgcolor: '#a5b4fc',
                                                     textcolor: '#1e3a8a',
                                                     events: [
                                                         {
                                                             name: ev.veranstaltung.name,
+                                                            shortname: ev.veranstaltung.stineName,
                                                             active: Visibility.Visible,
                                                             dates: [
                                                                 {
