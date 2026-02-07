@@ -2,6 +2,18 @@
 
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
 import { useState } from "react";
+import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
+
+type SearchResult = {
+        veranstaltung: Veranstaltung;
+        termine: Termin[] | null;
+        uebungsgruppen: [
+            {
+                uebungsgruppe: Uebungsgruppe;
+                termine: Termin[];
+            }
+        ] | null;
+    };
 
 enum Visibility {
     Visible,
@@ -9,7 +21,7 @@ enum Visibility {
     Partial
 }
 
-type Event = {
+export type Event = {
     id: number;
     name: string;
     active: Visibility;
@@ -56,8 +68,29 @@ const dummyEvents: Event[] = [
 
 const days = ["Mo", "Di", "Mi", "Do", "Fr"];
 
+function getInterval(termine: Termin[]) {
+    const tagDate = new Date(termine[0].tag);
+    const startDate = new Date(termine[0].startZeit);
+    const endDate = new Date(termine[0].endZeit);
+
+    // Deutsche Wochentage
+    const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+    const tag = days[tagDate.getDay()];
+
+    function toTimeString(date: Date) {
+        return date.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit", hour12: false });
+    }
+    const start = toTimeString(startDate);
+    const end = toTimeString(endDate);
+
+    // Debug
+    console.log({tag, start, end});
+    return {tag, start, end};
+}
+
 export default function Planer() {
     const [search, setSearch] = useState("");
+    const [searchedEvents, setSearchedEvents] = useState<SearchResult[]>([]);
     const [events, setEvents] = useState(dummyEvents);
 
     const handleToggle = (id: number) => {
@@ -90,6 +123,15 @@ export default function Planer() {
         }));
     };
 
+    const searchEvent = async() => {
+        const searchParam = search.trim().toLowerCase(); 
+        if (searchParam === "") return;
+        const response = await fetch('/api/search?search=' + encodeURIComponent(searchParam));
+        const result = await response.json();
+        console.log(result);
+        setSearchedEvents(result);
+    }
+
     const entrys: Entry[] = events        
         .flatMap(ev =>
             ev.events
@@ -115,13 +157,66 @@ export default function Planer() {
             <div className="flex flex-row gap-8 px-8">
                 {/* Linke Spalte: Suche + Events */}
                 <section className="flex flex-col w-1/4 min-w-[200px]">
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        placeholder="Event suchen..."
-                        className="border rounded px-3 py-2 mb-4"
-                    />
+                    <div className="flex flex-row gap-2 mb-2">
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder="Event suchen..."
+                            className="border rounded px-3 py-2 flex-1"
+                        />
+                        <button
+                            className={`px-2 py-1 rounded text-xs ${search.length > 0 ? "bg-green-200" : "bg-gray-200"}`}
+                            style={{ minWidth: 70 }}
+                            onClick={() => {
+                                searchEvent();
+                                setSearch("");
+                            }}
+                        >{"Suchen"}
+                        </button>
+                    </div>
+                    {searchedEvents.length > 0 && (
+                        <div className="mb-4 bg-blue-50 border border-blue-200 rounded p-2">
+                            <div className="font-semibold mb-2">Suchergebnisse:</div>
+                            <ul className="flex flex-col gap-1">
+                                {searchedEvents.map(ev => (
+                                    <li
+                                        key={ev.veranstaltung.id + '-' + ev.veranstaltung.name}
+                                        className="text-sm cursor-pointer hover:bg-blue-100 rounded px-1"
+                                        onClick={() => {
+                                            if (!ev.termine || ev.termine.length === 0) return;
+                                            const interval = getInterval(ev.termine);
+                                            setEvents(events => [
+                                                ...events,
+                                                {
+                                                    id: ev.veranstaltung.id,
+                                                    name: ev.veranstaltung.name,
+                                                    active: Visibility.Visible,
+                                                    bgcolor: '#a5b4fc',
+                                                    textcolor: '#1e3a8a',
+                                                    events: [
+                                                        {
+                                                            name: ev.veranstaltung.name,
+                                                            active: Visibility.Visible,
+                                                            dates: [
+                                                                {
+                                                                    day: interval.tag as unknown as string,
+                                                                    start: interval.start as unknown as string,
+                                                                    end: interval.end as unknown as string
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]);
+                                        }}
+                                    >
+                                        <span className="font-bold">{ev.veranstaltung.name}</span> 
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
                     <button
                         className={`px-2 py-1 rounded text-xs ${events.length > 0 ? "bg-red-200" : "bg-gray-200"} mb-4`}
                         onClick={() => setEvents([])}
