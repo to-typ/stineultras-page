@@ -41,10 +41,12 @@ const dummyEvents: Event[] = [
         events: [
         {name: "Vorlesung", dates: [
             {day: "Mo", start: 8, end: 10}, 
+            {day: "Mo", start: 11, end: 12}, 
             {day: "Mi", start: 8, end: 10}], 
         active: Visibility.Visible},
         {name: "Übung", dates: [
-            {day: "Fr", start: 10, end: 12}],
+            {day: "Fr", start: 8, end: 10},
+            {day: "Mo", start: 9, end: 10}],
         active: Visibility.Visible}
     ]},
     { id: 2, name: "Sport", active: Visibility.Hidden, bgcolor: "#ef4444", textcolor: "#7f1d1d",
@@ -128,22 +130,55 @@ export default function Planer() {
                 )
         );
 
+    // Überlappungen und Subspalten dynamisch vergeben
+    // Für jede Spalte (Tag)
+    const columnMap: { [col: string]: Entry[] } = {};
     for (const entry of entrys) {
-        for (const otherEntry of entrys) {
-            if (entry === otherEntry) continue;
-            if (entry.gridColumn === otherEntry.gridColumn) {
-                const [entryStart, entryEnd] = entry.gridRow.split("/").map(Number);
-                const [otherStart, otherEnd] = otherEntry.gridRow.split("/").map(Number);
-                if (entryStart < otherEnd && entryEnd > otherStart) {
-                    // Überlappung erkannt, beide Einträge leicht verschieben
-                    entry.position = "1/2";
-                    otherEntry.position = "2/2";
-                } else {
-                    entry.position = "1/1";
-                    otherEntry.position = "1/1";
+        if (!columnMap[entry.gridColumn]) columnMap[entry.gridColumn] = [];
+        columnMap[entry.gridColumn].push(entry);
+    }
+
+    console.log(columnMap);
+
+    for (const col in columnMap) {
+        const colEntries = columnMap[col];
+        // Sortiere nach Start
+        colEntries.sort((a, b) => {
+            const [aStart] = a.gridRow.split("/").map(Number);
+            const [bStart] = b.gridRow.split("/").map(Number);
+            return aStart - bStart;
+        });
+        // Subspalten-Tracking
+        const subColumns: Array<number[]> = [];
+        // Für jedes Entry merken, in welcher Subspalte es ist
+        const entrySubColIdx: Map<Entry, number> = new Map();
+        for (const entry of colEntries) {
+            const [start, end] = entry.gridRow.split("/").map(Number);
+            let assigned = false;
+            for (let i = 0; i < subColumns.length; i++) {
+                if (subColumns[i][1] <= start) {
+                    subColumns[i] = [start, end];
+                    entrySubColIdx.set(entry, i);
+                    assigned = true;
+                    break;
                 }
             }
-        }   
+            if (!assigned) {
+                subColumns.push([start, end]);
+                entrySubColIdx.set(entry, subColumns.length - 1);
+                // Jetzt: alle bisherigen Einträge müssen ihre position aktualisieren
+                for (const e of colEntries) {
+                    if (entrySubColIdx.has(e)) {
+                        const idx = entrySubColIdx.get(e)!;
+                        e.position = `${idx + 1}/${subColumns.length}`;
+                    }
+                }
+            } else {
+                // position für dieses Entry aktualisieren
+                const idx = entrySubColIdx.get(entry)!;
+                entry.position = `${idx + 1}/${subColumns.length}`;
+            }
+        }
     }
 
     console.log(entrys);
@@ -251,9 +286,9 @@ export default function Planer() {
                                         position: "relative",
                                         gridRow: entry.gridRow,
                                         gridColumn: entry.gridColumn,
-                                        zIndex: entry.position === "1/2" ? 3 : 2,
-                                        width: entry.position === "1/2" || entry.position === "2/2" ? "50%" : "100%",
-                                        left: entry.position === "1/2" ? "0" : entry.position === "2/2" ? "50%" : "0",
+                                        zIndex: 2,
+                                        width: `${100 / parseInt(entry.position.split("/")[1])}%`,
+                                        left: `${(parseInt(entry.position.split("/")[0]) - 1) * (100 / parseInt(entry.position.split("/")[1]))}%`,
                                         backgroundColor: entry.bgcolor,
                                         color: entry.textcolor,
                                         ...entry.style
