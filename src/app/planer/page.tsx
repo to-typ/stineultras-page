@@ -254,9 +254,9 @@ export default function Planer() {
     // TODO: API-Aufruf für Suche
 
     return (
-        <main className="flex flex-col w-full min-h-screen bg-gray-50">
+        <main className="flex flex-col w-full h-screen bg-gray-50">
             <h1 className="text-4xl font-bold text-center mt-10 mb-8">Planer</h1>
-            <div className="flex flex-row gap-8 px-8">
+            <div className="flex flex-row gap-8 px-8 flex-1 overflow-hidden">
                 {/* Linke Spalte: Suche + Events */}
                 <section className="flex flex-col w-1/4 min-w-[200px]">
                     <input
@@ -277,7 +277,7 @@ export default function Planer() {
                     >{"Alle löschen"}
                     </button>
                     
-                    <div className="flex flex-col gap-2">
+                    <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-2">
                         {events.map(ev => (
                             <div key={ev.id} className="bg-white rounded shadow px-3 py-2 mb-2">
                                 <div className="flex items-center justify-between">
