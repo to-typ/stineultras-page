@@ -3,8 +3,9 @@
 type Field = {
     key: string;
     content: string;
-    gridRow: string;
     gridColumn: string;
+    start: string;
+    end: string;
     position: string;
     bgcolor: string;
     textcolor: string;
@@ -15,13 +16,18 @@ export type Entry = {
     id: number;
     text: string;
     day: string;
-    start: number;
-    end: number;
+    start: string;
+    end: string;
     bgcolor: string;
     textcolor: string;
 };
 
 export default function WeeklyCalender({days, entrys}: {days: string[], entrys: Entry[]}) {
+    // Hilfsfunktion: Zeit-String (z.B. "18:10") in Minuten umwandeln
+    function timeStringToMinutes(time: string): number {
+        const [h, m] = time.split(":").map(Number);
+        return h * 60 + m;
+    }
  
     const timeSlots = Array.from({ length: 22 }, (_, i) => {
         const hour = 8 + Math.floor(i / 2);
@@ -33,14 +39,15 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
         .map(d => {
             const dayIdx = days.indexOf(d.day);
             if (dayIdx === -1) return null;
-            const startSlotIdx = timeSlots.findIndex(slot => slot.hour + slot.min / 60 >= d.start);
-            const endSlotIdx = timeSlots.findIndex(slot => slot.hour + slot.min / 60 >= d.end);
+            const startSlotIdx = timeSlots.findIndex(slot => slot.hour + slot.min / 60 >= timeStringToMinutes(d.start) / 60);
+            const endSlotIdx = timeSlots.findIndex(slot => slot.hour + slot.min / 60 >= timeStringToMinutes(d.end) / 60);
             if (startSlotIdx === -1 || endSlotIdx === -1) return null;
             return {
                 key: d.id + '-' + d.text + '-' + d.day + '-' + d.start,
                 content: d.text,
-                gridRow: `${startSlotIdx + 2} / ${endSlotIdx + 2}`,
                 gridColumn: (dayIdx + 2).toString(),
+                start: d.start,
+                end: d.end,
                 position: "1/1",
                 bgcolor: d.bgcolor,
                 textcolor: d.textcolor,
@@ -56,17 +63,12 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
 
     for (const day in dayMap) {
         const dayEntries = dayMap[day];
-        
-        dayEntries.sort((a, b) => {
-            const [aStart] = a.gridRow.split("/").map(Number);
-            const [bStart] = b.gridRow.split("/").map(Number);
-            return aStart - bStart;
-        });
-        
-        const subDayColumns: Array<number[]> = [];
+        dayEntries.sort((a, b) => timeStringToMinutes(a.start) - timeStringToMinutes(b.start));
+        const subDayColumns: Array<[number, number]> = [];
         const entrySubDayColIdx: Map<Field, number> = new Map();
         for (const entry of dayEntries) {
-            const [start, end] = entry.gridRow.split("/").map(Number);
+            const start = timeStringToMinutes(entry.start);
+            const end = timeStringToMinutes(entry.end);
             let assigned = false;
             for (let i = 0; i < subDayColumns.length; i++) {
                 if (subDayColumns[i][1] <= start) {
@@ -91,6 +93,7 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
             }
         }
     }
+    console.log(fields);
 
 
     return (
@@ -142,11 +145,13 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
                         className={`rounded px-1 flex items-center justify-center text-sm font-semibold`}
                         style={{
                             position: "relative",
-                            gridRow: entry.gridRow,
+                            gridRow: `2/${timeSlots.length + 1}`,
                             gridColumn: entry.gridColumn,
                             zIndex: 2,
                             width: `${100 / parseInt(entry.position.split("/")[1])}%`,
                             left: `${(parseInt(entry.position.split("/")[0]) - 1) * (100 / parseInt(entry.position.split("/")[1]))}%`,
+                            top: `${(timeStringToMinutes(entry.start) - timeStringToMinutes("8:00")) / 30 * 32}px`,
+                            height: `${(timeStringToMinutes(entry.end) - timeStringToMinutes(entry.start)) / 30 * 32}px`,
                             backgroundColor: entry.bgcolor,
                             color: entry.textcolor,
                         }}

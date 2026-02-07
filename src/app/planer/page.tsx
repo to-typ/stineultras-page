@@ -20,8 +20,8 @@ type Event = {
         active: Visibility;
         dates: {
             day: string;
-            start: number;
-            end: number;
+            start: string;
+            end: string;
         }[];
     }[];
 };
@@ -30,26 +30,26 @@ const dummyEvents: Event[] = [
     { id: 1, name: "Mathe", active: Visibility.Visible, bgcolor: "#3b82f6", textcolor: "#1e3a8a",
         events: [
         {name: "Vorlesung", dates: [
-            {day: "Mo", start: 8, end: 10}, 
-            {day: "Mo", start: 11, end: 12}, 
-            {day: "Mi", start: 8, end: 10}], 
+            {day: "Mo", start: "8:00", end: "8:45"}, 
+            {day: "Mo", start: "11:00", end: "12:00"}, 
+            {day: "Mi", start: "8:00", end: "10:00"}], 
         active: Visibility.Visible},
         {name: "Übung", dates: [
-            {day: "Fr", start: 8, end: 10},
-            {day: "Mo", start: 9, end: 10}],
+            {day: "Fr", start: "8:00", end: "10:00"},
+            {day: "Mo", start: "8:45", end: "10:00"}],
         active: Visibility.Visible}
     ]},
     { id: 2, name: "Sport", active: Visibility.Hidden, bgcolor: "#ef4444", textcolor: "#7f1d1d",
         events: [
         {name: "Training", dates: [
-            {day: "Di", start: 14, end: 16}, 
-            {day: "Do", start: 14, end: 16}], 
+            {day: "Di", start: "14:00", end: "16:00"}, 
+            {day: "Do", start: "14:00", end: "16:00"}], 
         active: Visibility.Hidden}
     ]},
     { id: 3, name: "Klausurvorbereitung", active: Visibility.Visible, bgcolor: "#22c55e", textcolor: "#166534",
         events: [
         {name: "Lernen", dates: [
-            {day: "Mo", start: 8, end: 12}],
+            {day: "Mo", start: "8:00", end: "12:00"}],
         active: Visibility.Visible}
     ]},
 ];
@@ -72,7 +72,7 @@ export default function Planer() {
     const handleRemove = (id: number) => {
         setEvents(events => events.filter(ev => ev.id !== id));
     };
-    
+
     const handleToggleSub = (eventId: number, subName: string) => {
         setEvents(events => events.map(ev => {
             if (ev.id !== eventId) return ev;
