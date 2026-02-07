@@ -62,7 +62,13 @@ export default function Planer() {
     const [showAddEventModal, setShowAddEventModal] = useState(false);
     const [newEventName, setNewEventName] = useState("");
     const [newEventColor, setNewEventColor] = useState("#6366f1");
-    const [newEventDates, setNewEventDates] = useState<Array<{type: string, day: string, start: string, end: string}>>([]);
+    const [newEventDates, setNewEventDates] = useState<Array<{type: string, day: string, start: string, end: string}>>([
+    ]);
+    const [editingEventId, setEditingEventId] = useState<number | null>(null);
+    const [editingEventName, setEditingEventName] = useState("");
+    const [editingEventColor, setEditingEventColor] = useState("#6366f1");
+    const [editingEventDates, setEditingEventDates] = useState<Array<{type: string, day: string, start: string, end: string}>>([
+    ]);
 
     const handleAddEvent = () => {
         if (newEventName.trim() === "") return;
@@ -136,6 +142,66 @@ export default function Planer() {
     const handleOpenAddEventModal = () => {
         setShowAddEventModal(true);
         setNewEventDates([{type: "", day: "Mo", start: "08:00", end: "10:00"}]);
+    };
+
+    const handleOpenEditEventModal = (eventId: number) => {
+        const event = events.find(e => e.id === eventId);
+        if (!event) return;
+        
+        setEditingEventId(eventId);
+        setEditingEventName(event.name);
+        setEditingEventColor(event.bgcolor);
+        setEditingEventDates(
+            event.events.flatMap(subEv => 
+                subEv.dates.map(d => ({
+                    type: subEv.name,
+                    day: d.day,
+                    start: d.start,
+                    end: d.end
+                }))
+            )
+        );
+    };
+
+    const handleSaveEditEvent = () => {
+        if (!editingEventId || editingEventName.trim() === "" || editingEventDates.length === 0) return;
+        
+        const textColor = getContrastColor(editingEventColor);
+        
+        setEvents(events.map(ev => 
+            ev.id === editingEventId
+                ? {
+                    ...ev,
+                    name: editingEventName,
+                    bgcolor: editingEventColor,
+                    textcolor: textColor,
+                    events: editingEventDates.map(d => ({
+                        name: d.type,
+                        active: Visibility.Visible,
+                        dates: [{day: d.day, start: d.start, end: d.end}]
+                    }))
+                  }
+                : ev
+        ));
+        
+        setEditingEventId(null);
+        setEditingEventName("");
+        setEditingEventColor("#6366f1");
+        setEditingEventDates([]);
+    };
+
+    const handleEditDateChange = (index: number, field: string, value: string) => {
+        const updated = [...editingEventDates];
+        updated[index] = {...updated[index], [field]: value};
+        setEditingEventDates(updated);
+    };
+
+    const handleAddEditDate = () => {
+        setEditingEventDates([...editingEventDates, {type: "", day: "Mo", start: "08:00", end: "10:00"}]);
+    };
+
+    const handleRemoveEditDate = (index: number) => {
+        setEditingEventDates(editingEventDates.filter((_, i) => i !== index));
     };
 
     const handleToggle = (id: number) => {
@@ -221,6 +287,10 @@ export default function Planer() {
                                             className={`px-2 py-1 rounded text-xs ${ev.active === Visibility.Visible ? "bg-green-200" : ev.active === Visibility.Hidden ?"bg-gray-200" : "bg-yellow-200"}`}
                                             onClick={() => handleToggle(ev.id)}
                                         >{ev.active === Visibility.Visible ? "An" : "Aus"}</button>
+                                        <button
+                                            className="px-2 py-1 rounded bg-blue-200 text-xs"
+                                            onClick={() => handleOpenEditEventModal(ev.id)}
+                                        >Bearbeiten</button>
                                         <button
                                             className="px-2 py-1 rounded bg-red-200 text-xs"
                                             onClick={() => handleRemove(ev.id)}
@@ -351,6 +421,114 @@ export default function Planer() {
                                 disabled={!newEventName.trim() || newEventDates.length === 0}
                             >
                                 Hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal für Event bearbeiten */}
+            {editingEventId !== null && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg w-96 shadow-lg flex flex-col h-[600px]">
+                        <div className="p-6 pb-4">
+                            <h2 className="text-xl font-bold mb-4">Event bearbeiten</h2>
+                            
+                            <div className="mb-4">
+                                <label className="block text-sm font-semibold mb-2">Event Name</label>
+                                <input
+                                    type="text"
+                                    value={editingEventName}
+                                    onChange={(e) => setEditingEventName(e.target.value)}
+                                    placeholder="z.B. Mathe"
+                                    className="w-full border rounded px-3 py-2"
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-sm font-semibold mb-2">Farbe</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="color"
+                                        value={editingEventColor}
+                                        onChange={(e) => setEditingEventColor(e.target.value)}
+                                        className="w-12 h-10 border rounded cursor-pointer"
+                                    />
+                                    <span className="text-xs text-gray-600">{editingEventColor}</span>
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between mb-2">
+                                <label className="block text-sm font-semibold">Termine</label>
+                                <button
+                                    onClick={handleAddEditDate}
+                                    className="px-2 py-1 rounded bg-green-500 text-white text-xs hover:bg-green-600"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-6">
+                            {editingEventDates.map((date, idx) => (
+                                <div key={idx} className="mb-3 p-3 border rounded bg-gray-50">
+                                    <div className="flex justify-between mb-2">
+                                        <span className="text-xs font-semibold">Termin {idx + 1}</span>
+                                        <button
+                                            onClick={() => handleRemoveEditDate(idx)}
+                                            className="px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    
+                                    <input
+                                        type="text"
+                                        placeholder="Typ (z.B. Vorlesung)"
+                                        value={date.type}
+                                        onChange={(e) => handleEditDateChange(idx, "type", e.target.value)}
+                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
+                                    />
+                                    
+                                    <select
+                                        value={date.day}
+                                        onChange={(e) => handleEditDateChange(idx, "day", e.target.value)}
+                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
+                                    >
+                                        {days.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
+                                    
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="time"
+                                            value={date.start}
+                                            onChange={(e) => handleEditDateChange(idx, "start", e.target.value)}
+                                            className="flex-1 border rounded px-2 py-1 text-xs"
+                                        />
+                                        <input
+                                            type="time"
+                                            value={date.end}
+                                            onChange={(e) => handleEditDateChange(idx, "end", e.target.value)}
+                                            className="flex-1 border rounded px-2 py-1 text-xs"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-6 pt-4 border-t flex gap-2 justify-end">
+                            <button
+                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                                onClick={() => setEditingEventId(null)}
+                            >
+                                Abbrechen
+                            </button>
+                            <button
+                                className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
+                                onClick={handleSaveEditEvent}
+                                disabled={!editingEventName.trim() || editingEventDates.length === 0}
+                            >
+                                Speichern
                             </button>
                         </div>
                     </div>
