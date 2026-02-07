@@ -48,52 +48,46 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
             };
         }).filter(Boolean) as Field[]
             
-
-    // Überlappungen und Subspalten dynamisch vergeben
-    // Für jede Spalte (Tag)
-    const columnMap: { [col: string]: Field[] } = {};
+    const dayMap: { [col: string]: Field[] } = {};
     for (const entry of fields) {
-        if (!columnMap[entry.gridColumn]) columnMap[entry.gridColumn] = [];
-        columnMap[entry.gridColumn].push(entry);
+        if (!dayMap[entry.gridColumn]) dayMap[entry.gridColumn] = [];
+        dayMap[entry.gridColumn].push(entry);
     }
 
-    for (const col in columnMap) {
-        const colEntries = columnMap[col];
-        // Sortiere nach Start
-        colEntries.sort((a, b) => {
+    for (const day in dayMap) {
+        const dayEntries = dayMap[day];
+        
+        dayEntries.sort((a, b) => {
             const [aStart] = a.gridRow.split("/").map(Number);
             const [bStart] = b.gridRow.split("/").map(Number);
             return aStart - bStart;
         });
-        // Subspalten-Tracking
-        const subColumns: Array<number[]> = [];
-        // Für jedes Entry merken, in welcher Subspalte es ist
-        const entrySubColIdx: Map<Field, number> = new Map();
-        for (const entry of colEntries) {
+        
+        const subDayColumns: Array<number[]> = [];
+        const entrySubDayColIdx: Map<Field, number> = new Map();
+        for (const entry of dayEntries) {
             const [start, end] = entry.gridRow.split("/").map(Number);
             let assigned = false;
-            for (let i = 0; i < subColumns.length; i++) {
-                if (subColumns[i][1] <= start) {
-                    subColumns[i] = [start, end];
-                    entrySubColIdx.set(entry, i);
+            for (let i = 0; i < subDayColumns.length; i++) {
+                if (subDayColumns[i][1] <= start) {
+                    subDayColumns[i] = [start, end];
+                    entrySubDayColIdx.set(entry, i);
                     assigned = true;
                     break;
                 }
             }
             if (!assigned) {
-                subColumns.push([start, end]);
-                entrySubColIdx.set(entry, subColumns.length - 1);
-                // Jetzt: alle bisherigen Einträge müssen ihre position aktualisieren
-                for (const e of colEntries) {
-                    if (entrySubColIdx.has(e)) {
-                        const idx = entrySubColIdx.get(e)!;
-                        e.position = `${idx + 1}/${subColumns.length}`;
+                subDayColumns.push([start, end]);
+                entrySubDayColIdx.set(entry, subDayColumns.length - 1);
+                for (const e of dayEntries) {
+                    if (entrySubDayColIdx.has(e)) {
+                        const idx = entrySubDayColIdx.get(e)!;
+                        e.position = `${idx + 1}/${subDayColumns.length}`;
                     }
                 }
             } else {
-                // position für dieses Entry aktualisieren
-                const idx = entrySubColIdx.get(entry)!;
-                entry.position = `${idx + 1}/${subColumns.length}`;
+                const idx = entrySubDayColIdx.get(entry)!;
+                entry.position = `${idx + 1}/${subDayColumns.length}`;
             }
         }
     }

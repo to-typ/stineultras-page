@@ -3,7 +3,6 @@
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
 import { useState } from "react";
 
-
 enum Visibility {
     Visible,
     Hidden,
@@ -56,13 +55,6 @@ const dummyEvents: Event[] = [
 ];
 
 const days = ["Mo", "Di", "Mi", "Do", "Fr"];
-const timeSlots = Array.from({ length: 22 }, (_, i) => {
-    const hour = 8 + Math.floor(i / 2);
-    const min = i % 2 === 0 ? 0 : 30;
-    return { hour, min, label: `${hour.toString().padStart(2, "0")}:${min === 0 ? "00" : "30"}` };
-});
-
-
 
 export default function Planer() {
     const [search, setSearch] = useState("");
@@ -76,9 +68,11 @@ export default function Planer() {
                 )
         } : ev));
     };
+
     const handleRemove = (id: number) => {
         setEvents(events => events.filter(ev => ev.id !== id));
     };
+    
     const handleToggleSub = (eventId: number, subName: string) => {
         setEvents(events => events.map(ev => {
             if (ev.id !== eventId) return ev;
