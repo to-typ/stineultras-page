@@ -142,7 +142,7 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
                 {fields.map(entry => (
                     <div
                         key={entry.key}
-                        className={`rounded px-1 flex items-center justify-center text-sm font-semibold`}
+                        className={`rounded px-1 flex items-center justify-center text-sm font-semibold border`}
                         style={{
                             position: "relative",
                             gridRow: `2/${timeSlots.length + 1}`,
@@ -154,6 +154,8 @@ export default function WeeklyCalender({days, entrys}: {days: string[], entrys: 
                             height: `${(timeStringToMinutes(entry.end) - timeStringToMinutes(entry.start)) / 30 * 32}px`,
                             backgroundColor: entry.bgcolor,
                             color: entry.textcolor,
+                            borderColor: entry.textcolor,
+                            borderWidth: "2px",
                         }}
                     >
                         {entry.content}
