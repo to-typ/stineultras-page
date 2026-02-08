@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { VeranstaltungsTyp, PrismaClient } from "@prisma/client";
+import { verify } from "@/utils/auth";
 
 const prisma = new PrismaClient();
 
@@ -488,6 +489,13 @@ function mapVeranstaltungsTyp(type: string): VeranstaltungsTyp {
 //Start crawl job
 export async function POST(req: NextRequest) {
     const body = await req.json();
+
+    if (!verify(body.token)) {
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }   
     
     const jobId = `job_${Date.now()}_${Math.random().toString(36)}`;
     jobs.set(jobId, {
@@ -540,6 +548,14 @@ export async function POST(req: NextRequest) {
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const jobId = searchParams.get('jobId');
+
+    const body = await req.json();
+    if (!verify(body.token)) {
+        return NextResponse.json(
+            { error: 'Unauthorized' },
+            { status: 401 }
+        );
+    }   
     
     if (!jobId) {
         return NextResponse.json(
