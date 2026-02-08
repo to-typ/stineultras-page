@@ -43,12 +43,12 @@ export type Event = {
 const dummyEvents: Event[] = [
     { id: 1, name: "Mathe", shortname: "Math", active: Visibility.Visible, bgcolor: "#3b82f6", textcolor: "#1e3a8a",
         events: [
-        {name: "Vorlesung", shortname: "Vorl", dates: [
+        {name: "Übung A", shortname: "Vorl", dates: [
             {day: "Mo", start: "8:00", end: "8:45"}, 
             {day: "Mo", start: "11:00", end: "12:00"}, 
             {day: "Mi", start: "8:00", end: "10:00"}], 
         active: Visibility.Visible},
-        {name: "Übung", shortname: "Übg", dates: [
+        {name: "Übung B", shortname: "Übg", dates: [
             {day: "Fr", start: "8:00", end: "10:00"},
             {day: "Mo", start: "8:45", end: "10:00"}],
         active: Visibility.Visible}
@@ -75,7 +75,6 @@ function getInterval(termine: Termin[]) {
     const startDate = new Date(termine[0].startZeit);
     const endDate = new Date(termine[0].endZeit);
 
-    // Deutsche Wochentage
     const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
     const tag = days[tagDate.getDay()];
 
@@ -85,8 +84,6 @@ function getInterval(termine: Termin[]) {
     const start = toTimeString(startDate);
     const end = toTimeString(endDate);
 
-    // Debug
-    console.log({tag, start, end});
     return {tag, start, end};
 }
 
@@ -112,7 +109,7 @@ export default function Planer() {
         const textColor = getContrastColor(newEventColor);
         
         const newEvent: Event = {
-            id: Math.max(...events.map(e => e.id), 0) + 1,
+            id: Math.max(...events.map(e => e.id), 0) * 1000 + 1,
             name: newEventName,
             shortname: newEventName.length > 10 ? newEventName.slice(0, 10) + "..." : newEventName,
             active: Visibility.Visible,
@@ -277,7 +274,6 @@ export default function Planer() {
         if (searchParam === "") return;
         const response = await fetch('/api/search?search=' + encodeURIComponent(searchParam));
         const result = await response.json();
-        console.log(result);
         setSearchedEvents(result);
     }
 
@@ -298,14 +294,13 @@ export default function Planer() {
                 )
         );
 
-    // TODO: API-Aufruf für Suche
-
     return (
         <main className="flex flex-col w-full h-screen bg-gray-50">
             <h1 className="text-4xl font-bold text-center mt-10 mb-8">Planer</h1>
             <div className="flex flex-row gap-8 px-8 flex-1 overflow-hidden">
                 {/* Linke Spalte: Suche + Events */}
                 <section className="flex flex-col w-1/4 min-w-[200px]">
+                    {/* Suche */}
                     <div className="flex flex-row gap-2 mb-2">
                         <input
                             type="text"
@@ -331,7 +326,7 @@ export default function Planer() {
                                 {searchedEvents.map(ev => (
                                     <li
                                         key={ev.veranstaltung.id + '-' + ev.veranstaltung.name}
-                                        className="text-sm cursor-pointer hover:bg-blue-100 rounded px-1"
+                                        className="text-sm cursor-pointer hover:bg-blue-100 rounded border border-blue-200 px-1"
                                         onClick={() => {
                                             if (!ev.termine || ev.termine.length === 0) return;
                                             const interval = getInterval(ev.termine);
@@ -360,23 +355,26 @@ export default function Planer() {
                                                     ]
                                                 }
                                             ]);
+                                            setSearchedEvents([]);
                                         }}
                                     >
-                                        <span className="font-bold">{ev.veranstaltung.name}</span> 
+                                        <div className="font-bold">
+                                            {ev.veranstaltung.name} <br/>
+                                            {ev.veranstaltung.stineId} <br/>
+                                            {ev.veranstaltung.lehrende} <br/>
+                                            {ev.veranstaltung.typ} <br/>
+                                        </div> 
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     )}
+
+                    {/* Events */}
                     <button
                         className={`px-2 py-1 rounded text-xs ${events.length > 0 ? "bg-green-200" : "bg-gray-200"} mb-4`}
                         onClick={handleOpenAddEventModal}
                     >{"Event hinzufügen"}
-                    </button>
-                    <button
-                        className={`px-2 py-1 rounded text-xs ${events.length > 0 ? "bg-red-200" : "bg-gray-200"} mb-4`}
-                        onClick={() => setEvents([])}
-                    >{"Alle löschen"}
                     </button>
                     
                     <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-2">
@@ -399,7 +397,7 @@ export default function Planer() {
                                         >Entfernen</button>
                                     </div>
                                 </div>
-                                <div className="ml-2 mt-1 flex flex-col gap-1">
+                                {ev.events.length > 1 && <div className="ml-2 mt-1 flex flex-col gap-1">
                                     {ev.events.map(subEv => (
                                         <div key={subEv.name} className="flex items-center justify-between">
                                             <span className={subEv.active === Visibility.Visible ? "" : "line-through text-gray-400"}>{subEv.name}</span>
@@ -409,10 +407,16 @@ export default function Planer() {
                                             >{subEv.active === Visibility.Visible ? "An" : "Aus"}</button>
                                         </div>
                                     ))}
-                                </div>
+                                </div>}
                             </div>
                         ))}
                     </div>
+
+                    <button
+                        className={`px-2 py-1 rounded text-xs ${events.length > 0 ? "bg-red-200" : "bg-gray-200"} mb-4`}
+                        onClick={() => setEvents([])}
+                    >{"Alle löschen"}
+                    </button>
                 </section>
 
                 {/* Rechte Spalte: Stundenplan */}
