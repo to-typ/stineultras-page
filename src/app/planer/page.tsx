@@ -3,6 +3,7 @@
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
 import { useState } from "react";
 import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
+import AddEventModal, { NewEventData } from "@/components/addeventmodal";
 
 type SearchResult = {
         veranstaltung: Veranstaltung;
@@ -87,68 +88,7 @@ function getInterval(termine: Termin[]) {
     return {tag, start, end};
 }
 
-export default function Planer() {
-    const [search, setSearch] = useState("");
-    const [searchedEvents, setSearchedEvents] = useState<SearchResult[]>([]);
-    const [events, setEvents] = useState(dummyEvents);
-    const [showAddEventModal, setShowAddEventModal] = useState(false);
-    const [newEventName, setNewEventName] = useState("");
-    const [newEventColor, setNewEventColor] = useState("#6366f1");
-    const [newEventDates, setNewEventDates] = useState<Array<{type: string, day: string, start: string, end: string}>>([
-    ]);
-    const [editingEventId, setEditingEventId] = useState<number | null>(null);
-    const [editingEventName, setEditingEventName] = useState("");
-    const [editingEventColor, setEditingEventColor] = useState("#6366f1");
-    const [editingEventDates, setEditingEventDates] = useState<Array<{type: string, day: string, start: string, end: string}>>([
-    ]);
-
-    const handleAddEvent = () => {
-        if (newEventName.trim() === "") return;
-        if (newEventDates.length === 0) return;
-        
-        const textColor = getContrastColor(newEventColor);
-        
-        const newEvent: Event = {
-            id: Math.max(...events.map(e => e.id), 0) * 1000 + 1,
-            name: newEventName,
-            shortname: newEventName.length > 10 ? newEventName.slice(0, 10) + "..." : newEventName,
-            active: Visibility.Visible,
-            bgcolor: newEventColor,
-            textcolor: textColor,
-            events: newEventDates.map(d => ({
-                name: d.type,
-                shortname: newEventName.length > 10 ? newEventName.slice(0, 10) + "..." : newEventName,
-                active: Visibility.Visible,
-                dates: [{
-                    day: d.day,
-                    start: d.start,
-                    end: d.end
-                }]
-            }))
-        };
-        
-        setEvents([...events, newEvent]);
-        setNewEventName("");
-        setNewEventColor("#6366f1");
-        setNewEventDates([]);
-        setShowAddEventModal(false);
-    };
-
-    const handleAddDate = () => {
-        setNewEventDates([...newEventDates, {type: "", day: "Mo", start: "08:00", end: "10:00"}]);
-    };
-
-    const handleRemoveDate = (index: number) => {
-        setNewEventDates(newEventDates.filter((_, i) => i !== index));
-    };
-
-    const handleDateChange = (index: number, field: string, value: string) => {
-        const updated = [...newEventDates];
-        updated[index] = {...updated[index], [field]: value};
-        setNewEventDates(updated);
-    };
-
-    const getContrastColor = (hexColor: string): string => {
+function getContrastColor(hexColor: string) {
         // Hex zu RGB konvertieren
         const r = parseInt(hexColor.slice(1, 3), 16);
         const g = parseInt(hexColor.slice(3, 5), 16);
@@ -173,72 +113,43 @@ export default function Planer() {
         }
     };
 
-    const handleOpenAddEventModal = () => {
-        setShowAddEventModal(true);
-        setNewEventDates([{type: "", day: "Mo", start: "08:00", end: "10:00"}]);
-    };
+export default function Planer() {
+    const [search, setSearch] = useState("");
+    const [searchedEvents, setSearchedEvents] = useState<SearchResult[]>([]);
+    const [events, setEvents] = useState(dummyEvents);
 
-    const handleOpenEditEventModal = (eventId: number) => {
-        const event = events.find(e => e.id === eventId);
-        if (!event) return;
+    const [showAddEventModal, setShowAddEventModal] = useState(false);
+
+    // Neues Event hinzufügen
+    const handleAddEvent = (newEventData: NewEventData) => {
+        if (newEventData.name.trim() === "") return;
         
-        setEditingEventId(eventId);
-        setEditingEventName(event.name);
-        setEditingEventColor(event.bgcolor);
-        setEditingEventDates(
-            event.events.flatMap(subEv => 
-                subEv.dates.map(d => ({
-                    type: subEv.name,
-                    day: d.day,
-                    start: d.start,
-                    end: d.end
-                }))
-            )
-        );
-    };
-
-    const handleSaveEditEvent = () => {
-        if (!editingEventId || editingEventName.trim() === "" || editingEventDates.length === 0) return;
+        const textColor = getContrastColor(newEventData.color);
         
-        const textColor = getContrastColor(editingEventColor);
+        const newEvent: Event = {
+            id: Math.max(...events.map(e => e.id), 0) * 1000 + 1,
+            name: newEventData.name,
+            shortname: newEventData.name.length > 10 ? newEventData.name.slice(0, 10) + "..." : newEventData.name,
+            active: Visibility.Visible,
+            bgcolor: newEventData.color,
+            textcolor: textColor,
+            events: [{
+                name: newEventData.name,
+                shortname: newEventData.name.length > 10 ? newEventData.name.slice(0, 10) + "..." : newEventData.name,
+                active: Visibility.Visible,
+                dates: [{
+                    day: newEventData.date.day,
+                    start: newEventData.date.start,
+                    end: newEventData.date.end
+                }]
+            }]
+        };
         
-        setEvents(events.map(ev => 
-            ev.id === editingEventId
-                ? {
-                    ...ev,
-                    name: editingEventName,
-                    bgcolor: editingEventColor,
-                    textcolor: textColor,
-                    events: editingEventDates.map(d => ({
-                        name: d.type,
-                        shortname: editingEventName.length > 10 ? editingEventName.slice(0, 10) + "..." : editingEventName,
-                        active: Visibility.Visible,
-                        dates: [{day: d.day, start: d.start, end: d.end}]
-                    }))
-                  }
-                : ev
-        ));
-        
-        setEditingEventId(null);
-        setEditingEventName("");
-        setEditingEventColor("#6366f1");
-        setEditingEventDates([]);
+        setEvents([...events, newEvent]);
+        setShowAddEventModal(false);
     };
 
-    const handleEditDateChange = (index: number, field: string, value: string) => {
-        const updated = [...editingEventDates];
-        updated[index] = {...updated[index], [field]: value};
-        setEditingEventDates(updated);
-    };
-
-    const handleAddEditDate = () => {
-        setEditingEventDates([...editingEventDates, {type: "", day: "Mo", start: "08:00", end: "10:00"}]);
-    };
-
-    const handleRemoveEditDate = (index: number) => {
-        setEditingEventDates(editingEventDates.filter((_, i) => i !== index));
-    };
-
+    // Event-Controls
     const handleToggle = (id: number) => {
         setEvents(events => events.map(ev => ev.id === id ? { 
             ...ev, active: ev.active === Visibility.Visible ? Visibility.Hidden : Visibility.Visible,
@@ -269,6 +180,7 @@ export default function Planer() {
         }));
     };
 
+    // Search
     const searchEvent = async() => {
         const searchParam = search.trim().toLowerCase(); 
         if (searchParam === "") return;
@@ -321,7 +233,13 @@ export default function Planer() {
                     </div>
                     {searchedEvents.length > 0 && (
                         <div className="mb-4 bg-blue-50 border border-blue-200 rounded p-2">
-                            <div className="font-semibold mb-2">Suchergebnisse:</div>
+                            <div className="font-semibold mb-2">
+                                Suchergebnisse:
+                                <button
+                                    className="ml-2 px-1 py-0.5 rounded text-xs bg-red-200"
+                                    onClick={() => setSearchedEvents([])}
+                                >X</button>
+                            </div>
                             <ul className="flex flex-col gap-1">
                                 {searchedEvents.map(ev => (
                                     <li
@@ -358,11 +276,15 @@ export default function Planer() {
                                             setSearchedEvents([]);
                                         }}
                                     >
-                                        <div className="font-bold">
-                                            {ev.veranstaltung.name} <br/>
-                                            {ev.veranstaltung.stineId} <br/>
-                                            {ev.veranstaltung.lehrende} <br/>
-                                            {ev.veranstaltung.typ} <br/>
+                                        <div className="p-2">
+                                            <div className="font-bold text-gray-800">{ev.veranstaltung.name}</div>
+                                            <div className="text-xs text-gray-500 flex flex-col gap-0.5 mt-1">
+                                                <span className="flex justify-between">
+                                                    <span>{ev.veranstaltung.stineId}</span>
+                                                    <span className="bg-blue-200 text-blue-800 px-1 rounded">{ev.veranstaltung.typ}</span>
+                                                </span>
+                                                <span className="italic truncate">Lehrende: {ev.veranstaltung.lehrende}</span>
+                                            </div>
                                         </div> 
                                     </li>
                                 ))}
@@ -373,8 +295,8 @@ export default function Planer() {
                     {/* Events */}
                     <button
                         className={`px-2 py-1 rounded text-xs ${events.length > 0 ? "bg-green-200" : "bg-gray-200"} mb-4`}
-                        onClick={handleOpenAddEventModal}
-                    >{"Event hinzufügen"}
+                        onClick={() => setShowAddEventModal(true)}
+                    >{"Eigenes Event hinzufügen"}
                     </button>
                     
                     <div className="flex-1 overflow-y-auto flex flex-col gap-2 pr-2">
@@ -387,10 +309,6 @@ export default function Planer() {
                                             className={`px-2 py-1 rounded text-xs ${ev.active === Visibility.Visible ? "bg-green-200" : ev.active === Visibility.Hidden ?"bg-gray-200" : "bg-yellow-200"}`}
                                             onClick={() => handleToggle(ev.id)}
                                         >{ev.active === Visibility.Visible ? "An" : "Aus"}</button>
-                                        <button
-                                            className="px-2 py-1 rounded bg-blue-200 text-xs"
-                                            onClick={() => handleOpenEditEventModal(ev.id)}
-                                        >Bearbeiten</button>
                                         <button
                                             className="px-2 py-1 rounded bg-red-200 text-xs"
                                             onClick={() => handleRemove(ev.id)}
@@ -426,220 +344,7 @@ export default function Planer() {
             </div>
 
             {/* Modal für neues Event */}
-            {showAddEventModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg w-96 shadow-lg flex flex-col h-[600px]">
-                        <div className="p-6 pb-4">
-                            <h2 className="text-xl font-bold mb-4">Neues Event hinzufügen</h2>
-                            
-                            <div className="mb-4">
-                                <label className="block text-sm font-semibold mb-2">Event Name</label>
-                                <input
-                                    type="text"
-                                    value={newEventName}
-                                    onChange={(e) => setNewEventName(e.target.value)}
-                                    placeholder="z.B. Mathe"
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-semibold mb-2">Farbe</label>
-                                <div className="flex gap-2 items-center">
-                                    <input
-                                        type="color"
-                                        value={newEventColor}
-                                        onChange={(e) => setNewEventColor(e.target.value)}
-                                        className="w-12 h-10 border rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-600">{newEventColor}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-sm font-semibold">Termine</label>
-                                <button
-                                    onClick={handleAddDate}
-                                    className="px-2 py-1 rounded bg-green-500 text-white text-xs hover:bg-green-600"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-6">
-                            {newEventDates.map((date, idx) => (
-                                <div key={idx} className="mb-3 p-3 border rounded bg-gray-50">
-                                    <div className="flex justify-between mb-2">
-                                        <span className="text-xs font-semibold">Termin {idx + 1}</span>
-                                        <button
-                                            onClick={() => handleRemoveDate(idx)}
-                                            className="px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                    
-                                    <input
-                                        type="text"
-                                        placeholder="Typ (z.B. Vorlesung)"
-                                        value={date.type}
-                                        onChange={(e) => handleDateChange(idx, "type", e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
-                                    />
-                                    
-                                    <select
-                                        value={date.day}
-                                        onChange={(e) => handleDateChange(idx, "day", e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
-                                    >
-                                        {days.map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                    
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="time"
-                                            value={date.start}
-                                            onChange={(e) => handleDateChange(idx, "start", e.target.value)}
-                                            className="flex-1 border rounded px-2 py-1 text-xs"
-                                        />
-                                        <input
-                                            type="time"
-                                            value={date.end}
-                                            onChange={(e) => handleDateChange(idx, "end", e.target.value)}
-                                            className="flex-1 border rounded px-2 py-1 text-xs"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="p-6 pt-4 border-t flex gap-2 justify-end">
-                            <button
-                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                                onClick={() => setShowAddEventModal(false)}
-                            >
-                                Abbrechen
-                            </button>
-                            <button
-                                className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
-                                onClick={handleAddEvent}
-                                disabled={!newEventName.trim() || newEventDates.length === 0}
-                            >
-                                Hinzufügen
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Modal für Event bearbeiten */}
-            {editingEventId !== null && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg w-96 shadow-lg flex flex-col h-[600px]">
-                        <div className="p-6 pb-4">
-                            <h2 className="text-xl font-bold mb-4">Event bearbeiten</h2>
-                            
-                            <div className="mb-4">
-                                <label className="block text-sm font-semibold mb-2">Event Name</label>
-                                <input
-                                    type="text"
-                                    value={editingEventName}
-                                    onChange={(e) => setEditingEventName(e.target.value)}
-                                    placeholder="z.B. Mathe"
-                                    className="w-full border rounded px-3 py-2"
-                                />
-                            </div>
-
-                            <div className="mb-4">
-                                <label className="block text-sm font-semibold mb-2">Farbe</label>
-                                <div className="flex gap-2 items-center">
-                                    <input
-                                        type="color"
-                                        value={editingEventColor}
-                                        onChange={(e) => setEditingEventColor(e.target.value)}
-                                        className="w-12 h-10 border rounded cursor-pointer"
-                                    />
-                                    <span className="text-xs text-gray-600">{editingEventColor}</span>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center justify-between mb-2">
-                                <label className="block text-sm font-semibold">Termine</label>
-                                <button
-                                    onClick={handleAddEditDate}
-                                    className="px-2 py-1 rounded bg-green-500 text-white text-xs hover:bg-green-600"
-                                >
-                                    +
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-6">
-                            {editingEventDates.map((date, idx) => (
-                                <div key={idx} className="mb-3 p-3 border rounded bg-gray-50">
-                                    <div className="flex justify-between mb-2">
-                                        <span className="text-xs font-semibold">Termin {idx + 1}</span>
-                                        <button
-                                            onClick={() => handleRemoveEditDate(idx)}
-                                            className="px-2 py-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
-                                        >
-                                            ✕
-                                        </button>
-                                    </div>
-                                    
-                                    <input
-                                        type="text"
-                                        placeholder="Typ (z.B. Vorlesung)"
-                                        value={date.type}
-                                        onChange={(e) => handleEditDateChange(idx, "type", e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
-                                    />
-                                    
-                                    <select
-                                        value={date.day}
-                                        onChange={(e) => handleEditDateChange(idx, "day", e.target.value)}
-                                        className="w-full border rounded px-2 py-1 text-xs mb-2"
-                                    >
-                                        {days.map(d => <option key={d} value={d}>{d}</option>)}
-                                    </select>
-                                    
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="time"
-                                            value={date.start}
-                                            onChange={(e) => handleEditDateChange(idx, "start", e.target.value)}
-                                            className="flex-1 border rounded px-2 py-1 text-xs"
-                                        />
-                                        <input
-                                            type="time"
-                                            value={date.end}
-                                            onChange={(e) => handleEditDateChange(idx, "end", e.target.value)}
-                                            className="flex-1 border rounded px-2 py-1 text-xs"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="p-6 pt-4 border-t flex gap-2 justify-end">
-                            <button
-                                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                                onClick={() => setEditingEventId(null)}
-                            >
-                                Abbrechen
-                            </button>
-                            <button
-                                className="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600 disabled:bg-gray-400"
-                                onClick={handleSaveEditEvent}
-                                disabled={!editingEventName.trim() || editingEventDates.length === 0}
-                            >
-                                Speichern
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showAddEventModal && <AddEventModal onAdd={handleAddEvent} onCancel={() => setShowAddEventModal(false)} />}
         </main>
     );
 }
