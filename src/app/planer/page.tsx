@@ -1,7 +1,7 @@
 "use client"
 
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
 import AddEventModal, { NewEventData } from "@/components/addeventmodal";
 
@@ -70,6 +70,7 @@ const dummyEvents: Event[] = [
 ];
 
 const days = ["Mo", "Di", "Mi", "Do", "Fr"];
+const LOCAL_STORAGE_KEY = "planer-events";
 
 function getInterval(termine: Termin[]) {
     const tagDate = new Date(termine[0].tag);
@@ -116,7 +117,14 @@ function getContrastColor(hexColor: string) {
 export default function Planer() {
     const [search, setSearch] = useState("");
     const [searchedEvents, setSearchedEvents] = useState<SearchResult[]>([]);
-    const [events, setEvents] = useState(dummyEvents);
+
+    const [events, setEvents] = useState<Event[]>(() => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+        return stored ? JSON.parse(stored) : dummyEvents;
+    });
+    useEffect(() => {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
+    }, [events]);
 
     const [showAddEventModal, setShowAddEventModal] = useState(false);
 
