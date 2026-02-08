@@ -83,18 +83,18 @@ export default function RootLayout({
         <div className="flex-grow">{children}</div>
         <div>
           <div className="text-white text-center text-lg sm:text-xl font-semibold">
-            <p>STiNE ist scheiße! Mach es dir zumindest etwas hübscher.</p>
+            <p>STiNE Stundenplaner.</p>
           </div>
         </div>
         <footer className="bg-ocean w-full">
           <div className="flex gap-2 text-white items-center justify-center p-4">
-            <Link href="/contact" className="hover:underline">
+            <Link href="/info/contact" className="hover:underline">
               Kontakt
             </Link>
-            <Link href="/credits" className="hover:underline">
+            <Link href="/info/credits" className="hover:underline">
               Credits
             </Link>
-            <Link href="/privacy" className="hover:underline">
+            <Link href="/info/privacy" className="hover:underline">
               Privacy
             </Link>
           </div>
