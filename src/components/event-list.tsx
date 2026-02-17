@@ -49,7 +49,7 @@ export function EventList({
             </p>
           </div>
         ) : (
-          <ScrollArea className="h-[calc(100vh-32rem)]">
+          <ScrollArea className="h-full">
             <div className="space-y-2 pr-4">
               {events.map((ev) => (
                 <EventCard

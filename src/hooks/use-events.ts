@@ -36,6 +36,15 @@ export function useEvents(initialEvents: Event[] = []) {
 
       const textColor = getContrastColor(newEventData.color);
 
+      // Konvertiere Gruppen in SubEvents
+      const subEvents = newEventData.groups.map((group) => ({
+        name: group.name,
+        shortname:
+          group.name.length > 10 ? group.name.slice(0, 10) + "..." : group.name,
+        active: Visibility.Visible,
+        dates: group.dates,
+      }));
+
       const newEvent: Event = {
         id: Math.max(...events.map((e) => e.id), 0) * 1000 + 1,
         name: newEventData.name,
@@ -46,26 +55,11 @@ export function useEvents(initialEvents: Event[] = []) {
         active: Visibility.Visible,
         bgcolor: newEventData.color,
         textcolor: textColor,
-        events: [
-          {
-            name: newEventData.name,
-            shortname:
-              newEventData.name.length > 10
-                ? newEventData.name.slice(0, 10) + "..."
-                : newEventData.name,
-            active: Visibility.Visible,
-            dates: [
-              {
-                day: newEventData.date.day,
-                start: newEventData.date.start,
-                end: newEventData.date.end,
-              },
-            ],
-          },
-        ],
+        events: subEvents,
       };
 
       setEvents([...events, newEvent]);
+      toast.success(`${newEventData.name} wurde hinzugefügt`);
     },
     [events],
   );

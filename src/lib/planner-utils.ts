@@ -4,16 +4,21 @@ export const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
 export const LOCAL_STORAGE_KEY = "planer-events";
 
 export const COLORS = [
-  "#3b82f6", // blue
-  "#ef4444", // red
-  "#22c55e", // green
-  "#f59e0b", // amber
-  "#8b5cf6", // violet
-  "#ec4899", // pink
-  "#06b6d4", // cyan
-  "#84cc16", // lime
-  "#f97316", // orange
-  "#6366f1", // indigo
+  "#4a148c", // dark purple
+  "#6a1b9a", // purple
+  "#7b1fa2", // medium purple
+  "#8e24aa", // light purple
+  "#b71c1c", // dark red
+  "#d32f2f", // red
+  "#e64a19", // dark orange
+  "#f57c00", // orange
+  "#ff9800", // amber
+  "#ffa726", // light orange
+  "#ffb74d", // lighter orange
+  "#ffc107", // yellow orange
+  "#ffd54f", // light yellow
+  "#ffe082", // lighter yellow
+  "#ffecb3", // very light yellow
 ];
 
 /**

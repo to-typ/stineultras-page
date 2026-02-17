@@ -33,7 +33,7 @@ export function EventCard({
           style={{ backgroundColor: event.bgcolor }}
         />
         <div className="flex-1">
-          <CardHeader className="pb-3">
+          <CardHeader className="py-3">
             <div className="flex items-center justify-between gap-2">
               <div className="flex-1 min-w-0">
                 <CardTitle
@@ -65,7 +65,7 @@ export function EventCard({
           </CardHeader>
 
           {event.events.length > 1 && (
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-3">
               <Separator className="mb-3" />
               <Accordion type="single" collapsible>
                 <AccordionItem value="sub-events" className="border-none">

@@ -20,73 +20,6 @@ import { Visibility, SearchResult } from "@/types/planner";
 import { DAYS } from "@/lib/planner-utils";
 import { NewEventData } from "@/components/addeventmodal";
 
-const dummyEvents = [
-  {
-    id: 1,
-    name: "Mathe",
-    shortname: "Math",
-    active: Visibility.Visible,
-    bgcolor: "#3b82f6",
-    textcolor: "#1e3a8a",
-    events: [
-      {
-        name: "Übung A",
-        shortname: "Vorl",
-        dates: [
-          { day: "Mo", start: "8:00", end: "8:45" },
-          { day: "Mo", start: "11:00", end: "12:00" },
-          { day: "Mi", start: "8:00", end: "10:00" },
-        ],
-        active: Visibility.Visible,
-      },
-      {
-        name: "Übung B",
-        shortname: "Übg",
-        dates: [
-          { day: "Fr", start: "8:00", end: "10:00" },
-          { day: "Mo", start: "8:45", end: "10:00" },
-        ],
-        active: Visibility.Visible,
-      },
-    ],
-  },
-  {
-    id: 2,
-    name: "Sport",
-    shortname: "Sport",
-    active: Visibility.Hidden,
-    bgcolor: "#ef4444",
-    textcolor: "#7f1d1d",
-    events: [
-      {
-        name: "Training",
-        shortname: "Train",
-        dates: [
-          { day: "Di", start: "14:00", end: "16:00" },
-          { day: "Do", start: "14:00", end: "16:00" },
-        ],
-        active: Visibility.Hidden,
-      },
-    ],
-  },
-  {
-    id: 3,
-    name: "Klausurvorbereitung",
-    shortname: "Klausur",
-    active: Visibility.Visible,
-    bgcolor: "#22c55e",
-    textcolor: "#166534",
-    events: [
-      {
-        name: "Lernen",
-        shortname: "Lern",
-        dates: [{ day: "Mo", start: "8:00", end: "12:00" }],
-        active: Visibility.Visible,
-      },
-    ],
-  },
-];
-
 export default function Planer() {
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
@@ -99,7 +32,7 @@ export default function Planer() {
     removeEvent,
     toggleSubEvent,
     clearAllEvents,
-  } = useEvents(dummyEvents);
+  } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
     useSearch();
@@ -143,12 +76,12 @@ export default function Planer() {
   return (
     <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       {/* Header */}
-      <div className="w-full border-b bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+      <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-6 py-6">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Stundenplan Editor
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-600 mt-1">
             Erstelle deinen individuellen Stundenplan
           </p>
         </div>
@@ -186,15 +119,15 @@ export default function Planer() {
         </aside>
 
         {/* Rechte Seite: Stundenplan */}
-        <section className="flex-1 flex flex-col">
-          <Card className="shadow-md flex-1">
-            <CardHeader>
+        <section className="flex-1 flex flex-col min-w-0">
+          <Card className="shadow-md flex-1 flex flex-col overflow-hidden">
+            <CardHeader className="flex-shrink-0">
               <CardTitle className="text-xl">Dein Stundenplan</CardTitle>
               <CardDescription>
                 Aktive Veranstaltungen im Wochenplan
               </CardDescription>
             </CardHeader>
-            <CardContent className="flex-1">
+            <CardContent className="flex-1 p-6 pt-0 overflow-auto">
               <WeeklyCalender days={DAYS} entrys={entrys} />
             </CardContent>
           </Card>
@@ -202,12 +135,11 @@ export default function Planer() {
       </div>
 
       {/* Modal für neues Event */}
-      {showAddEventModal && (
-        <AddEventModal
-          onAdd={handleAddEvent}
-          onCancel={() => setShowAddEventModal(false)}
-        />
-      )}
+      <AddEventModal
+        open={showAddEventModal}
+        onAdd={handleAddEvent}
+        onCancel={() => setShowAddEventModal(false)}
+      />
 
       {/* Dialog für Veranstaltungssuche */}
       <SearchDialog
