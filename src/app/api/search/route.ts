@@ -5,64 +5,88 @@ import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
 const prisma = new PrismaClient();
 
 type SearchResult = {
-        veranstaltung: Veranstaltung;
-        termine: Termin[] | null;
-        uebungsgruppen: [
-            {
-                uebungsgruppe: Uebungsgruppe;
-                termine: Termin[];
-            }
-        ] | null;
-    };
+  veranstaltung: Veranstaltung;
+  termine: Termin[] | null;
+  uebungsgruppen:
+    | [
+        {
+          uebungsgruppe: Uebungsgruppe;
+          termine: Termin[];
+        },
+      ]
+    | null;
+};
 
 async function searchDB(search: string) {
-    const results = [];
-    const vResults = await prisma.veranstaltung.findMany({
-        where: {
-            name: {
-                contains: search,
-                mode: "insensitive",
-            },
+  const results = [];
+  const vResults = await prisma.veranstaltung.findMany({
+    where: {
+      OR: [
+        {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
         },
-    });
-    for (const v of vResults) {
-        if(v.typ === VeranstaltungsTyp.UEBUNG) {
-            const uebungsgruppen = await prisma.uebungsgruppe.findMany({
-                where: {
-                    veranstaltungsId: v.id,
-                },
-            });
-            const uebungsgruppenWithTermine = [];
-            for (const u of uebungsgruppen) {
-                const termine = await prisma.termin.findMany({
-                    where: {
-                        uebungsId: u.id,
-                    },
-                });
-                uebungsgruppenWithTermine.push({
-                    uebungsgruppe: u,
-                    termine: termine,
-                });
-            }
-            results.push({
-                veranstaltung: v,
-                termine: null,
-                uebungsgruppen: uebungsgruppenWithTermine,
-            });
-        } else {
-            const termine = await prisma.termin.findMany({
-                where: {
-                    veranstaltungsId: v.id, 
-                },
-            });
-            results.push({
-                veranstaltung: v,
-                termine: termine,
-                uebungsgruppen: null,
-            });
-        }
+        {
+          stineName: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          stineId: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          lehrende: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      ],
+    },
+  });
+  for (const v of vResults) {
+    if (v.typ === VeranstaltungsTyp.UEBUNG) {
+      const uebungsgruppen = await prisma.uebungsgruppe.findMany({
+        where: {
+          veranstaltungsId: v.id,
+        },
+      });
+      const uebungsgruppenWithTermine = [];
+      for (const u of uebungsgruppen) {
+        const termine = await prisma.termin.findMany({
+          where: {
+            uebungsId: u.id,
+          },
+        });
+        uebungsgruppenWithTermine.push({
+          uebungsgruppe: u,
+          termine: termine,
+        });
+      }
+      results.push({
+        veranstaltung: v,
+        termine: null,
+        uebungsgruppen: uebungsgruppenWithTermine,
+      });
+    } else {
+      const termine = await prisma.termin.findMany({
+        where: {
+          veranstaltungsId: v.id,
+        },
+      });
+      results.push({
+        veranstaltung: v,
+        termine: termine,
+        uebungsgruppen: null,
+      });
     }
-    return results;
+  }
+  return results;
 }
 
 export async function GET(req: NextRequest) {
@@ -71,5 +95,3 @@ export async function GET(req: NextRequest) {
   console.log(searched);
   return NextResponse.json(searched);
 }
-
-

@@ -3,6 +3,7 @@ import "./globals.css";
 import { Oswald } from "next/font/google";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
+import { Toaster } from "@/components/ui/sonner";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -80,6 +81,7 @@ export default function RootLayout({
       <Analytics />
       <body
         className={`${oswald.className} antialiased bg-ocean flex flex-col min-h-screen`}>
+        <Toaster richColors position="top-right" />
         <div className="flex-grow">{children}</div>
         <div>
           <div className="text-white text-center text-lg sm:text-xl font-semibold">
