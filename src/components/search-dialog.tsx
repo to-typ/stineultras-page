@@ -61,7 +61,7 @@ export function SearchDialog({
             {isSearching && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
           </div>
 
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="">
             <Command>
               <CommandList>
                 {search.trim().length > 0 && search.trim().length < 2 && (
