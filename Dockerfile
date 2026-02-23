@@ -13,7 +13,8 @@ COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 COPY . .
 
-# Prisma generieren
+# Prisma generieren (benötigt DATABASE_URL, aber nur für Schema-Generierung)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN bunx prisma generate
 
 # Next.js Build
