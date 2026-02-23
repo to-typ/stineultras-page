@@ -5,7 +5,6 @@ import { cookies } from "next/headers";
 const JWT_SECRET =
   process.env.JWT_SECRET || "fallback-secret-change-in-production";
 const COOKIE_NAME = "admin_session";
-const TOKEN_EXPIRY = "30d"; // 30 days
 const TOKEN_EXPIRY_SECONDS = 30 * 24 * 60 * 60; // 30 days in seconds
 
 export interface SessionPayload {
