@@ -8,16 +8,22 @@ function verifyToken(token: string): boolean {
 
 const prisma = new PrismaClient();
 
-type JobStatus = "pending" | "running" | "completed" | "error";
+type JobStatus = "pending" | "running" | "completed" | "stopped" | "error";
 type Job = {
   id: string;
   status: JobStatus;
   error?: string;
   createdAt: Date;
   completedAt?: Date;
+  searchTree?: Object;
 };
 
+const standardTimeout = 1000;
+const randomTimeout = 1000;
+
 const jobs = new Map<string, Job>();
+
+let crawlStopFlag = false;
 
 //Test URLs ------------------------------------------------
 // const urlEventMenu = 'https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AOIRQVyI3yOi8SRKgfbOi1I-EA5k6~IbrQQu3vIzBc29qLEaa7Ai6KxX0JJGoRM~8Bof92S3-heBl-4LDQW1AVVtQvhAh51sUMbIMvNOLYm-Jnoy9SsqOzPUvL6ZprWKCIey9Al2Yk6DmA3D5BjuiB22Yz1nzMGExUjKqia-Xh~TMgy4GK1XCpx3DdkaLNkI34a-rBDD3xn6R5Qc_';
@@ -29,6 +35,8 @@ const jobs = new Map<string, Job>();
 const stineBaseURL = "https://www.stine.uni-hamburg.de";
 const stineURL2526 =
   "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AyWhCKzswcs-c6Byp9xtolWBxvzFmFk0QpruFGBmRNFjlPz43J2ag0L5ha5-89vKhj2PvYDbIdNHfyXlIqS0Cb3gY7vrV-05CVsDJOmjltPkq6ijPzRVeUo9twJDU4IjTtgSJ0Afq0Cv4ClqOyuTKiMzzHYRORro8iznXvXszKJ~RxZSouhqsq~klyQ__";
+const stineURL26 = 
+  "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AKASswnuYGaqGHKVIEzr78JS8XTsQ2rjXfsNr0DDrEtf5z3fuUMOHbPtzKrF39qCiCCJS0jT9UUDe4yRDIvwHSpkmQPQmoTQCnSd78HQttnxA1jheEvE5DPnc8vdkNqgpTi1O1uRvibRV7CAnOxwZuZUlmcbrpHCIqSQVzFIcfmJe9NeoSYCefsFjOQ__";
 
 //---------------------------------------------------
 //    _____                    _
@@ -48,6 +56,8 @@ async function crawlSemester(semester: string) {
     switch (semester) {
       case "WiSe 25/26":
         url = stineURL2526;
+      case "SoSe 26":
+        url = stineURL26;
     }
     if (url === "") {
       console.log(`Crawling menu: no url for semester ${semester}`);
@@ -68,7 +78,7 @@ async function crawlMenu(url: string, semesterId: number): Promise<Object> {
     console.log(`Crawling menu: null url`);
     return {};
   } else {
-    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 1000));
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
     console.log(`Crawling menu: ${url}`);
 
     const website = async () => {
@@ -82,34 +92,31 @@ async function crawlMenu(url: string, semesterId: number): Promise<Object> {
     if (html.includes("auditRegistrationList")) {
       if (html.includes("Veranstaltungen / Module")) {
         const veranstaltungen = findVeranstaltungen(html);
-        const results = [];
         for (const veranstaltung of veranstaltungen) {
-          results.push(
-            await crawlVeranstaltung(
-              stineBaseURL + veranstaltung.url,
-              semesterId,
-            ),
-          );
+          await crawlVeranstaltung(
+            stineBaseURL + veranstaltung.url,
+            semesterId,
+          )
         }
       }
       const submenuLinks = findSubmenus(html);
       const results = [];
       for (const submenu of submenuLinks) {
+        if (crawlStopFlag) {
+          return { submenus: results };
+        }
         results.push(await crawlMenu(stineBaseURL + submenu.href, semesterId));
       }
       return { submenus: results };
     } else {
       const veranstaltungen = findVeranstaltungen(html);
-      const results = [];
       for (const veranstaltung of veranstaltungen) {
-        results.push(
-          await crawlVeranstaltung(
-            stineBaseURL + veranstaltung.url,
-            semesterId,
-          ),
-        );
+        await crawlVeranstaltung(
+          stineBaseURL + veranstaltung.url,
+          semesterId,
+        )
       }
-      return { events: results };
+      return { };
     }
   }
 }
@@ -119,7 +126,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
     console.log(`Crawling event: null url`);
     return null;
   } else {
-    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 1000));
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
     console.log(`Crawling event: ${url}`);
     const website = async () => {
       return await fetch(url, {
@@ -129,6 +136,15 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
     const response = await website();
     const html = await response.text();
     const eventData = getVeranstaltungData(html);
+
+    const existing = await prisma.veranstaltung.findMany({
+      where: { stineId: eventData.stineId },
+    });
+    if (existing.length > 0) {
+      console.log(`Veranstaltung mit STiNE-ID ${eventData.stineId} bereits vorhanden`);
+      return null;
+    }
+
     const result = await prisma.veranstaltung.create({
       data: {
         name: eventData.name,
@@ -139,7 +155,8 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
         semester: { connect: { id: semesterId } },
       },
     });
-    if (eventData.type === VeranstaltungsTyp.UEBUNG) {
+
+    if (html.includes("Kleingruppe(n)")) {
       const subgroups = findUebungsgruppen(html);
       const results = [];
       for (const subgroup of subgroups) {
@@ -149,8 +166,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
       }
       return { subgroups: results };
     } else {
-      const dates = await crawlTermin(html, undefined, result.id);
-      return { event: result, dates: dates };
+    await crawlTermin(html, undefined, result.id);
     }
   }
 }
@@ -159,7 +175,8 @@ async function crawlUebungsgruppe(url: string, eventId: number) {
   if (url === null || url === undefined || url === "") {
     return null;
   } else {
-    await new Promise((r) => setTimeout(r, 2000 + Math.random() * 1000));
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
+    console.log(`Crawling subgroup: ${url}`);
     const website = async () => {
       return await fetch(url, {
         method: "GET",
@@ -312,6 +329,7 @@ function findTermine(
     const datePart = parts[0]
       .replace(/^[A-Za-z]+,\s*/, "")
       .replaceAll(".", "")
+      .replaceAll("*", "")
       .trim()
       .split(" ");
     const day = datePart[0].padStart(2, "0");
@@ -384,7 +402,7 @@ function findUebungsgruppen(
 //---------------------------------------------------
 
 function getUebungsgruppeData(html: string): { name: string } {
-  const nameRegex = /<h1[^>]*>\s*([^<]+?)\s*<\/h1>/;
+  const nameRegex = /<h2[^>]*>\s*Kleingruppe:\s*([^<]+?)\s*<\/h2>/;
   const nameMatch = nameRegex.exec(html);
   if (nameMatch) {
     return {
@@ -402,8 +420,7 @@ function getVeranstaltungData(html: string): {
   person: string;
 } {
   const typeRegex = /Veranstaltungsart:[\s\S]*?<div[^>]*>\s*([^\n<]+)/;
-  const nameRegex =
-    /<h1[^>]*>\s*([\d-\.\w]+)\s+(?:\(\d+\s+LP\)\s+)?(.*?)\s*<\/h1>/;
+  const nameRegex = /<h1[^>]*>\s*([\d-\.\w]+)[\s\S]+?(.*?)\s*<\/h1>/;
   const personRegex = /<span[^>]*id="dozenten"[^>]*>([^<]*)<\/span>/;
   const stineNameRegex =
     /Anzeige im Stundenplan: [\s\S]*?<div[^>]*>\s*([^\n<]+)/;
@@ -674,14 +691,18 @@ export async function POST(req: NextRequest) {
         jobs.set(jobId, job);
       }
       console.log(`Starting crawl job ${jobId} for semester ${body.semester}`);
-      const tu =
-        "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000605,-N0,-N393775100880865,-N393775100816866,-N0,-N0,-N3,-AWzn6VBNwRzZVQjVA7dZjWNLs4gVAeul9HoHXVULBeD7FRzW5O-UtWN7dmDWgOqNwfBmPYDn97UUdmSLgv-PlHdo8QSKs3zHw3vZQOu5feWpleNfdYqlFVBRH4BGbxjiNc-PleqaZrqP5WNZIWYK64zPeQMeN4BUsONZ9mqwAxfPaVUUBmfUDPUWJmQmaQzoYCfGeVWWlvuA6QDPMCYmlvIWqfdLCHBUCVWou7NR3cSpvfzL8mBKHVYWkVNc6fgHTCWLEHdcAOWHpmMoBWDWIvZPvCfZFWDPhPYW8OjPh4Dc9QDGJmNWKHdU3eMLIfZ5AfUHTVDKQvkZzxjH-fjmoVf6LHuaZrMUA4DAjHdo0ODGFcdAjVBHdWYZ73fZavq6YvkZ7mScwxBwh3BApedUzcqc-3uoVVUUHYfLFRWoKRqK6cBRCRB6UmUWMRuPMQZctcoH-RzwlmNAuYz96mBLeWBUjQIUAYUmwxNHoVdUMWBKAf-LErDG37YB-cdVwYUp5HfGIVSRvvSHePSa9xNoIvQBZWQWs3SPzcoLUxqUuedHK4YetOoHSQNm-4oPCxNPFmZWxcDKYYBooeQolegWWcWHmQ-7deWmerDGTxjejcdKamqwoWolAOjL6RYPTOYwg3QRfPWiAcMPMvuKEHgHovMpjfZHbVBHDmYZlfDHWYvZ8cSmofBWgrMKxvuPgmIporDyjRqUhVNLB3W5-PjHBPf6pfvZ7cDASeqRLPBUyOURaHfoemBmCeD6S7UUqxzo-";
-      const crawled = await crawlVeranstaltung(tu, 6);
-      //const crawled = await crawlSemester(body.semester);
+      //const tu =
+        //"https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=COURSEDETAILS&ARGUMENTS=-N000000000000001,-N000605,-N0,-N394614426283623,-N394614426295624,-N0,-N0,-N3,-ARZoScWUhRZetQMo3vNLMrqoTHN6BYYWxcuRSvfKbv-iZeZ5vOBAqPMaZQda64zRqHB7ZQumoR-RCHq58RDLQfIo8vB5UCYmQ4Y96QBUBcdK7CYUMfBW8VzowOfRo3zyNmWPQWIoqmDKQPdnN4qojxqoeVuAMHBRFOUoxPUaZYzAHQImKOQUCPZ5JPd7wOWDtvQLYvIL-VNUIvgUtvDUHVz2ZxqVd3YmKxtZPvzPfOo5pxSmIQYW3PfFwOtZBxzwSPjobcoaAWjPzHIR6xfHv7YKzeDmMcuWgHoptOQmvvZ5ocjoXPSm0cWiwVWWZxUVtP-Djcd6CRS5AQz2N4MLdCuDF3QHZHuWmWopgPMphOqHeRooK7fBjWffFOuUgVd9jWBRZfMUzczZLvfwXOzN6mDNZWqWBWupSmWV64B6DfqoofMWHQ-UtHWKfmWldcUHdOBZxxdKuVUHw7upAQY6SVBlNPNKQ4gmamvZ-P-oPHBwgeDZsvgojQZLWHjolvYmqHDB64Yw0VWDwYzHsRZUD7qoeCQHyWfPbegpV3IL84fU8mZRIPgHNvSmQ4DGbYYGB3YyZ7NoAHDomYMUjCuogQS5kWWLjCYRCmWL0xWmUYfRP4M5lYqyNfoVFHQRSvBWLPMAsOzKlWWPEVMAyRWijxUlZvUWC3SKV3BmKVYRLRjK-mBFweDmpOoUUWM577jfweQiNV-5VR-LVeUPWvSmYHjRBedHqOBej7UUwVSRDOgHW4MokQjPJHq63OWUBVMfF";
+      //const crawled = await crawlVeranstaltung(tu, 8);
+      const crawled = await crawlSemester(body.semester);
 
       const completedJob = jobs.get(jobId);
       if (completedJob) {
-        completedJob.status = "completed";
+        if (crawlStopFlag) {
+          completedJob.status = "stopped";
+        } else {
+          completedJob.status = "completed";
+        }
         completedJob.completedAt = new Date();
         jobs.set(jobId, completedJob);
       }
@@ -732,4 +753,13 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json(job);
+}
+
+export async function PUT(req: NextRequest) {
+  const body = await req.json();
+  if (!verifyToken(body.token)) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  crawlStopFlag = true;
+  return NextResponse.json({ message: "Crawl stop requested" });
 }
