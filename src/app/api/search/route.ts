@@ -1,21 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, VeranstaltungsTyp } from "@prisma/client";
-import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-type SearchResult = {
-  veranstaltung: Veranstaltung;
-  termine: Termin[] | null;
-  uebungsgruppen:
-    | [
-        {
-          uebungsgruppe: Uebungsgruppe;
-          termine: Termin[];
-        },
-      ]
-    | null;
-};
 
 async function searchDB(search: string) {
   const results = [];
@@ -92,6 +78,5 @@ async function searchDB(search: string) {
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const searched = await searchDB(url.searchParams.get("search") || "");
-  console.log(searched);
   return NextResponse.json(searched);
 }

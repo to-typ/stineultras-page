@@ -3,6 +3,7 @@
 type Field = {
   key: string;
   content: string;
+  room?: string;
   gridColumn: string;
   start: string;
   end: string;
@@ -18,6 +19,7 @@ export type Entry = {
   day: string;
   start: string;
   end: string;
+  room?: string;
   bgcolor: string;
   textcolor: string;
 };
@@ -60,6 +62,7 @@ export default function WeeklyCalender({
       return {
         key: d.id + "-" + d.text + "-" + d.day + "-" + d.start,
         content: d.text,
+        room: d.room,
         gridColumn: (dayIdx + 2).toString(),
         start: d.start,
         end: d.end,
@@ -186,7 +189,7 @@ export default function WeeklyCalender({
         {fields.map((entry) => (
           <div
             key={entry.key}
-            className="rounded-md px-2 py-1 flex items-center justify-center text-xs font-semibold border-2 shadow-sm hover:shadow-md transition-all cursor-default overflow-hidden"
+            className="rounded-md px-2 py-1 flex flex-col items-center justify-center text-xs font-semibold border-2 shadow-sm hover:shadow-md transition-all cursor-default overflow-hidden"
             style={{
               position: "relative",
               gridRow: `2/${timeSlots.length + 1}`,
@@ -200,7 +203,14 @@ export default function WeeklyCalender({
               color: entry.textcolor,
               borderColor: entry.textcolor + "40",
             }}>
-            <span className="truncate">{entry.content}</span>
+            <div className="w-full text-center leading-tight break-words">
+              {entry.content}
+            </div>
+            {entry.room && (
+              <div className="w-full text-center text-[10px] opacity-80 mt-1 break-words">
+                {entry.room}
+              </div>
+            )}
           </div>
         ))}
       </div>

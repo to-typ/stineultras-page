@@ -22,27 +22,37 @@ export const COLORS = [
 ];
 
 /**
- * Extrahiert Tag und Zeitintervall aus Terminen
+ * Extrahiert Tag, Zeitintervall und Raum aus Terminen
  */
 export function getInterval(termine: Termin[]) {
   const tagDate = new Date(termine[0].tag);
   const startDate = new Date(termine[0].startZeit);
   const endDate = new Date(termine[0].endZeit);
+  const raum = termine[0].raum;
+
+  // Debug logging
+  console.log("getInterval input:", {
+    startZeit: termine[0].startZeit,
+    endZeit: termine[0].endZeit,
+    startDate: startDate.toISOString(),
+    endDate: endDate.toISOString(),
+  });
 
   const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
   const tag = days[tagDate.getDay()];
 
+  // Verwende UTC-Stunden und -Minuten, um Timezone-Probleme zu vermeiden
   function toTimeString(date: Date) {
-    return date.toLocaleTimeString("de-DE", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
+    const hours = date.getUTCHours().toString().padStart(2, "0");
+    const minutes = date.getUTCMinutes().toString().padStart(2, "0");
+    return `${hours}:${minutes}`;
   }
   const start = toTimeString(startDate);
   const end = toTimeString(endDate);
 
-  return { tag, start, end };
+  console.log("getInterval output:", { tag, start, end, room: raum });
+
+  return { tag, start, end, room: raum };
 }
 
 /**

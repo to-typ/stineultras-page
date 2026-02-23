@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
-function verifyToken(token: string): boolean {
-  const adminToken = process.env.ADMIN_TOKEN || "admin-secret-token";
-  return token === adminToken;
-}
-
 const prisma = new PrismaClient();
 
 async function deleteDB(data: string) {
@@ -31,9 +26,6 @@ async function deleteDB(data: string) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  if (!verifyToken(body.token)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
   const deleted = await deleteDB(body.data);
   return NextResponse.json(deleted);
 }

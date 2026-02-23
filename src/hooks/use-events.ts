@@ -11,6 +11,7 @@ import { NewEventData } from "@/components/addeventmodal";
 
 export function useEvents(initialEvents: Event[] = []) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Lade Events aus localStorage beim ersten Render
   useEffect(() => {
@@ -21,14 +22,15 @@ export function useEvents(initialEvents: Event[] = []) {
     if (stored) {
       setEvents(JSON.parse(stored));
     }
+    setIsLoaded(true);
   }, []);
 
-  // Speichere Events in localStorage bei Änderungen
+  // Speichere Events in localStorage bei Änderungen (erst nach initialem Laden)
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (isLoaded && typeof window !== "undefined") {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
     }
-  }, [events]);
+  }, [events, isLoaded]);
 
   const addEvent = useCallback(
     (newEventData: NewEventData) => {
@@ -39,8 +41,7 @@ export function useEvents(initialEvents: Event[] = []) {
       // Konvertiere Gruppen in SubEvents
       const subEvents = newEventData.groups.map((group) => ({
         name: group.name,
-        shortname:
-          group.name.length > 10 ? group.name.slice(0, 10) + "..." : group.name,
+        shortname: group.name,
         active: Visibility.Visible,
         dates: group.dates,
       }));
@@ -48,10 +49,7 @@ export function useEvents(initialEvents: Event[] = []) {
       const newEvent: Event = {
         id: Math.max(...events.map((e) => e.id), 0) * 1000 + 1,
         name: newEventData.name,
-        shortname:
-          newEventData.name.length > 10
-            ? newEventData.name.slice(0, 10) + "..."
-            : newEventData.name,
+        shortname: newEventData.name,
         active: Visibility.Visible,
         bgcolor: newEventData.color,
         textcolor: textColor,
@@ -92,10 +90,7 @@ export function useEvents(initialEvents: Event[] = []) {
             allTermine.push({
               termine: ug.termine,
               name: ug.uebungsgruppe.name,
-              shortname:
-                ug.uebungsgruppe.name.length > 10
-                  ? ug.uebungsgruppe.name.slice(0, 10) + "..."
-                  : ug.uebungsgruppe.name,
+              shortname: ug.uebungsgruppe.name,
             });
           }
         }
@@ -116,6 +111,7 @@ export function useEvents(initialEvents: Event[] = []) {
             day: interval.tag,
             start: interval.start,
             end: interval.end,
+            room: interval.room,
           };
         });
 

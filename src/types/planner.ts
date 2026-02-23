@@ -10,6 +10,7 @@ export type EventDate = {
   day: string;
   start: string;
   end: string;
+  room?: string;
 };
 
 export type SubEvent = {

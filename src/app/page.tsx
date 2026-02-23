@@ -57,7 +57,8 @@ export default function Planer() {
   };
 
   // Konvertiere Events zu Calendar Entries
-  const entrys: Entry[] = events.flatMap((ev) =>
+  // Dedupliziere Termine: Nehme nur einen Termin pro Kombination aus day + start + end + text
+  const allEntrys: Entry[] = events.flatMap((ev) =>
     ev.events
       .filter((subEv) => subEv.active === Visibility.Visible)
       .flatMap((subEv) =>
@@ -67,11 +68,22 @@ export default function Planer() {
           day: d.day,
           start: d.start,
           end: d.end,
+          room: d.room,
           bgcolor: ev.bgcolor,
           textcolor: ev.textcolor,
         })),
       ),
   );
+
+  // Dedupliziere basierend auf day + start + end + text (nur eine Instanz jedes wöchentlichen Termins)
+  const uniqueEntryMap = new Map<string, Entry>();
+  allEntrys.forEach((entry) => {
+    const key = `${entry.text}-${entry.day}-${entry.start}-${entry.end}`;
+    if (!uniqueEntryMap.has(key)) {
+      uniqueEntryMap.set(key, entry);
+    }
+  });
+  const entrys: Entry[] = Array.from(uniqueEntryMap.values());
 
   return (
     <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
