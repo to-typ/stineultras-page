@@ -1,0 +1,47 @@
+FROM oven/bun:1 AS base
+
+WORKDIR /app
+
+# Installer für Dependencies
+FROM base AS deps
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile --production
+
+# Builder für die App
+FROM base AS builder
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
+COPY . .
+
+# Prisma generieren (benötigt DATABASE_URL, aber nur für Schema-Generierung)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+RUN bunx prisma generate
+
+# Next.js Build
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN bun run build
+
+# Production Image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN groupadd -r -g 1001 nodejs && \
+    useradd -r -u 1001 -g nodejs nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/prisma ./prisma
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["bun", "run", "server.js"]

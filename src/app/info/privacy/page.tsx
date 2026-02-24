@@ -20,56 +20,45 @@ export default function Privacy() {
         <h1 className="text-4xl font-bold">Privacy Policy</h1>
 
         <section>
-          <h2 className="text-xl font-semibold">Person Responsible</h2>
-          <p>Responsible for the app &quot;STiNE Ultras&quot; is</p>
+          <h2 className="text-xl font-semibold">Verantwortliche Person</h2>
+          <p>Verantwortlich für die App &quot;STiNE Ultras&quot; ist</p>
           <br />
           <address>
             Moritz Liedtke <br />
             Borgfelder Straße 16 <br />
             20537 Hamburg <br />
-            Germany <br />
+            Deutschland <br />
             <a href="mailto:info@moritzliedtke.com">info@moritzliedtke.com</a>
           </address>
         </section>
 
         <section>
           <h2 className="text-xl font-semibold">
-            Collection and Processing of Data
-          </h2>
-          <p>This app does not collect, store or process any personal data.</p>
-          <p>
-            The Safari extension merely changes the appearance of certain
-            websites by adapting the CSS code. No data is collected, stored or
-            passed on from or about the user.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold">External Services</h2>
-          <p>
-            This app does not use any external services, analysis tools or APIs
-            that could collect data.
-          </p>
-        </section>
-
-        <section>
-          <h2 className="text-xl font-semibold">
-            Changes to the Privacy Policy
+            Kontaktaufnahme per E-Mail
           </h2>
           <p>
-            If changes are made to the functionality of the app that require the
-            collection or processing of data, this privacy policy will be
-            updated accordingly.
+            Wenn du mir eine E-Mail sendest, verarbeite ich deine E-Mail-Adresse und den Inhalt der Nachricht, um deine Anfrage zu beantworten.
+            Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse).
+            Die Daten werden gelöscht, sobald sie für die Bearbeitung deiner Anfrage nicht mehr benötigt werden.
           </p>
         </section>
 
         <section>
+          <h2 className="text-xl font-semibold">Rechte der Nutzer</h2>
           <p>
-            If you have any questions or concerns about the privacy policy,
-            please contact us at{" "}
-            <a href="mailto:info@moritzliedtke.com">info@moritzliedtke.com</a>.
+            Du hast das Recht auf:
+
+            Auskunft über die gespeicherten Daten,
+
+            Berichtigung oder Löschung,
+
+            Einschränkung der Verarbeitung und
+
+            Beschwerde bei einer Aufsichtsbehörde
           </p>
         </section>
+
+     
       </div>
     </>
   );

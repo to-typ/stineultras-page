@@ -1,0 +1,42 @@
+import { Veranstaltung, Termin, Uebungsgruppe } from "@prisma/client";
+
+export enum Visibility {
+  Visible,
+  Hidden,
+  Partial,
+}
+
+export type EventDate = {
+  day: string;
+  start: string;
+  end: string;
+  room?: string;
+};
+
+export type SubEvent = {
+  name: string;
+  shortname: string;
+  active: Visibility;
+  dates: EventDate[];
+};
+
+export type Event = {
+  id: number;
+  name: string;
+  shortname: string;
+  active: Visibility;
+  bgcolor: string;
+  textcolor: string;
+  events: SubEvent[];
+};
+
+export type SearchResult = {
+  veranstaltung: Veranstaltung;
+  termine: Termin[] | null;
+  uebungsgruppen:
+    | {
+        uebungsgruppe: Uebungsgruppe;
+        termine: Termin[];
+      }[]
+    | null;
+};

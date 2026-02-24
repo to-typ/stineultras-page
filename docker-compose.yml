@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stineultras-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stineultras
+      POSTGRES_PASSWORD: THcI4bwjTvIOHE
+      POSTGRES_DB: stineultras
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stineultras"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stineultras-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stineultras-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://stineultras:THcI4bwjTvIOHE@postgres:5432/stineultras
+      NODE_ENV: production
+      JWT_SECRET: "ETaUr1xCNyWpPCSMvtpSLegiOh2Xd6srMs6es9Eg3vg="
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - stineultras-network
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: stineultras-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - caddy_logs:/var/log/caddy
+    depends_on:
+      - app
+    networks:
+      - stineultras-network
+
+volumes:
+  postgres_data:
+    driver: local
+  caddy_data:
+    driver: local
+  caddy_config:
+    driver: local
+  caddy_logs:
+    driver: local
+
+networks:
+  stineultras-network:
+    driver: bridge
