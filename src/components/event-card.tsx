@@ -42,7 +42,7 @@ export function EventCard({
     <Card
       className={`transition-all overflow-hidden group ${
         event.active === Visibility.Hidden ? "opacity-50" : ""
-      } w-full hover:w-[calc(100%+0.5rem)] ml-1.5 hover:ml-0`}>
+      } w-full origin-right hover:w-[calc(100%+0.5rem)] `}>
       <div className="flex">
         {/* Farbiger Streifen am linken Rand */}
         <div
