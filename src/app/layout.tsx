@@ -11,7 +11,7 @@ const oswald = Oswald({
 
 export const metadata: Metadata = {
   title: "STiNE Ultras",
-  description: "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
+  description: "Macht Kurse wählen ultra einfach.",
   applicationName: "STiNE Ultras",
   icons: [
     {
@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     },
     {
       name: "Moritz",
+    },
+    {
+      name: "Robin",
     },
   ],
   keywords: [
@@ -49,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "STiNE Ultras",
     description:
-      "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
+      "Macht Kurse wählen ultra einfach.",
     url: "https://stineultras.de",
     type: "website",
     images: [
@@ -66,7 +69,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "STiNE Ultras",
     description:
-      "Hol dir das Redesign für STiNE und beautifyziere Kurse wählen!",
+      "Macht Kurse wählen ultra einfach.",
     images: ["https://stineultras.de/preview.png"],
   },
 };
@@ -85,7 +88,7 @@ export default function RootLayout({
         <div className="flex-grow">{children}</div>
         <div>
           <div className="text-white text-center text-lg sm:text-xl font-semibold">
-            <p>STiNE Stundenplaner.</p>
+            <p>STiNE Ultras- Nicht affiliert mit UHH</p>
           </div>
         </div>
         <footer className="bg-ocean w-full">
