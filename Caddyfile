@@ -1,5 +1,4 @@
-# Ersetze deine-domain.de mit deiner echten Domain
-stineultras.moritzliedtke.com {
+stineultras.moritzliedtke.com, stineultras.de, www.stineultras.de {
     reverse_proxy app:3000
     
     encode gzip
