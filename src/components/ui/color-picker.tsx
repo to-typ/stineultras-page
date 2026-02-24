@@ -611,16 +611,15 @@ function ColorPicker(props: ColorPickerProps) {
   );
 }
 
-interface ColorPickerImplProps
-  extends Omit<
-    ColorPickerProps,
-    | "defaultValue"
-    | "onValueChange"
-    | "onOpenChange"
-    | "format"
-    | "defaultFormat"
-    | "onFormatChange"
-  > {}
+type ColorPickerImplProps = Omit<
+  ColorPickerProps,
+  | "defaultValue"
+  | "onValueChange"
+  | "onOpenChange"
+  | "format"
+  | "defaultFormat"
+  | "onFormatChange"
+>;
 
 function ColorPickerImpl(props: ColorPickerImplProps) {
   const {
@@ -1122,11 +1121,12 @@ function ColorPickerEyeDropper(props: React.ComponentProps<typeof Button>) {
 }
 
 interface ColorPickerFormatSelectProps
-  extends Omit<React.ComponentProps<typeof Select>, "value" | "onValueChange">,
-    Pick<React.ComponentProps<typeof SelectTrigger>, "size" | "className"> {}
+  extends Omit<React.ComponentProps<typeof Select>, "value" | "onValueChange"> {
+  className?: string;
+}
 
 function ColorPickerFormatSelect(props: ColorPickerFormatSelectProps) {
-  const { size, disabled, className, ...selectProps } = props;
+  const { disabled, className, ...selectProps } = props;
 
   const context = useColorPickerContext(FORMAT_SELECT_NAME);
   const store = useStoreContext(FORMAT_SELECT_NAME);
@@ -1151,8 +1151,7 @@ function ColorPickerFormatSelect(props: ColorPickerFormatSelectProps) {
     >
       <SelectTrigger
         data-slot="color-picker-format-select-trigger"
-        size={size ?? "sm"}
-        className={cn(className)}
+        className={cn("h-8", className)}
       >
         <SelectValue />
       </SelectTrigger>
