@@ -70,16 +70,27 @@ export default function Planer() {
         const response = await fetch("/api/semesters");
         const data = await response.json();
         setSemesters(data);
-        // Setze das erste Semester als Standard
-        if (data.length > 0 && !currentStundenplan) {
-          setSelectedSemesterId(data[0].id);
-        }
       } catch (error) {
         console.error("Fehler beim Laden der Semester:", error);
       }
     }
     loadSemesters();
-  }, [currentStundenplan]);
+  }, []);
+
+  // Erstelle automatisch einen Stundenplan, wenn keiner existiert
+  useEffect(() => {
+    if (
+      semesters.length > 0 &&
+      stundenplaene.length === 0 &&
+      !currentStundenplan
+    ) {
+      const neuestesSemester = semesters[0];
+      createStundenplan(
+        `Stundenplan ${neuestesSemester.name}`,
+        neuestesSemester.id,
+      );
+    }
+  }, [semesters, stundenplaene.length, currentStundenplan, createStundenplan]);
 
   // Lade Events aus dem aktuellen Stundenplan
   useEffect(() => {

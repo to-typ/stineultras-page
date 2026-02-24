@@ -16,6 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
@@ -43,6 +53,8 @@ export function StundenplanControls({
 }: StundenplanControlsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newPlanName, setNewPlanName] = useState("");
   const [newPlanSemesterId, setNewPlanSemesterId] = useState<number | null>(
     null,
@@ -70,8 +82,15 @@ export function StundenplanControls({
   };
 
   const handleDelete = (id: string) => {
-    if (confirm("Möchtest du diesen Stundenplan wirklich löschen?")) {
-      onDeleteStundenplan(id);
+    setDeleteId(id);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (deleteId) {
+      onDeleteStundenplan(deleteId);
+      setDeleteId(null);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -215,9 +234,33 @@ export function StundenplanControls({
           <Button
             variant="outline"
             size="sm"
+            className="hover:bg-red-100 hover:text-red-600 hover:border-red-300"
             onClick={() => handleDelete(currentPlan.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
+
+          {/* Löschen Bestätigung */}
+          <AlertDialog
+            open={showDeleteDialog}
+            onOpenChange={setShowDeleteDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Stundenplan löschen</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Möchtest du diesen Stundenplan wirklich löschen? Diese Aktion
+                  kann nicht rückgängig gemacht werden.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmDelete}
+                  className="bg-red-600 hover:bg-red-700">
+                  Löschen
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
     </div>
