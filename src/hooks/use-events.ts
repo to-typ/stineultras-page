@@ -210,6 +210,15 @@ export function useEvents(initialEvents: Event[] = []) {
     setEvents([]);
   }, []);
 
+  const changeEventColor = useCallback((id: number, color: string) => {
+    const textcolor = getContrastColor(color);
+    setEvents((events) =>
+      events.map((ev) =>
+        ev.id === id ? { ...ev, bgcolor: color, textcolor } : ev,
+      ),
+    );
+  }, []);
+
   return {
     events,
     addEvent,
@@ -218,5 +227,6 @@ export function useEvents(initialEvents: Event[] = []) {
     removeEvent,
     toggleSubEvent,
     clearAllEvents,
+    changeEventColor,
   };
 }

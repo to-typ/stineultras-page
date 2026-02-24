@@ -49,6 +49,7 @@ export default function Planer() {
     removeEvent,
     toggleSubEvent,
     clearAllEvents,
+    changeEventColor,
   } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
@@ -195,6 +196,7 @@ export default function Planer() {
             onToggleSubEvent={toggleSubEvent}
             onClearAll={clearAllEvents}
             onShowInfo={showEventDetails}
+            onColorChange={changeEventColor}
           />
         </aside>
 

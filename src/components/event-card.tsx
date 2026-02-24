@@ -9,6 +9,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Eye, EyeOff, Info, Trash2 } from "lucide-react";
+import {
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerContent,
+  ColorPickerHueSlider,
+  ColorPickerTrigger,
+} from "@/components/ui/color-picker";
+import { COLORS } from "@/lib/planner-utils";
+import { useState } from "react";
 
 interface EventCardProps {
   event: Event;
@@ -16,6 +25,7 @@ interface EventCardProps {
   onRemove: () => void;
   onToggleSub: (subName: string) => void;
   onShowInfo: () => void;
+  onColorChange: (color: string) => void;
 }
 
 export function EventCard({
@@ -24,7 +34,10 @@ export function EventCard({
   onRemove,
   onToggleSub,
   onShowInfo,
+  onColorChange,
 }: EventCardProps) {
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+
   return (
     <Card
       className={`transition-all overflow-hidden group ${
@@ -33,9 +46,33 @@ export function EventCard({
       <div className="flex">
         {/* Farbiger Streifen am linken Rand */}
         <div
-          className="w-1.5 group-hover:w-3 flex-shrink-0 transition-all"
+          className="w-1.5 group-hover:w-3 flex-shrink-0 transition-all cursor-pointer hover:opacity-80"
           style={{ backgroundColor: event.bgcolor }}
+          onClick={() => setColorPickerOpen(true)}
         />
+        <ColorPicker defaultFormat="hex" defaultValue={event.bgcolor} open={colorPickerOpen} onOpenChange={setColorPickerOpen} onValueChange={(value) => onColorChange(value)}>
+          <ColorPickerTrigger asChild>
+            <div className="display-none"/>
+          </ColorPickerTrigger>
+          <ColorPickerContent>
+            <ColorPickerArea />
+            <div className="flex items-center gap-2">
+                <ColorPickerHueSlider />
+            </div>
+            <div className="flex grid grid-cols-8 grid-rows-2 gap-2">
+              {COLORS.map((color, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="size-8 rounded border-2 border-transparent hover:border-border focus:border-ring focus:outline-none"
+                  style={{ backgroundColor: color }}
+                  onClick={() => onColorChange(color)}
+                  aria-label={`Select color ${color}`}
+                />
+              ))}
+            </div>
+          </ColorPickerContent>
+        </ColorPicker>
         <div className="flex-1">
           <CardHeader className="py-3">
             <div className="flex items-center justify-between gap-2">

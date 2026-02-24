@@ -12,6 +12,7 @@ interface EventListProps {
   onToggleSubEvent: (eventId: number, subName: string) => void;
   onClearAll: () => void;
   onShowInfo: (id: number) => void;
+  onColorChange: (id: number, color: string) => void;
 }
 
 export function EventList({
@@ -21,6 +22,7 @@ export function EventList({
   onToggleSubEvent,
   onClearAll,
   onShowInfo,
+  onColorChange,
 }: EventListProps) {
   return (
     <Card className="shadow-md flex-1">
@@ -61,6 +63,7 @@ export function EventList({
                   onRemove={() => onRemoveEvent(ev.id)}
                   onToggleSub={(subName) => onToggleSubEvent(ev.id, subName)}
                   onShowInfo={() => onShowInfo(ev.id)}
+                  onColorChange={(color) => onColorChange(ev.id, color)}
                 />
               ))}
             </div>
