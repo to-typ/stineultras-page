@@ -176,6 +176,7 @@ export default function Planer() {
       <EventInfoModal
         open={showEventDetailsModal}
         event={selectedEvent}
+        onClose={() => setShowEventDetailsModal(false)}
       />
 
       {/* Dialog für Veranstaltungssuche */}
