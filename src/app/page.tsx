@@ -1,23 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
 import AddEventModal from "@/components/add-event-modal";
 import EventInfoModal from "@/components/event-info-modal";
 import { EventList } from "@/components/event-list";
 import { SearchDialog } from "@/components/search-dialog";
+import { StundenplanControls } from "@/components/stundenplan-controls";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
 import { useEvents } from "@/hooks/use-events";
 import { useSearch } from "@/hooks/use-search";
+import { useStundenplan } from "@/hooks/use-stundenplan";
 import { Visibility, SearchResult, Event } from "@/types/planner";
 import { DAYS } from "@/lib/planner-utils";
 import { NewEventData } from "@/components/add-event-modal";
@@ -40,6 +35,18 @@ export default function Planer() {
   const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(
     null,
   );
+  const isLoadingStundenplan = useRef(false);
+
+  const {
+    stundenplaene,
+    currentStundenplan,
+    currentStundenplanId,
+    createStundenplan,
+    loadStundenplan,
+    saveCurrentStundenplan,
+    deleteStundenplan,
+    renameStundenplan,
+  } = useStundenplan();
 
   const {
     events,
@@ -63,7 +70,7 @@ export default function Planer() {
         const data = await response.json();
         setSemesters(data);
         // Setze das erste Semester als Standard
-        if (data.length > 0) {
+        if (data.length > 0 && !currentStundenplan) {
           setSelectedSemesterId(data[0].id);
         }
       } catch (error) {
@@ -71,7 +78,52 @@ export default function Planer() {
       }
     }
     loadSemesters();
-  }, []);
+  }, [currentStundenplan]);
+
+  // Lade Events aus dem aktuellen Stundenplan
+  useEffect(() => {
+    if (currentStundenplan) {
+      isLoadingStundenplan.current = true;
+      setEvents(currentStundenplan.events);
+      setSelectedSemesterId(currentStundenplan.semesterId);
+      // Reset nach einem Tick, damit Speichern wieder aktiviert wird
+      setTimeout(() => {
+        isLoadingStundenplan.current = false;
+      }, 0);
+    } else {
+      setEvents([]);
+    }
+  }, [currentStundenplan, setEvents]);
+
+  // Speichere Events automatisch, wenn sie sich ändern
+  useEffect(() => {
+    // Nur speichern wenn wir nicht gerade laden
+    if (
+      currentStundenplan &&
+      events.length >= 0 &&
+      !isLoadingStundenplan.current
+    ) {
+      saveCurrentStundenplan(events);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events]); // Nur events, nicht saveCurrentStundenplan um Endlosschleife zu vermeiden
+
+  // Synchronisiere Semester mit Stundenplan
+  useEffect(() => {
+    if (
+      currentStundenplan &&
+      selectedSemesterId !== currentStundenplan.semesterId
+    ) {
+      // Wenn ein anderes Semester gewählt wird, erstelle neuen Stundenplan
+      if (selectedSemesterId) {
+        const semesterName =
+          semesters.find((s) => s.id === selectedSemesterId)?.name ||
+          "Unbekannt";
+        createStundenplan(`Stundenplan ${semesterName}`, selectedSemesterId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSemesterId]);
 
   // Setze Suche zurück wenn Dialog geschlossen wird
   useEffect(() => {
@@ -79,6 +131,14 @@ export default function Planer() {
       clearSearch();
     }
   }, [showSearchDialog, clearSearch]);
+
+  const handleLoadStundenplan = (id: string) => {
+    loadStundenplan(id);
+  };
+
+  const handleCreateStundenplan = (name: string, semesterId: number) => {
+    createStundenplan(name, semesterId);
+  };
 
   const handleAddSearchResult = (result: SearchResult) => {
     const success = addSearchResult(result);
@@ -133,20 +193,35 @@ export default function Planer() {
     <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       {/* Header */}
       <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
-          <div>
-            <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+        <div className="container mx-auto px-6 py-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+            </div>
+            <div>
+              <Image src={logo} alt="STiNE Ultras" height={64} />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold bg-[#0261bb] bg-clip-text text-transparent">
+                Stundenplan Editor
+              </h1>
+              <p className="text-sm text-slate-600 mt-1">
+                Erstelle deinen individuellen Stundenplan
+              </p>
+            </div>
           </div>
-          <div>
-            <Image src={logo} alt="STiNE Ultras" height={64} />
-          </div>
-          <div> 
-            <h1 className="text-4xl font-bold bg-[#0271bb] bg-clip-text text-transparent">
-              Stundenplan Editor
-            </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Erstelle deinen individuellen Stundenplan
-            </p>
+          {/* Stundenplan Controls */}
+          <div className="flex items-center gap-4">
+            <StundenplanControls
+              stundenplaene={stundenplaene}
+              currentStundenplanId={currentStundenplanId}
+              currentSemesterId={selectedSemesterId}
+              semesters={semesters}
+              onLoadStundenplan={handleLoadStundenplan}
+              onCreateStundenplan={handleCreateStundenplan}
+              onDeleteStundenplan={deleteStundenplan}
+              onRenameStundenplan={renameStundenplan}
+            />
           </div>
         </div>
       </div>
@@ -156,33 +231,19 @@ export default function Planer() {
         <aside className="w-full lg:w-96 flex flex-col gap-4">
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            <Select
-              value={selectedSemesterId?.toString() || ""}
-              onValueChange={(value) =>
-                setSelectedSemesterId(parseInt(value, 10))
-              }>
-              <SelectTrigger className="w-full h-12">
-                <SelectValue placeholder="Semester auswählen" />
-              </SelectTrigger>
-              <SelectContent>
-                {semesters.map((semester) => (
-                  <SelectItem key={semester.id} value={semester.id.toString()}>
-                    {semester.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
             <Button
               onClick={() => setShowSearchDialog(true)}
               className="w-full h-12"
-              variant="default">
+              variant="default"
+              disabled={!currentStundenplan}>
               <Search className="h-4 w-4 mr-2" />
               Vorlesungsverzeichnis durchsuchen
             </Button>
             <Button
               onClick={() => setShowAddEventModal(true)}
               className="w-full h-12"
-              variant="outline">
+              variant="outline"
+              disabled={!currentStundenplan}>
               <Plus className="h-4 w-4 mr-2" />
               Eigenes Event hinzufügen
             </Button>
