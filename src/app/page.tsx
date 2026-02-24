@@ -191,7 +191,7 @@ export default function Planer() {
               <Image src={logo} alt="STiNE Ultras" height={64} />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-[#0261bb] bg-clip-text text-transparent">
                 Stundenplan Editor
               </h1>
               <p className="text-sm text-slate-600 mt-1">
