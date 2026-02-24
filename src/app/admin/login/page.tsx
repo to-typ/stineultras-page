@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import logoWhite from "/public/stineultras-white.svg";
+import logo from "/public/stineultras.svg";
 
 function LoginForm() {
   const router = useRouter();
@@ -62,7 +62,7 @@ function LoginForm() {
         <div className="flex justify-center">
           <Link href="/">
             <Image
-              src={logoWhite}
+              src={logo}
               alt="STiNE Ultras Logo"
               width={200}
               height={80}

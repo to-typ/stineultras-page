@@ -139,8 +139,8 @@ export default function Planer() {
           <div>
             <Image src={logo} alt="STiNE Ultras" height={64} />
           </div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <div> 
+            <h1 className="text-4xl font-bold bg-[#0271bb] bg-clip-text text-transparent">
               Stundenplan Editor
             </h1>
             <p className="text-sm text-slate-600 mt-1">
@@ -176,7 +176,7 @@ export default function Planer() {
               className="w-full h-12"
               variant="default">
               <Search className="h-4 w-4 mr-2" />
-              Veranstaltungen durchsuchen
+              Vorlesungsverzeichnis durchsuchen
             </Button>
             <Button
               onClick={() => setShowAddEventModal(true)}

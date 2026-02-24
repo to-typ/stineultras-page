@@ -42,7 +42,7 @@ export function SearchDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
-            Veranstaltungen durchsuchen
+            Vorlesungsverzeichnis durchsuchen
           </DialogTitle>
           <DialogDescription>
             Suche nach Name, STiNE-ID, Lehrenden oder Typ (mind. 2 Zeichen)

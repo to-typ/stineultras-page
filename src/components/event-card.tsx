@@ -27,11 +27,13 @@ export function EventCard({
 }: EventCardProps) {
   return (
     <Card
-      className={`transition-all overflow-hidden ${event.active === Visibility.Hidden ? "opacity-50" : ""}`}>
+      className={`transition-all overflow-hidden group ${
+        event.active === Visibility.Hidden ? "opacity-50" : ""
+      } w-full hover:w-[calc(100%+0.5rem)] ml-1.5 hover:ml-0`}>
       <div className="flex">
         {/* Farbiger Streifen am linken Rand */}
         <div
-          className="w-1.5 flex-shrink-0"
+          className="w-1.5 group-hover:w-3 flex-shrink-0 transition-all"
           style={{ backgroundColor: event.bgcolor }}
         />
         <div className="flex-1">
