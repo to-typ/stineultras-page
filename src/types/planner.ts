@@ -27,6 +27,7 @@ export type Event = {
   active: Visibility;
   bgcolor: string;
   textcolor: string;
+  info: SearchResult | null;
   events: SubEvent[];
 };
 

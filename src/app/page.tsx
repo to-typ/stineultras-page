@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
-import AddEventModal from "@/components/addeventmodal";
+import AddEventModal from "@/components/add-event-modal";
+import EventInfoModal from "@/components/event-info-modal";
 import { EventList } from "@/components/event-list";
 import { SearchDialog } from "@/components/search-dialog";
 import { Button } from "@/components/ui/button";
@@ -15,9 +16,9 @@ import {
 import { Search, Plus } from "lucide-react";
 import { useEvents } from "@/hooks/use-events";
 import { useSearch } from "@/hooks/use-search";
-import { Visibility, SearchResult } from "@/types/planner";
+import { Visibility, SearchResult, Event } from "@/types/planner";
 import { DAYS } from "@/lib/planner-utils";
-import { NewEventData } from "@/components/addeventmodal";
+import { NewEventData } from "@/components/add-event-modal";
 import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
@@ -25,6 +26,8 @@ import logo from "/public/stineultras.svg";
 export default function Planer() {
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
+  const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const {
     events,
@@ -56,6 +59,14 @@ export default function Planer() {
   const handleAddEvent = (newEventData: NewEventData) => {
     addEvent(newEventData);
     setShowAddEventModal(false);
+  };
+
+  const showEventDetails = (id: number) => {
+    const event = events.find((ev) => ev.id === id);
+    if (event) {
+      setSelectedEvent(event);
+      setShowEventDetailsModal(true);
+    }
   };
 
   // Konvertiere Events zu Calendar Entries
@@ -96,7 +107,7 @@ export default function Planer() {
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
           </div>
           <div>
-          <Image src={logo} alt="STiNE Ultras" height={64} />
+            <Image src={logo} alt="STiNE Ultras" height={64} />
           </div>
           <div> 
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -137,6 +148,7 @@ export default function Planer() {
             onRemoveEvent={removeEvent}
             onToggleSubEvent={toggleSubEvent}
             onClearAll={clearAllEvents}
+            onShowInfo={showEventDetails}
           />
         </aside>
 
@@ -158,6 +170,12 @@ export default function Planer() {
         open={showAddEventModal}
         onAdd={handleAddEvent}
         onCancel={() => setShowAddEventModal(false)}
+      />
+
+      {/* Modal für Event-Details */}
+      <EventInfoModal
+        open={showEventDetailsModal}
+        event={selectedEvent}
       />
 
       {/* Dialog für Veranstaltungssuche */}

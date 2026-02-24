@@ -8,13 +8,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Eye, EyeOff, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Info, Trash2 } from "lucide-react";
 
 interface EventCardProps {
   event: Event;
   onToggle: () => void;
   onRemove: () => void;
   onToggleSub: (subName: string) => void;
+  onShowInfo: () => void;
 }
 
 export function EventCard({
@@ -22,6 +23,7 @@ export function EventCard({
   onToggle,
   onRemove,
   onToggleSub,
+  onShowInfo,
 }: EventCardProps) {
   return (
     <Card
@@ -53,6 +55,14 @@ export function EventCard({
                     <EyeOff className="h-3.5 w-3.5" />
                   )}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onShowInfo}
+                  className="h-7 w-7 p-0 hover:bg-accent">
+                  <Info className="h-3.5 w-3.5" />
+                </Button>
+                
                 <Button
                   variant="ghost"
                   size="sm"

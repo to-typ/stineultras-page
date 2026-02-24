@@ -7,7 +7,7 @@ import {
   generateRandomColor,
 } from "@/lib/planner-utils";
 import { toast } from "sonner";
-import { NewEventData } from "@/components/addeventmodal";
+import { NewEventData } from "@/components/add-event-modal";
 
 export function useEvents(initialEvents: Event[] = []) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -54,6 +54,7 @@ export function useEvents(initialEvents: Event[] = []) {
         bgcolor: newEventData.color,
         textcolor: textColor,
         events: subEvents,
+        info: null,
       };
 
       setEvents([...events, newEvent]);
@@ -76,6 +77,7 @@ export function useEvents(initialEvents: Event[] = []) {
         termine: typeof ev.termine;
         name: string;
         shortname: string;
+        info: SearchResult;
       }[] = [];
 
       if (ev.termine && ev.termine.length > 0) {
@@ -83,6 +85,7 @@ export function useEvents(initialEvents: Event[] = []) {
           termine: ev.termine,
           name: ev.veranstaltung.name,
           shortname: ev.veranstaltung.stineName,
+          info: ev,
         });
       } else if (ev.uebungsgruppen && ev.uebungsgruppen.length > 0) {
         for (const ug of ev.uebungsgruppen) {
@@ -91,6 +94,7 @@ export function useEvents(initialEvents: Event[] = []) {
               termine: ug.termine,
               name: ug.uebungsgruppe.name,
               shortname: ug.uebungsgruppe.name,
+              info: ev,
             });
           }
         }
@@ -131,6 +135,7 @@ export function useEvents(initialEvents: Event[] = []) {
         bgcolor: bgcolor,
         textcolor: textcolor,
         events: subEvents,
+        info: ev,
       };
 
       setEvents((prevEvents) => [...prevEvents, newEvent]);
