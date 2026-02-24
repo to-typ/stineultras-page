@@ -107,7 +107,8 @@ export function useStundenplan() {
       );
 
       saveToStorage(newPlaene);
-      setCurrentStundenplan(updated);
+      // Nicht setCurrentStundenplan aufrufen, da das einen Re-Render triggert
+      // Der State wird beim nächsten Laden aktualisiert
     },
     [currentStundenplan, stundenplaene, saveToStorage],
   );

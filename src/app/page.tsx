@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import WeeklyCalender, { Entry } from "@/components/weeklycalender";
 import AddEventModal from "@/components/add-event-modal";
 import EventInfoModal from "@/components/event-info-modal";
@@ -35,6 +35,7 @@ export default function Planer() {
   const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(
     null,
   );
+  const isLoadingStundenplan = useRef(false);
 
   const {
     stundenplaene,
@@ -82,8 +83,13 @@ export default function Planer() {
   // Lade Events aus dem aktuellen Stundenplan
   useEffect(() => {
     if (currentStundenplan) {
+      isLoadingStundenplan.current = true;
       setEvents(currentStundenplan.events);
       setSelectedSemesterId(currentStundenplan.semesterId);
+      // Reset nach einem Tick, damit Speichern wieder aktiviert wird
+      setTimeout(() => {
+        isLoadingStundenplan.current = false;
+      }, 0);
     } else {
       setEvents([]);
     }
@@ -91,7 +97,12 @@ export default function Planer() {
 
   // Speichere Events automatisch, wenn sie sich ändern
   useEffect(() => {
-    if (currentStundenplan && events.length >= 0) {
+    // Nur speichern wenn wir nicht gerade laden
+    if (
+      currentStundenplan &&
+      events.length >= 0 &&
+      !isLoadingStundenplan.current
+    ) {
       saveCurrentStundenplan(events);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
