@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -19,6 +18,9 @@ import { useSearch } from "@/hooks/use-search";
 import { Visibility, SearchResult } from "@/types/planner";
 import { DAYS } from "@/lib/planner-utils";
 import { NewEventData } from "@/components/addeventmodal";
+import Image from "next/image";
+import betterStine from "/public/icons/betterstine.svg";
+import logo from "/public/stineultras.svg";
 
 export default function Planer() {
   const [showSearchDialog, setShowSearchDialog] = useState(false);
@@ -89,13 +91,21 @@ export default function Planer() {
     <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       {/* Header */}
       <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-6 py-6">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Stundenplan Editor
-          </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Erstelle deinen individuellen Stundenplan
-          </p>
+        <div className="container mx-auto px-6 py-6 flex items-center gap-4">
+          <div>
+            <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
+          </div>
+          <div>
+          <Image src={logo} alt="STiNE Ultras" height={64} />
+          </div>
+          <div> 
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Stundenplan Editor
+            </h1>
+            <p className="text-sm text-slate-600 mt-1">
+              Erstelle deinen individuellen Stundenplan
+            </p>
+          </div>
         </div>
       </div>
 
@@ -135,9 +145,6 @@ export default function Planer() {
           <Card className="shadow-md flex-1 flex flex-col overflow-hidden">
             <CardHeader className="flex-shrink-0">
               <CardTitle className="text-xl">Dein Stundenplan</CardTitle>
-              <CardDescription>
-                Aktive Veranstaltungen im Wochenplan
-              </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 p-6 pt-0 overflow-auto">
               <WeeklyCalender days={DAYS} entrys={entrys} />

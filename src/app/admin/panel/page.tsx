@@ -128,7 +128,9 @@ export default function Admin() {
           <Link href="/">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
           </Link>
-          <Image src={logoWhite} alt="STiNE Ultras" height={64} />
+          <Link href="/">
+            <Image src={logoWhite} alt="STiNE Ultras" height={64} />
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           {adminUsername && (

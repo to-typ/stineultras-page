@@ -4,6 +4,7 @@ import { Oswald } from "next/font/google";
 import Link from "next/link";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@/components/ui/sonner";
+import { Lock } from "lucide-react";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -101,6 +102,9 @@ export default function RootLayout({
             </Link>
             <Link href="/info/privacy" className="hover:underline">
               Privacy
+            </Link>
+            <Link href="/admin/panel" className="">
+              <Lock className="h-3.5 w-3.5"/>
             </Link>
           </div>
         </footer>
