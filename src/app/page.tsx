@@ -57,6 +57,7 @@ export default function Planer() {
     toggleSubEvent,
     clearAllEvents,
     changeEventColor,
+    setEvents,
   } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
