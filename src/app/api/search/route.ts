@@ -36,12 +36,15 @@ async function searchDB(search: string) {
     },
   });
   for (const v of vResults) {
-    if (v.typ === VeranstaltungsTyp.UEBUNG) {
-      const uebungsgruppen = await prisma.uebungsgruppe.findMany({
-        where: {
-          veranstaltungsId: v.id,
-        },
-      });
+    // Prüfe zuerst, ob Übungsgruppen existieren
+    const uebungsgruppen = await prisma.uebungsgruppe.findMany({
+      where: {
+        veranstaltungsId: v.id,
+      },
+    });
+
+    if (uebungsgruppen.length > 0) {
+      // Veranstaltung hat Übungsgruppen
       const uebungsgruppenWithTermine = [];
       for (const u of uebungsgruppen) {
         const termine = await prisma.termin.findMany({
@@ -60,6 +63,7 @@ async function searchDB(search: string) {
         uebungsgruppen: uebungsgruppenWithTermine,
       });
     } else {
+      // Keine Übungsgruppen, hole direkte Termine der Veranstaltung
       const termine = await prisma.termin.findMany({
         where: {
           veranstaltungsId: v.id,
