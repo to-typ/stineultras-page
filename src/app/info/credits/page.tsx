@@ -31,7 +31,7 @@ export default function Credits() {
           </p>
         </div>
         <div className="flex items-baseline">
-          <p className="inline-block ">PAGE&THEME</p>
+          <p className="inline-block ">WAR AUCH DABEI</p>
           <p className="inline-block sm:text-8xl text-7xl">
             <a href="https://github.com/RobinTcn">Robin </a>
           </p>
