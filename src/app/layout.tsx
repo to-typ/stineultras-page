@@ -84,15 +84,15 @@ export default function RootLayout({
     <html lang="en">
       <Analytics />
       <body
-        className={`${oswald.className} antialiased bg-ocean flex flex-col min-h-screen`}>
+        className={`${oswald.className} antialiased bg-[#0261bb] flex flex-col min-h-screen`}>
         <Toaster richColors position="top-right" />
         <div className="flex-grow">{children}</div>
         <div>
-          <div className="text-white text-center text-lg sm:text-xl font-semibold">
+          <div className="text-white text-center text-lg sm:text-xl font-semibold mt-4">
             <p>STiNE Ultras- Nicht affiliert mit UHH</p>
           </div>
         </div>
-        <footer className="bg-ocean w-full">
+        <footer className="w-full">
           <div className="flex gap-2 text-white items-center justify-center p-4">
             <Link href="/info/contact" className="hover:underline">
               Kontakt
