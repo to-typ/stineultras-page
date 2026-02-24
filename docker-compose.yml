@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: stineultras
       POSTGRES_PASSWORD: THcI4bwjTvIOHE
       POSTGRES_DB: stineultras
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
