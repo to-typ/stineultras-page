@@ -200,7 +200,7 @@ export default function WeeklyCalender({
               top: `${((timeStringToMinutes(entry.start) - timeStringToMinutes("8:00")) / 30) * 40 + 4}px`,
               height: `${((timeStringToMinutes(entry.end) - timeStringToMinutes(entry.start)) / 30) * 40 - 8}px`,
               backgroundColor: entry.bgcolor,
-              color: entry.textcolor,
+              color: ((parseInt(entry.bgcolor.slice(1, 3), 16) * 299 + parseInt(entry.bgcolor.slice(3, 5), 16) * 587 + parseInt(entry.bgcolor.slice(5, 7), 16) * 114) / 1000 > 128 ? "#242424" : "#ffffff"),
               borderColor: entry.textcolor + "40",
             }}>
             <div className="w-full text-center leading-tight break-words">
