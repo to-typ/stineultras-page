@@ -7,12 +7,14 @@ import EventInfoModal from "@/components/event-info-modal";
 import { EventList } from "@/components/event-list";
 import { SearchDialog } from "@/components/search-dialog";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Plus } from "lucide-react";
 import { useEvents } from "@/hooks/use-events";
 import { useSearch } from "@/hooks/use-search";
@@ -23,11 +25,21 @@ import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
 
+type Semester = {
+  id: number;
+  name: string;
+  isSelectable: boolean;
+};
+
 export default function Planer() {
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(
+    null,
+  );
 
   const {
     events,
@@ -40,7 +52,25 @@ export default function Planer() {
   } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
-    useSearch();
+    useSearch(selectedSemesterId);
+
+  // Lade Semester beim Start
+  useEffect(() => {
+    async function loadSemesters() {
+      try {
+        const response = await fetch("/api/semesters");
+        const data = await response.json();
+        setSemesters(data);
+        // Setze das erste Semester als Standard
+        if (data.length > 0) {
+          setSelectedSemesterId(data[0].id);
+        }
+      } catch (error) {
+        console.error("Fehler beim Laden der Semester:", error);
+      }
+    }
+    loadSemesters();
+  }, []);
 
   // Setze Suche zurück wenn Dialog geschlossen wird
   useEffect(() => {
@@ -109,7 +139,7 @@ export default function Planer() {
           <div>
             <Image src={logo} alt="STiNE Ultras" height={64} />
           </div>
-          <div> 
+          <div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Stundenplan Editor
             </h1>
@@ -125,6 +155,22 @@ export default function Planer() {
         <aside className="w-full lg:w-96 flex flex-col gap-4">
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
+            <Select
+              value={selectedSemesterId?.toString() || ""}
+              onValueChange={(value) =>
+                setSelectedSemesterId(parseInt(value, 10))
+              }>
+              <SelectTrigger className="w-full h-12">
+                <SelectValue placeholder="Semester auswählen" />
+              </SelectTrigger>
+              <SelectContent>
+                {semesters.map((semester) => (
+                  <SelectItem key={semester.id} value={semester.id.toString()}>
+                    {semester.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button
               onClick={() => setShowSearchDialog(true)}
               className="w-full h-12"

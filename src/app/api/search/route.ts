@@ -1,39 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function searchDB(search: string) {
+async function searchDB(search: string, semesterId?: number) {
   const results = [];
+  const whereClause: Prisma.VeranstaltungWhereInput = {
+    OR: [
+      {
+        name: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        stineName: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        stineId: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+      {
+        lehrende: {
+          contains: search,
+          mode: "insensitive",
+        },
+      },
+    ],
+  };
+
+  // Füge Semester-Filter hinzu, falls angegeben
+  if (semesterId) {
+    whereClause.semesterId = semesterId;
+  }
+
   const vResults = await prisma.veranstaltung.findMany({
-    where: {
-      OR: [
-        {
-          name: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          stineName: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          stineId: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-        {
-          lehrende: {
-            contains: search,
-            mode: "insensitive",
-          },
-        },
-      ],
-    },
+    where: whereClause,
   });
   for (const v of vResults) {
     // Prüfe zuerst, ob Übungsgruppen existieren
@@ -81,6 +88,12 @@ async function searchDB(search: string) {
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
-  const searched = await searchDB(url.searchParams.get("search") || "");
+  const search = url.searchParams.get("search") || "";
+  const semesterIdParam = url.searchParams.get("semesterId");
+  const semesterId = semesterIdParam
+    ? parseInt(semesterIdParam, 10)
+    : undefined;
+
+  const searched = await searchDB(search, semesterId);
   return NextResponse.json(searched);
 }
