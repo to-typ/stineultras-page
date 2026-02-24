@@ -9,28 +9,33 @@ import {
 import { toast } from "sonner";
 import { NewEventData } from "@/components/add-event-modal";
 
-export function useEvents(initialEvents: Event[] = []) {
+export function useEvents(
+  initialEvents: Event[] = [],
+  useLocalStorage: boolean = true,
+) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // Lade Events aus localStorage beim ersten Render
+  // Lade Events aus localStorage beim ersten Render (nur wenn useLocalStorage true ist)
   useEffect(() => {
-    const stored =
-      typeof window !== "undefined"
-        ? localStorage.getItem(LOCAL_STORAGE_KEY)
-        : null;
-    if (stored) {
-      setEvents(JSON.parse(stored));
+    if (useLocalStorage) {
+      const stored =
+        typeof window !== "undefined"
+          ? localStorage.getItem(LOCAL_STORAGE_KEY)
+          : null;
+      if (stored) {
+        setEvents(JSON.parse(stored));
+      }
     }
     setIsLoaded(true);
-  }, []);
+  }, [useLocalStorage]);
 
-  // Speichere Events in localStorage bei Änderungen (erst nach initialem Laden)
+  // Speichere Events in localStorage bei Änderungen (erst nach initialem Laden, nur wenn useLocalStorage true ist)
   useEffect(() => {
-    if (isLoaded && typeof window !== "undefined") {
+    if (isLoaded && useLocalStorage && typeof window !== "undefined") {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(events));
     }
-  }, [events, isLoaded]);
+  }, [events, isLoaded, useLocalStorage]);
 
   const addEvent = useCallback(
     (newEventData: NewEventData) => {
@@ -212,6 +217,7 @@ export function useEvents(initialEvents: Event[] = []) {
 
   return {
     events,
+    setEvents,
     addEvent,
     addSearchResult,
     toggleEvent,
