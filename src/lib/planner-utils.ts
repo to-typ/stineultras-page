@@ -10,6 +10,7 @@ export const COLORS = [
   "#8e24aa", // light purple
   "#b71c1c", // dark red
   "#d32f2f", // red
+  "#e53935", // light red
   "#e64a19", // dark orange
   "#f57c00", // orange
   "#ff9800", // amber

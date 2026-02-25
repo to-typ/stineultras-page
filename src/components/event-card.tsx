@@ -42,24 +42,29 @@ export function EventCard({
     <Card
       className={`transition-all overflow-hidden group ${
         event.active === Visibility.Hidden ? "opacity-50" : ""
-      } w-full origin-right hover:w-[calc(100%+0.5rem)] `}>
-      <div className="flex">
+      } w-full origin-right`}>
+      <div className="flex relative">
         {/* Farbiger Streifen am linken Rand */}
         <div
-          className="w-1.5 group-hover:w-3 flex-shrink-0 transition-all cursor-pointer hover:opacity-80"
+          className="absolute left-0 top-0 bottom-0 w-1.5 group-hover:w-3 transition-all cursor-pointer hover:opacity-80 z-10"
           style={{ backgroundColor: event.bgcolor }}
           onClick={() => setColorPickerOpen(true)}
         />
-        <ColorPicker defaultFormat="hex" defaultValue={event.bgcolor} open={colorPickerOpen} onOpenChange={setColorPickerOpen} onValueChange={(value) => onColorChange(value)}>
+        <ColorPicker
+          defaultFormat="hex"
+          defaultValue={event.bgcolor}
+          open={colorPickerOpen}
+          onOpenChange={setColorPickerOpen}
+          onValueChange={(value) => onColorChange(value)}>
           <ColorPickerTrigger asChild>
-            <div className="display-none"/>
+            <div className="display-none" />
           </ColorPickerTrigger>
           <ColorPickerContent>
             <ColorPickerArea />
             <div className="flex items-center gap-2">
-                <ColorPickerHueSlider />
+              <ColorPickerHueSlider />
             </div>
-            <div className="flex grid grid-cols-8 grid-rows-2 gap-2">
+            <div className="grid grid-cols-8 grid-rows-2 gap-2">
               {COLORS.map((color, index) => (
                 <button
                   key={index}
@@ -101,7 +106,7 @@ export function EventCard({
                   className="h-7 w-7 p-0 hover:bg-accent">
                   <Info className="h-3.5 w-3.5" />
                 </Button>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
