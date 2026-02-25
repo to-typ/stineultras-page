@@ -104,7 +104,7 @@ export function StundenplanControls({
       <Select
         value={currentStundenplanId || ""}
         onValueChange={onLoadStundenplan}>
-        <SelectTrigger className="w-[200px]">
+        <SelectTrigger className="w-[200px]" title="Stundenplan auswählen">
           <SelectValue placeholder="Stundenplan wählen" />
         </SelectTrigger>
         <SelectContent>
@@ -119,7 +119,10 @@ export function StundenplanControls({
       {/* Neuer Stundenplan */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            title="Neuen Stundenplan erstellen">
             <Plus className="h-4 w-4 mr-2" />
             Neu
           </Button>
@@ -154,7 +157,7 @@ export function StundenplanControls({
                 onValueChange={(value) =>
                   setNewPlanSemesterId(parseInt(value, 10))
                 }>
-                <SelectTrigger>
+                <SelectTrigger title="Wähle das Semester für den neuen Stundenplan">
                   <SelectValue placeholder="Semester auswählen" />
                 </SelectTrigger>
                 <SelectContent>
@@ -172,14 +175,16 @@ export function StundenplanControls({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowCreateDialog(false)}>
+              onClick={() => setShowCreateDialog(false)}
+              title="Dialog schließen ohne zu erstellen">
               Abbrechen
             </Button>
             <Button
               onClick={handleCreate}
               disabled={
                 !newPlanName.trim() || !(newPlanSemesterId || currentSemesterId)
-              }>
+              }
+              title="Neuen Stundenplan erstellen">
               Erstellen
             </Button>
           </DialogFooter>
@@ -196,7 +201,8 @@ export function StundenplanControls({
               setRenamePlanId(currentPlan.id);
               setRenamePlanName(currentPlan.name);
               setShowRenameDialog(true);
-            }}>
+            }}
+            title="Aktuellen Stundenplan umbenennen">
             Umbenennen
           </Button>
 
@@ -218,12 +224,14 @@ export function StundenplanControls({
               <DialogFooter>
                 <Button
                   variant="outline"
-                  onClick={() => setShowRenameDialog(false)}>
+                  onClick={() => setShowRenameDialog(false)}
+                  title="Dialog schließen ohne umzubenennen">
                   Abbrechen
                 </Button>
                 <Button
                   onClick={handleRename}
-                  disabled={!renamePlanName.trim()}>
+                  disabled={!renamePlanName.trim()}
+                  title="Stundenplan mit neuem Namen speichern">
                   Speichern
                 </Button>
               </DialogFooter>
@@ -235,7 +243,8 @@ export function StundenplanControls({
             variant="outline"
             size="sm"
             className="hover:bg-red-100 hover:text-red-600 hover:border-red-300"
-            onClick={() => handleDelete(currentPlan.id)}>
+            onClick={() => handleDelete(currentPlan.id)}
+            title="Aktuellen Stundenplan löschen">
             <Trash2 className="h-4 w-4" />
           </Button>
 
@@ -252,10 +261,13 @@ export function StundenplanControls({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                <AlertDialogCancel title="Löschen abbrechen">
+                  Abbrechen
+                </AlertDialogCancel>
                 <AlertDialogAction
                   onClick={confirmDelete}
-                  className="bg-red-600 hover:bg-red-700">
+                  className="bg-red-600 hover:bg-red-700"
+                  title="Stundenplan endgültig löschen">
                   Löschen
                 </AlertDialogAction>
               </AlertDialogFooter>

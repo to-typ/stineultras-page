@@ -8,7 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Eye, EyeOff, Info, Trash2 } from "lucide-react";
+import { Eye, EyeOff, Info, Trash2, Star, AlertTriangle } from "lucide-react";
 import {
   ColorPicker,
   ColorPickerArea,
@@ -26,6 +26,8 @@ interface EventCardProps {
   onToggleSub: (subName: string) => void;
   onShowInfo: () => void;
   onColorChange: (color: string) => void;
+  onPrioritize: () => void;
+  onPrioritizeSub: (subName: string) => void;
 }
 
 export function EventCard({
@@ -35,12 +37,23 @@ export function EventCard({
   onToggleSub,
   onShowInfo,
   onColorChange,
+  onPrioritize,
+  onPrioritizeSub,
 }: EventCardProps) {
   const [colorPickerOpen, setColorPickerOpen] = useState(false);
+
+  // Prüfe ob alle Termine ausgeblendet sind
+  const allHidden = event.events.every(
+    (subEv) => subEv.active === Visibility.Hidden,
+  );
 
   return (
     <Card
       className={`transition-all overflow-hidden group ${
+        allHidden
+          ? "border-2 border-orange-500 bg-orange-50/50 dark:bg-orange-950/20"
+          : ""
+      } ${
         event.active === Visibility.Hidden ? "opacity-50" : ""
       } w-full origin-right`}>
       <div className="flex relative">
@@ -49,6 +62,7 @@ export function EventCard({
           className="absolute left-0 top-0 bottom-0 w-1.5 group-hover:w-3 transition-all cursor-pointer hover:opacity-80 z-10"
           style={{ backgroundColor: event.bgcolor }}
           onClick={() => setColorPickerOpen(true)}
+          title="Farbe ändern"
         />
         <ColorPicker
           defaultFormat="hex"
@@ -73,6 +87,7 @@ export function EventCard({
                   style={{ backgroundColor: color }}
                   onClick={() => onColorChange(color)}
                   aria-label={`Select color ${color}`}
+                  title={`Farbe ${color} auswählen`}
                 />
               ))}
             </div>
@@ -86,13 +101,24 @@ export function EventCard({
                   className={`text-sm ${event.active === Visibility.Hidden ? "line-through" : ""}`}>
                   {event.name}
                 </CardTitle>
+                {allHidden && (
+                  <p className="text-xs text-orange-600 dark:text-orange-400 mt-0.5 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Alle Termine ausgeblendet
+                  </p>
+                )}
               </div>
-              <div className="flex gap-1 flex-shrink-0">
+              <div className="grid grid-cols-2 gap-1 flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={onToggle}
-                  className="h-7 w-7 p-0 hover:bg-accent">
+                  className="h-7 w-7 p-0 hover:bg-accent"
+                  title={
+                    event.active === Visibility.Visible
+                      ? "Ausblenden"
+                      : "Einblenden"
+                  }>
                   {event.active === Visibility.Visible ? (
                     <Eye className="h-3.5 w-3.5" />
                   ) : (
@@ -102,8 +128,23 @@ export function EventCard({
                 <Button
                   variant="ghost"
                   size="sm"
+                  onClick={onPrioritize}
+                  className={`h-7 w-7 p-0 hover:bg-accent ${
+                    event.prioritized
+                      ? "text-yellow-500"
+                      : "hover:text-yellow-500"
+                  }`}
+                  title="Priorisieren">
+                  <Star
+                    className={`h-3.5 w-3.5 ${event.prioritized ? "fill-yellow-500" : ""}`}
+                  />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={onShowInfo}
-                  className="h-7 w-7 p-0 hover:bg-accent">
+                  className="h-7 w-7 p-0 hover:bg-accent"
+                  title="Informationen anzeigen">
                   <Info className="h-3.5 w-3.5" />
                 </Button>
 
@@ -111,7 +152,8 @@ export function EventCard({
                   variant="ghost"
                   size="sm"
                   onClick={onRemove}
-                  className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive">
+                  className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive"
+                  title="Veranstaltung entfernen">
                   <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
@@ -141,17 +183,38 @@ export function EventCard({
                             }`}>
                             {subEv.name}
                           </span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => onToggleSub(subEv.name)}
-                            className="h-6 w-6 p-0 hover:bg-accent">
-                            {subEv.active === Visibility.Visible ? (
-                              <Eye className="h-3 w-3" />
-                            ) : (
-                              <EyeOff className="h-3 w-3" />
-                            )}
-                          </Button>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onPrioritizeSub(subEv.name)}
+                              className={`h-6 w-6 p-0 hover:bg-accent ${
+                                subEv.prioritized
+                                  ? "text-yellow-500"
+                                  : "hover:text-yellow-500"
+                              }`}
+                              title="Priorisieren">
+                              <Star
+                                className={`h-3 w-3 ${subEv.prioritized ? "fill-yellow-500" : ""}`}
+                              />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => onToggleSub(subEv.name)}
+                              className="h-6 w-6 p-0 hover:bg-accent"
+                              title={
+                                subEv.active === Visibility.Visible
+                                  ? "Ausblenden"
+                                  : "Einblenden"
+                              }>
+                              {subEv.active === Visibility.Visible ? (
+                                <Eye className="h-3 w-3" />
+                              ) : (
+                                <EyeOff className="h-3 w-3" />
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>

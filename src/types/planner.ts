@@ -18,6 +18,8 @@ export type SubEvent = {
   shortname: string;
   active: Visibility;
   dates: EventDate[];
+  prioritized?: boolean;
+  hiddenByPriority?: boolean;
 };
 
 export type Event = {
@@ -29,6 +31,7 @@ export type Event = {
   textcolor: string;
   info: SearchResult | null;
   events: SubEvent[];
+  prioritized?: boolean;
 };
 
 export type SearchResult = {

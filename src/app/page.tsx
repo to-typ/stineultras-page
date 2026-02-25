@@ -58,6 +58,8 @@ export default function Planer() {
     clearAllEvents,
     changeEventColor,
     setEvents,
+    prioritizeEvent,
+    prioritizeSubEvent,
   } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
@@ -247,7 +249,8 @@ export default function Planer() {
               onClick={() => setShowSearchDialog(true)}
               className="w-full h-12"
               variant="default"
-              disabled={!currentStundenplan}>
+              disabled={!currentStundenplan}
+              title="Durchsuche das Vorlesungsverzeichnis nach Veranstaltungen">
               <Search className="h-4 w-4 mr-2" />
               Vorlesungsverzeichnis durchsuchen
             </Button>
@@ -255,7 +258,8 @@ export default function Planer() {
               onClick={() => setShowAddEventModal(true)}
               className="w-full h-12"
               variant="outline"
-              disabled={!currentStundenplan}>
+              disabled={!currentStundenplan}
+              title="Füge eine eigene Veranstaltung oder einen Termin hinzu">
               <Plus className="h-4 w-4 mr-2" />
               Eigenes Event hinzufügen
             </Button>
@@ -270,6 +274,8 @@ export default function Planer() {
             onClearAll={clearAllEvents}
             onShowInfo={showEventDetails}
             onColorChange={changeEventColor}
+            onPrioritizeEvent={prioritizeEvent}
+            onPrioritizeSubEvent={prioritizeSubEvent}
           />
         </aside>
 

@@ -204,7 +204,8 @@ export default function AddEventModal({
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemoveGroup(groupIndex)}
-                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive">
+                          className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                          title="Gruppe entfernen">
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
                       )}
@@ -266,7 +267,8 @@ export default function AddEventModal({
                             onClick={() =>
                               handleRemoveDate(groupIndex, dateIndex)
                             }
-                            className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive flex-shrink-0">
+                            className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
+                            title="Termin entfernen">
                             <X className="h-3 w-3" />
                           </Button>
                         )}
@@ -276,7 +278,8 @@ export default function AddEventModal({
                       variant="outline"
                       size="sm"
                       onClick={() => handleAddDate(groupIndex)}
-                      className="w-full h-8 text-xs">
+                      className="w-full h-8 text-xs"
+                      title="Weiteren Termin zu dieser Gruppe hinzufügen">
                       <Plus className="h-3 w-3 mr-1" />
                       Termin hinzufügen
                     </Button>
@@ -286,17 +289,27 @@ export default function AddEventModal({
             </div>
           </ScrollArea>
 
-          <Button variant="outline" onClick={handleAddGroup} className="w-full">
+          <Button
+            variant="outline"
+            onClick={handleAddGroup}
+            className="w-full"
+            title="Neue Gruppe (z.B. verschiedene Übungsgruppen) hinzufügen">
             <Plus className="h-4 w-4 mr-2" />
             Gruppe hinzufügen
           </Button>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleCancel}>
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            title="Abbrechen und Dialog schließen">
             Abbrechen
           </Button>
-          <Button onClick={handleSubmit} disabled={!name.trim()}>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim()}
+            title="Veranstaltung zum Stundenplan hinzufügen">
             Hinzufügen
           </Button>
         </DialogFooter>

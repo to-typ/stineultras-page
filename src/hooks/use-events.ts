@@ -224,6 +224,371 @@ export function useEvents(
     );
   }, []);
 
+  // Prüft ob zwei Zeitslots überlappen
+  const timesOverlap = useCallback(
+    (
+      day1: string,
+      start1: string,
+      end1: string,
+      day2: string,
+      start2: string,
+      end2: string,
+    ) => {
+      if (day1 !== day2) return false;
+
+      const [h1Start, m1Start] = start1.split(":").map(Number);
+      const [h1End, m1End] = end1.split(":").map(Number);
+      const [h2Start, m2Start] = start2.split(":").map(Number);
+      const [h2End, m2End] = end2.split(":").map(Number);
+
+      const mins1Start = h1Start * 60 + m1Start;
+      const mins1End = h1End * 60 + m1End;
+      const mins2Start = h2Start * 60 + m2Start;
+      const mins2End = h2End * 60 + m2End;
+
+      return mins1Start < mins2End && mins2Start < mins1End;
+    },
+    [],
+  );
+
+  const prioritizeEvent = useCallback(
+    (id: number) => {
+      const targetEvent = events.find((ev) => ev.id === id);
+      if (!targetEvent) return;
+
+      // Toggle: Wenn bereits priorisiert, stelle vorherigen Zustand wieder her
+      if (targetEvent.prioritized) {
+        setEvents((events) =>
+          events.map((ev) => {
+            if (ev.id === id) {
+              return { ...ev, prioritized: false };
+            }
+
+            // Blende alle SubEvents wieder ein, die durch DIESES Event ausgeblendet wurden
+            const restoredSubEvents = ev.events.map((subEv) => {
+              // Prüfe ob dieser SubEvent durch das zu de-priorisierende Event ausgeblendet wurde
+              const wasHiddenByThisEvent =
+                subEv.hiddenByPriority &&
+                subEv.dates.some((date) =>
+                  targetEvent.events.some(
+                    (targetSubEv) =>
+                      targetSubEv.active === Visibility.Visible &&
+                      targetSubEv.dates.some((targetDate) =>
+                        timesOverlap(
+                          date.day,
+                          date.start,
+                          date.end,
+                          targetDate.day,
+                          targetDate.start,
+                          targetDate.end,
+                        ),
+                      ),
+                  ),
+                );
+
+              if (wasHiddenByThisEvent) {
+                // Prüfe ob es noch andere priorisierte Events gibt, die diesen Termin ausblenden
+                const stillHiddenByOthers = events.some(
+                  (otherEv) =>
+                    otherEv.id !== id &&
+                    otherEv.prioritized &&
+                    otherEv.events.some(
+                      (otherSubEv) =>
+                        otherSubEv.active === Visibility.Visible &&
+                        otherSubEv.dates.some((otherDate) =>
+                          subEv.dates.some((date) =>
+                            timesOverlap(
+                              date.day,
+                              date.start,
+                              date.end,
+                              otherDate.day,
+                              otherDate.start,
+                              otherDate.end,
+                            ),
+                          ),
+                        ),
+                    ),
+                );
+
+                if (!stillHiddenByOthers) {
+                  return {
+                    ...subEv,
+                    active: Visibility.Visible,
+                    hiddenByPriority: false,
+                  };
+                }
+              }
+              return subEv;
+            });
+
+            // Update Event visibility
+            const allHidden = restoredSubEvents.every(
+              (se) => se.active === Visibility.Hidden,
+            );
+            const allVisible = restoredSubEvents.every(
+              (se) => se.active === Visibility.Visible,
+            );
+
+            return {
+              ...ev,
+              events: restoredSubEvents,
+              active: allHidden
+                ? Visibility.Hidden
+                : allVisible
+                  ? Visibility.Visible
+                  : Visibility.Partial,
+            };
+          }),
+        );
+        toast.info("Priorisierung aufgehoben");
+        return;
+      }
+
+      // Sammle alle Zeitslots des zu priorisierenden Events
+      const prioritySlots = targetEvent.events
+        .filter((subEv) => subEv.active === Visibility.Visible)
+        .flatMap((subEv) => subEv.dates);
+
+      if (prioritySlots.length === 0) {
+        toast.error("Keine sichtbaren Termine zum Priorisieren");
+        return;
+      }
+
+      // Setze Event als priorisiert und blende überlappende aus
+      setEvents((events) =>
+        events.map((ev) => {
+          if (ev.id === id) {
+            return { ...ev, prioritized: true };
+          }
+
+          // Blende überlappende SubEvents aus (behalte Priorisierung anderer Events)
+          const updatedSubEvents = ev.events.map((subEv) => {
+            // Prüfe ob dieses SubEvent mit einem Priority-Slot überlappt
+            const hasOverlap = subEv.dates.some((date) =>
+              prioritySlots.some((pSlot) =>
+                timesOverlap(
+                  date.day,
+                  date.start,
+                  date.end,
+                  pSlot.day,
+                  pSlot.start,
+                  pSlot.end,
+                ),
+              ),
+            );
+
+            if (hasOverlap && subEv.active === Visibility.Visible) {
+              return {
+                ...subEv,
+                active: Visibility.Hidden,
+                hiddenByPriority: true,
+              };
+            }
+            return subEv;
+          });
+
+          // Update Event visibility basierend auf SubEvents
+          const allHidden = updatedSubEvents.every(
+            (se) => se.active === Visibility.Hidden,
+          );
+          const allVisible = updatedSubEvents.every(
+            (se) => se.active === Visibility.Visible,
+          );
+
+          return {
+            ...ev,
+            events: updatedSubEvents,
+            active: allHidden
+              ? Visibility.Hidden
+              : allVisible
+                ? Visibility.Visible
+                : Visibility.Partial,
+          };
+        }),
+      );
+      toast.success("Alle überlappenden Termine wurden ausgeblendet");
+    },
+    [events, timesOverlap],
+  );
+
+  const prioritizeSubEvent = useCallback(
+    (eventId: number, subName: string) => {
+      const targetEvent = events.find((ev) => ev.id === eventId);
+      if (!targetEvent) return;
+
+      const targetSubEvent = targetEvent.events.find(
+        (se) => se.name === subName,
+      );
+      if (!targetSubEvent || targetSubEvent.active === Visibility.Hidden)
+        return;
+
+      // Toggle: Wenn bereits priorisiert, stelle vorherigen Zustand wieder her
+      if (targetSubEvent.prioritized) {
+        setEvents((events) =>
+          events.map((ev) => {
+            // Update das Event mit der priorisierten Gruppe
+            if (ev.id === eventId) {
+              return {
+                ...ev,
+                events: ev.events.map((se) =>
+                  se.name === subName ? { ...se, prioritized: false } : se,
+                ),
+              };
+            }
+
+            // Blende alle SubEvents wieder ein, die durch DIESES SubEvent ausgeblendet wurden
+            const restoredSubEvents = ev.events.map((subEv) => {
+              const wasHiddenByThisSubEvent =
+                subEv.hiddenByPriority &&
+                subEv.dates.some((date) =>
+                  targetSubEvent.dates.some((targetDate) =>
+                    timesOverlap(
+                      date.day,
+                      date.start,
+                      date.end,
+                      targetDate.day,
+                      targetDate.start,
+                      targetDate.end,
+                    ),
+                  ),
+                );
+
+              if (wasHiddenByThisSubEvent) {
+                // Prüfe ob es noch andere priorisierte Events/SubEvents gibt
+                const stillHiddenByOthers = events.some(
+                  (otherEv) =>
+                    otherEv.events.some(
+                      (otherSubEv) =>
+                        (otherEv.id !== eventId ||
+                          otherSubEv.name !== subName) &&
+                        otherSubEv.prioritized &&
+                        otherSubEv.active === Visibility.Visible &&
+                        otherSubEv.dates.some((otherDate) =>
+                          subEv.dates.some((date) =>
+                            timesOverlap(
+                              date.day,
+                              date.start,
+                              date.end,
+                              otherDate.day,
+                              otherDate.start,
+                              otherDate.end,
+                            ),
+                          ),
+                        ),
+                    ) ||
+                    (otherEv.prioritized &&
+                      otherEv.id !== eventId &&
+                      otherEv.events.some(
+                        (otherSubEv) =>
+                          otherSubEv.active === Visibility.Visible &&
+                          otherSubEv.dates.some((otherDate) =>
+                            subEv.dates.some((date) =>
+                              timesOverlap(
+                                date.day,
+                                date.start,
+                                date.end,
+                                otherDate.day,
+                                otherDate.start,
+                                otherDate.end,
+                              ),
+                            ),
+                          ),
+                      )),
+                );
+
+                if (!stillHiddenByOthers) {
+                  return {
+                    ...subEv,
+                    active: Visibility.Visible,
+                    hiddenByPriority: false,
+                  };
+                }
+              }
+              return subEv;
+            });
+
+            // Update Event visibility
+            const allHidden = restoredSubEvents.every(
+              (se) => se.active === Visibility.Hidden,
+            );
+            const allVisible = restoredSubEvents.every(
+              (se) => se.active === Visibility.Visible,
+            );
+
+            return {
+              ...ev,
+              events: restoredSubEvents,
+              active: allHidden
+                ? Visibility.Hidden
+                : allVisible
+                  ? Visibility.Visible
+                  : Visibility.Partial,
+            };
+          }),
+        );
+        toast.info("Priorisierung aufgehoben");
+        return;
+      }
+
+      const prioritySlots = targetSubEvent.dates;
+
+      // Setze SubEvent als priorisiert und blende überlappende aus
+      setEvents((events) =>
+        events.map((ev) => {
+          const updatedSubEvents = ev.events.map((subEv) => {
+            // Setze das zu priorisierende SubEvent
+            if (ev.id === eventId && subEv.name === subName) {
+              return { ...subEv, prioritized: true };
+            }
+
+            // Prüfe ob dieses SubEvent mit dem Priority-SubEvent überlappt
+            const hasOverlap = subEv.dates.some((date) =>
+              prioritySlots.some((pSlot) =>
+                timesOverlap(
+                  date.day,
+                  date.start,
+                  date.end,
+                  pSlot.day,
+                  pSlot.start,
+                  pSlot.end,
+                ),
+              ),
+            );
+
+            if (hasOverlap && subEv.active === Visibility.Visible) {
+              return {
+                ...subEv,
+                active: Visibility.Hidden,
+                hiddenByPriority: true,
+              };
+            }
+            return subEv;
+          });
+
+          // Update Event visibility basierend auf SubEvents
+          const allHidden = updatedSubEvents.every(
+            (se) => se.active === Visibility.Hidden,
+          );
+          const allVisible = updatedSubEvents.every(
+            (se) => se.active === Visibility.Visible,
+          );
+
+          return {
+            ...ev,
+            events: updatedSubEvents,
+            active: allHidden
+              ? Visibility.Hidden
+              : allVisible
+                ? Visibility.Visible
+                : Visibility.Partial,
+          };
+        }),
+      );
+      toast.success("Alle überlappenden Termine wurden ausgeblendet");
+    },
+    [events, timesOverlap],
+  );
+
   return {
     events,
     setEvents,
@@ -234,5 +599,7 @@ export function useEvents(
     toggleSubEvent,
     clearAllEvents,
     changeEventColor,
+    prioritizeEvent,
+    prioritizeSubEvent,
   };
 }

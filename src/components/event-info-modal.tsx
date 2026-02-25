@@ -22,7 +22,6 @@ export default function EventInfoModal({
   event,
   onClose,
 }: EventInfoModalProps) {
-
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[85vh]">
@@ -37,11 +36,15 @@ export default function EventInfoModal({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Lehrende:</span>
-            <span className="text-sm">{event?.info?.veranstaltung.lehrende || "-"}</span>
+            <span className="text-sm">
+              {event?.info?.veranstaltung.lehrende || "-"}
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Typ:</span>
-            <span className="text-sm">{event?.info?.veranstaltung.typ || "-"}</span>
+            <span className="text-sm">
+              {event?.info?.veranstaltung.typ || "-"}
+            </span>
           </div>
 
           <Separator />
@@ -54,7 +57,9 @@ export default function EventInfoModal({
                   <CardHeader className="pb-3">
                     {event.events.length > 1 && (
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">{group.uebungsgruppe.name}</span>
+                        <span className="text-sm font-medium">
+                          {group.uebungsgruppe.name}
+                        </span>
                       </div>
                     )}
                     <div className="flex">
@@ -68,14 +73,30 @@ export default function EventInfoModal({
                       <div
                         key={dateIndex}
                         className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
-                        <span className="text-sm font-medium">{date.nummer}</span>
+                        <span className="text-sm font-medium">
+                          {date.nummer}
+                        </span>
                         <span className="text-sm">
-                          {new Date(date.tag).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })}: {new Date(date.startZeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} - {new Date(date.endZeit).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(date.tag).toLocaleDateString("de-DE", {
+                            weekday: "short",
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                          })}
+                          :{" "}
+                          {new Date(date.startZeit).toLocaleTimeString(
+                            "de-DE",
+                            { hour: "2-digit", minute: "2-digit" },
+                          )}{" "}
+                          -{" "}
+                          {new Date(date.endZeit).toLocaleTimeString("de-DE", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </span>
                         <span className="text-sm font-medium">{date.raum}</span>
                       </div>
                     ))}
-                  
                   </CardContent>
                 </Card>
               ))}
@@ -84,7 +105,7 @@ export default function EventInfoModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={onClose} title="Dialog schließen">
             Schließen
           </Button>
         </DialogFooter>

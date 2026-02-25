@@ -13,6 +13,8 @@ interface EventListProps {
   onClearAll: () => void;
   onShowInfo: (id: number) => void;
   onColorChange: (id: number, color: string) => void;
+  onPrioritizeEvent: (id: number) => void;
+  onPrioritizeSubEvent: (eventId: number, subName: string) => void;
 }
 
 export function EventList({
@@ -23,6 +25,8 @@ export function EventList({
   onClearAll,
   onShowInfo,
   onColorChange,
+  onPrioritizeEvent,
+  onPrioritizeSubEvent,
 }: EventListProps) {
   return (
     <Card className="shadow-md flex-1">
@@ -36,7 +40,8 @@ export function EventList({
               variant="ghost"
               size="sm"
               onClick={onClearAll}
-              className="h-8 text-xs text-destructive hover:text-destructive">
+              className="h-8 text-xs text-destructive hover:text-destructive"
+              title="Alle Veranstaltungen löschen">
               <Trash2 className="h-3 w-3 mr-1" />
               Alle löschen
             </Button>
@@ -64,6 +69,10 @@ export function EventList({
                   onToggleSub={(subName) => onToggleSubEvent(ev.id, subName)}
                   onShowInfo={() => onShowInfo(ev.id)}
                   onColorChange={(color) => onColorChange(ev.id, color)}
+                  onPrioritize={() => onPrioritizeEvent(ev.id)}
+                  onPrioritizeSub={(subName) =>
+                    onPrioritizeSubEvent(ev.id, subName)
+                  }
                 />
               ))}
             </div>
