@@ -12,8 +12,9 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2, X } from "lucide-react";
+import { Pipette, Plus, Trash2, X } from "lucide-react";
 import { DAYS } from "@/lib/planner-utils";
+import { ColorPickerComponent } from "./color-picker";
 
 type EventDate = {
   day: string;
@@ -44,6 +45,7 @@ export default function AddEventModal({
   onCancel,
 }: AddEventModalProps) {
   const [name, setName] = useState("");
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [color, setColor] = useState("#d32f2f");
   const [groups, setGroups] = useState<EventGroup[]>([
     {
@@ -172,11 +174,20 @@ export default function AddEventModal({
               className="flex-1"
             />
             <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="w-12 h-10 border rounded cursor-pointer"
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setColorPickerOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded h-8"
+                style={{ backgroundColor: color }}
+              >
+                <Pipette className="h-4 w-4 text-white" />
+              </Button>
+              <ColorPickerComponent
+                open={colorPickerOpen}
+                onClose={() => setColorPickerOpen(false)}
+                defaultColor={color}
+                onColorChange={(e) => setColor(e)}
               />
             </div>
           </div>
