@@ -20,6 +20,7 @@ import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
 import { createShareLink, exportICS, importStundeplan } from "@/lib/import-export";
+import { toast } from "sonner";
 
 type Semester = {
   id: number;
@@ -159,10 +160,12 @@ export default function Planer() {
       changeEventColor,
       params
     );
-  }, []);
+  }, );
 
   const handleShare = () => {
-    return createShareLink(currentStundenplan!);
+    const link = createShareLink(currentStundenplan!);
+    navigator.clipboard.writeText(link);
+    toast.success("Link zum Teilen wurde in die Zwischenablage kopiert!");
   }
 
   const handleExport = () => {
@@ -176,6 +179,7 @@ export default function Planer() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    toast.success("Stundenplan wurde als ICS-Datei heruntergeladen!");
   };
 
   const handleLoadStundenplan = (id: string) => {
