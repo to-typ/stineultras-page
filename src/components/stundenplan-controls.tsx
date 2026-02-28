@@ -165,13 +165,13 @@ export function StundenplanControls({
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Separator orientation="vertical" className="h-6" />
+        <Separator orientation="vertical" className="h-6 -mr-px" />
 
         {/* Stundenplan Auswahl */}
         <Select
           value={currentStundenplanId || ""}
           onValueChange={onLoadStundenplan}>
-          <SelectTrigger className="w-[200px] rounded-[0px] h-9 border-0 border-r-0 shadow-none" title="Stundenplan auswählen">
+          <SelectTrigger className="w-[200px] rounded-[0px] h-9 border-0 shadow-none" title="Stundenplan auswählen">
             <SelectValue placeholder="Stundenplan wählen" />
           </SelectTrigger>
           <SelectContent>
