@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Forward, Pencil } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
 
 type StundenplanControlsProps = {
@@ -39,6 +39,7 @@ type StundenplanControlsProps = {
   onCreateStundenplan: (name: string, semesterId: number) => void;
   onDeleteStundenplan: (id: string) => void;
   onRenameStundenplan: (id: string, newName: string) => void;
+  onShareStundenplan: () => void;
 };
 
 export function StundenplanControls({
@@ -50,6 +51,7 @@ export function StundenplanControls({
   onCreateStundenplan,
   onDeleteStundenplan,
   onRenameStundenplan,
+  onShareStundenplan,
 }: StundenplanControlsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -100,6 +102,10 @@ export function StundenplanControls({
 
   return (
     <div className="flex items-center gap-3">
+      {/* Edit Button for Stundenplan */}
+      <Button variant="outline" size="sm" className="justify-between" title="Stundenplan bearbeiten">
+        <Pencil className="h-4 w-4 mr-2" />
+      </Button>
       {/* Stundenplan Auswahl */}
       <Select
         value={currentStundenplanId || ""}
@@ -273,6 +279,12 @@ export function StundenplanControls({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onShareStundenplan()}>
+            <Forward className="h-4 w-4" />
+          </Button>
         </>
       )}
     </div>

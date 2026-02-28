@@ -64,6 +64,7 @@ export function useEvents(
 
       setEvents([...events, newEvent]);
       toast.success(`${newEventData.name} wurde hinzugefügt`);
+      return newEvent.id;
     },
     [events],
   );
@@ -145,7 +146,7 @@ export function useEvents(
 
       setEvents((prevEvents) => [...prevEvents, newEvent]);
       toast.success(`${ev.veranstaltung.name} wurde hinzugefügt`);
-      return true;
+      return newEvent.id;
     },
     [events],
   );

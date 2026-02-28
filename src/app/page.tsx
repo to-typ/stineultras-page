@@ -146,6 +146,111 @@ export default function Planer() {
     }
   }, [showSearchDialog, clearSearch]);
 
+  // Lade Stundenplan aus URL-Parameter (nur einmalig beim Start)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("data")) return; 
+
+    // Stundenplan erstellen
+    const name = params.get("name");
+    const sem = params.get("sem");
+    createStundenplan(name || "Importierter Stundenplan", sem ? parseInt(sem) : 0);
+
+    // Events hinzufügen
+    const data = params.get("data");
+    if (data) {
+      (async () => {
+        const ownEvents: NewEventData[] = [];  
+        const ownEventVisibility: string[] = [];
+        const searchResults: SearchResult[] = [];
+        const searchResultVisibility: string[] = [];
+        const searchResultColors: string[] = [];
+        
+        for (const evStr of data.split("|")) {
+          if (!evStr) continue;
+          
+          if (evStr.startsWith("*")) {
+            // Eigenes Event
+            const [namePart, visPart, colorPart, subPart, datesPart] = evStr
+              .substring(1)
+              .split("-");
+            
+            ownEvents.push({
+              name: namePart,
+              color: colorPart,
+              groups: subPart.split(";").map((subStr, index) => ({
+                name: `${subStr}`,
+                dates: [(() => {
+                  const d = datesPart.split(";")[index];
+                  const [day, start, end] = d.split(",");
+                  return { day, start, end };
+                })()],
+              })),
+            });
+            ownEventVisibility.push(visPart);
+          } else {
+            // Normales Event
+            const [idPart, visPart, colorPart] = evStr.split("-");
+            const url = "/api/search?id=" + idPart;
+            const response = await fetch(url);
+            const result = await response.json();
+            searchResults.push(result);
+            searchResultVisibility.push(visPart);
+            searchResultColors.push(colorPart);
+          }
+        }
+        
+        // Alle Events auf einmal hinzufügen 
+        ownEvents.forEach((e, index) => {
+          const event = addEvent(e);
+          if(event) {
+            for(let i = 0; i < e.groups.length; i++) {
+              const vis = ownEventVisibility[index][i];
+              if(vis === "0") toggleSubEvent(event, e.groups[i]?.name); 
+            }
+          }
+        });
+        searchResults.forEach((r, index) => {
+          const event = addSearchResult(r);
+          if (index < searchResultColors.length && searchResultColors[index]) {
+            changeEventColor(r.veranstaltung.id, searchResultColors[index]);
+          }
+          if(event && r.uebungsgruppen) {
+            for(let i = 0; i < r.uebungsgruppen.length; i++) {
+              const vis = searchResultVisibility[index][i];
+              if(vis === "0") toggleSubEvent(event, r.uebungsgruppen[i].uebungsgruppe.name); 
+            }
+          }
+        });
+      })();
+    }
+  }, []);
+
+  const handleShare = () => {
+    const url = `www.stineultras.de?`;
+    const name = currentStundenplan?.name;
+    const sem = currentStundenplan?.semesterId;
+    const eventdata = currentStundenplan?.events
+      .map((e) => {
+          if(e.info != null) {
+            return e.id + "-" + e.events.map((sub) => sub.active === Visibility.Visible ? "1" : "0").join("") 
+            + "-" + e.bgcolor;
+          } else {
+            
+            console.log(e.events.map((sub) => sub.dates.map((d) => d.day + "," + d.start + "," + d.end).join(",")).join(";"));
+            return "*" + e.name + "-" + e.events.map((sub) => sub.active === Visibility.Visible ? "1" : "0").join("")
+            + "-" + e.bgcolor + "-" + e.events.map((sub) => sub.name).join(";") + "-"
+            + e.events.map((sub) => sub.dates.map((d) => d.day + "," + d.start + "," + d.end).join(",")).join(";");
+          }
+        }
+      )
+      .join("|");
+      console.log(eventdata || "");
+      console.log(`${url}name=${encodeURIComponent(name || "")}&sem=${sem}&data=${encodeURIComponent(eventdata || "")}`);
+    
+    return `${url}name=${encodeURIComponent(name || "")}&sem=${sem}&data=${encodeURIComponent(eventdata || "")}`;
+  }
+
   const handleLoadStundenplan = (id: string) => {
     loadStundenplan(id);
   };
@@ -235,6 +340,7 @@ export default function Planer() {
               onCreateStundenplan={handleCreateStundenplan}
               onDeleteStundenplan={deleteStundenplan}
               onRenameStundenplan={renameStundenplan}
+              onShareStundenplan={handleShare}
             />
           </div>
         </div>

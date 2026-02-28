@@ -43,52 +43,88 @@ async function searchDB(search: string, semesterId?: number) {
     where: whereClause,
   });
   for (const v of vResults) {
-    // Prüfe zuerst, ob Übungsgruppen existieren
-    const uebungsgruppen = await prisma.uebungsgruppe.findMany({
-      where: {
-        veranstaltungsId: v.id,
-      },
+    const details = await searchJoin(v.id);
+    results.push({
+      veranstaltung: v,
+      termine: details.termine,
+      uebungsgruppen: details.uebungsgruppen,
     });
-
-    if (uebungsgruppen.length > 0) {
-      // Veranstaltung hat Übungsgruppen
-      const uebungsgruppenWithTermine = [];
-      for (const u of uebungsgruppen) {
-        const termine = await prisma.termin.findMany({
-          where: {
-            uebungsId: u.id,
-          },
-        });
-        uebungsgruppenWithTermine.push({
-          uebungsgruppe: u,
-          termine: termine,
-        });
-      }
-      results.push({
-        veranstaltung: v,
-        termine: null,
-        uebungsgruppen: uebungsgruppenWithTermine,
-      });
-    } else {
-      // Keine Übungsgruppen, hole direkte Termine der Veranstaltung
-      const termine = await prisma.termin.findMany({
-        where: {
-          veranstaltungsId: v.id,
-        },
-      });
-      results.push({
-        veranstaltung: v,
-        termine: termine,
-        uebungsgruppen: null,
-      });
-    }
   }
   return results;
 }
 
+async function searchJoin(eventId: number) {
+  // Prüfe zuerst, ob Übungsgruppen existieren
+  const uebungsgruppen = await prisma.uebungsgruppe.findMany({
+    where: {
+      veranstaltungsId: eventId,
+    },
+  });
+
+  if (uebungsgruppen.length > 0) {
+    // Veranstaltung hat Übungsgruppen
+    const uebungsgruppenWithTermine = [];
+    for (const u of uebungsgruppen) {
+      const termine = await prisma.termin.findMany({
+        where: {
+          uebungsId: u.id,
+        },
+      });
+      uebungsgruppenWithTermine.push({
+        uebungsgruppe: u,
+        termine: termine,
+      });
+    }
+    return {
+      termine: null,
+      uebungsgruppen: uebungsgruppenWithTermine,
+    };
+  } else {
+    // Keine Übungsgruppen, hole direkte Termine der Veranstaltung
+    const termine = await prisma.termin.findMany({
+      where: {
+        veranstaltungsId: eventId,
+      },
+    });
+    return {
+      termine: termine,
+      uebungsgruppen: null,
+    };
+  }
+}
+
+
+async function searchID(id: number) {
+  const v = await prisma.veranstaltung.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  if (!v) {
+    return null;
+  }
+  const details = await searchJoin(v.id);
+  return {
+    veranstaltung: v,
+    termine: details.termine,
+    uebungsgruppen: details.uebungsgruppen,
+  };
+}
+
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const search = url.searchParams.get("search") || "";
+  const idParam = url.searchParams.get("id");
+  if (idParam) {
+    const id = parseInt(idParam);
+    const result = await searchID(id);
+    if (result) {
+      return NextResponse.json(result);
+    } else {
+      return NextResponse.json({ error: "Veranstaltung nicht gefunden" }, { status: 404 });
+    }
+  }
   const semesterIdParam = url.searchParams.get("semesterId");
   const semesterId = semesterIdParam
     ? parseInt(semesterIdParam, 10)
