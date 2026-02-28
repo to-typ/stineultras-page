@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Forward, Pencil } from "lucide-react";
+import { Plus, Trash2, Forward, Pencil, Upload } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
 
 type StundenplanControlsProps = {
@@ -40,6 +40,7 @@ type StundenplanControlsProps = {
   onDeleteStundenplan: (id: string) => void;
   onRenameStundenplan: (id: string, newName: string) => void;
   onShareStundenplan: () => void;
+  onExportStundenplan: () => void;
 };
 
 export function StundenplanControls({
@@ -52,6 +53,7 @@ export function StundenplanControls({
   onDeleteStundenplan,
   onRenameStundenplan,
   onShareStundenplan,
+  onExportStundenplan,
 }: StundenplanControlsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -279,11 +281,22 @@ export function StundenplanControls({
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+
+          {/* Teilen Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={() => onShareStundenplan()}>
             <Forward className="h-4 w-4" />
+          </Button>
+
+          {/* Exportieren Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onExportStundenplan()}
+            title="Stundenplan exportieren">
+            <Upload className="h-4 w-4" />
           </Button>
         </>
       )}

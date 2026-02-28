@@ -75,7 +75,7 @@ export function useEvents(
       const exists = events.some((e) => e.id === ev.veranstaltung.id);
       if (exists) {
         toast.error("Diese Veranstaltung ist bereits in deinem Stundenplan");
-        return false;
+        return null;
       }
 
       // Sammle alle Termine
@@ -108,7 +108,7 @@ export function useEvents(
 
       if (allTermine.length === 0) {
         toast.error("Diese Veranstaltung hat keine Termine");
-        return false;
+        return null;
       }
 
       const bgcolor = generateRandomColor();
