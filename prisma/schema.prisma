@@ -26,6 +26,8 @@ model Veranstaltung {
   uebungen   Uebungsgruppe[]
   semesterId Int
   semester   Semester          @relation(fields: [semesterId], references: [id])
+  module     VeranstaltungInModul[]
+  url        String            @default("")
 }
 
 model Termin {
@@ -56,6 +58,23 @@ model Semester {
   veranstaltungen Veranstaltung[]
 }
 
+model Modul {
+  id              Int             @id @default(autoincrement())
+  name            String
+  veranstaltungen VeranstaltungInModul[]
+}
+
+model VeranstaltungInModul {
+  id               Int           @id @default(autoincrement())
+  veranstaltung    Veranstaltung @relation(fields: [veranstaltungsId], references: [id])
+  veranstaltungsId Int           
+  modul            Modul         @relation(fields: [modulId], references: [id])
+  modulId          Int           
+}
+
+//================
+// Admin
+//================
 model Admin {
   id           Int      @id @default(autoincrement())
   username     String   @unique

@@ -61,7 +61,24 @@ export default function Admin() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        semester: "WiSe 25/26",
+        semester: "SoSe 26",
+      }),
+    });
+    const result = await response.json();
+    alert(JSON.stringify(result, null, 2));
+    console.log(JSON.stringify(result, null, 2));
+    const jobIdInput = document.getElementById("jobId") as HTMLInputElement;
+    jobIdInput.value = result.jobId;
+  };
+
+  const crawlModuls = async () => {
+    const response = await fetch("/api/admin/crawl-moduls", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        semester: "SoSe 26",
       }),
     });
     const result = await response.json();
@@ -201,6 +218,12 @@ export default function Admin() {
           value="Daten von STiNE crawlen"
           onClick={crawl}
           className="bg-blue-600 p-4 rounded-lg hover:bg-blue-700 cursor-pointer"
+        />
+        <input
+          type="button"
+          value="Module crawlen"
+          onClick={crawlModuls}
+          className="bg-blue-800 p-4 rounded-lg hover:bg-blue-900 cursor-pointer"
         />
         <input
           type="text"
