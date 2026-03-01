@@ -27,7 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Forward, Pencil, Upload } from "lucide-react";
+import { Plus, Trash2, Pencil, CalendarArrowDown, Upload } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
 import { Separator } from "./ui/separator";
 
@@ -138,8 +138,7 @@ export function StundenplanControls({
             <DialogFooter className="sm:justify-between">
               {/* Löschen */}
               <Button
-                variant="outline"
-                className="hover:bg-red-100 hover:text-red-600 hover:border-red-300"
+                variant="destructive"
                 onClick={() => {
                   if (!currentPlan) return;
                   handleDelete(currentPlan.id);
@@ -293,7 +292,7 @@ export function StundenplanControls({
           className="border-0 rounded-r-[0px] shadow-none"
           onClick={() => onShareStundenplan()}
           title="Stundenplan-Link teilen">
-          <Forward className="h-4 w-4" />
+          <Upload className="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" className="h-6" />
 
@@ -303,7 +302,7 @@ export function StundenplanControls({
           className="border-0 rounded-l-[0px] shadow-none"
           onClick={() => onExportStundenplan()}
           title="Stundenplan exportieren">
-          <Upload className="h-4 w-4" />
+          <CalendarArrowDown className="h-4 w-4" />
         </Button>
       </div>
     </div>
