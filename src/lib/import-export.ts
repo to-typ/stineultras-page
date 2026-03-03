@@ -188,7 +188,10 @@ const toICSLocalDate = (date: Date) => {
 
 // UTC-Timestamp für DTSTAMP (RFC 5545: muss UTC sein)
 const toICSDTSTAMP = (date: Date) =>
-  date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+  date
+    .toISOString()
+    .replace(/[-:]/g, "")
+    .replace(/\.\d{3}Z$/, "Z");
 
 const VTIMEZONE_BERLIN = [
   "BEGIN:VTIMEZONE",
@@ -210,82 +213,80 @@ const VTIMEZONE_BERLIN = [
   "END:VTIMEZONE",
 ].join("\r\n");
 
-const makeVEvent = (lines: string[]) =>
-  lines.filter(Boolean).join("\r\n");
+const makeVEvent = (lines: string[]) => lines.filter(Boolean).join("\r\n");
 
 export function exportICS(events: Event[], semester: string) {
   const dtstamp = toICSDTSTAMP(new Date());
 
-  const icsEvents = events
-    .flatMap((e) => {
-      if (e.info) {
-        // Normale Events
-        const allTermine = [
-          ...(e.info.termine || []),
-          ...(e.info.uebungsgruppen?.flatMap((ug) => ug.termine || []) || []),
-        ];
+  const icsEvents = events.flatMap((e) => {
+    if (e.info) {
+      // Normale Events
+      const allTermine = [
+        ...(e.info.termine || []),
+        ...(e.info.uebungsgruppen?.flatMap((ug) => ug.termine || []) || []),
+      ];
 
-        return allTermine.map((termin, index) => {
+      return allTermine.map((termin, index) => {
+        const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
+        return makeVEvent([
+          "BEGIN:VEVENT",
+          `UID:${uid}`,
+          `SUMMARY:${e.name}`,
+          `DTSTART;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.startZeit))}`,
+          `DTEND;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.endZeit))}`,
+          `DTSTAMP:${dtstamp}`,
+          termin.raum ? `LOCATION:${termin.raum}` : "",
+          "END:VEVENT",
+        ]);
+      });
+    } else {
+      // Eigene Events
+      const semStartBase = semesterZeit.get(semester)?.[0] || new Date();
+      const semesterEnd =
+        semesterZeit.get(semester)?.[1] ||
+        new Date(semStartBase.getTime() + 1000 * 60 * 60 * 24 * 7 * 16);
+
+      return e.events.flatMap((sub) =>
+        sub.dates.flatMap((d, index) => {
           const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
-          return makeVEvent([
-            "BEGIN:VEVENT",
-            `UID:${uid}`,
-            `SUMMARY:${e.name}`,
-            `DTSTART;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.startZeit))}`,
-            `DTEND;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.endZeit))}`,
-            `DTSTAMP:${dtstamp}`,
-            termin.raum ? `LOCATION:${termin.raum}` : "",
-            "END:VEVENT",
-          ]);
-        });
-      } else {
-        // Eigene Events
-        const semStartBase = semesterZeit.get(semester)?.[0] || new Date();
-        const semesterEnd =
-          semesterZeit.get(semester)?.[1] ||
-          new Date(semStartBase.getTime() + 1000 * 60 * 60 * 24 * 7 * 16);
+          const [startHour, startMinute] = d.start.split(":").map(Number);
+          const [endHour, endMinute] = d.end.split(":").map(Number);
+          const dayOffset = DAYS.indexOf(d.day);
 
-        return e.events.flatMap((sub) =>
-          sub.dates.flatMap((d, index) => {
-            const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
-            const [startHour, startMinute] = d.start.split(":").map(Number);
-            const [endHour, endMinute] = d.end.split(":").map(Number);
-            const dayOffset = DAYS.indexOf(d.day);
+          const result = [];
+          // Kopie damit semStartBase nicht mutiert wird
+          for (
+            let date = new Date(semStartBase);
+            date <= semesterEnd;
+            date = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000)
+          ) {
+            const startTime = new Date(date);
+            startTime.setDate(startTime.getDate() + dayOffset);
+            startTime.setHours(startHour, startMinute, 0, 0);
 
-            const result = [];
-            // Kopie damit semStartBase nicht mutiert wird
-            for (
-              let date = new Date(semStartBase);
-              date <= semesterEnd;
-              date = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000)
-            ) {
-              const startTime = new Date(date);
-              startTime.setDate(startTime.getDate() + dayOffset);
-              startTime.setHours(startHour, startMinute, 0, 0);
+            const endTime = new Date(date);
+            endTime.setDate(endTime.getDate() + dayOffset);
+            endTime.setHours(endHour, endMinute, 0, 0);
 
-              const endTime = new Date(date);
-              endTime.setDate(endTime.getDate() + dayOffset);
-              endTime.setHours(endHour, endMinute, 0, 0);
+            result.push(
+              makeVEvent([
+                "BEGIN:VEVENT",
+                `UID:${uid}-${startTime.getTime()}`,
+                `SUMMARY:${e.name} - ${sub.name}`,
+                `DTSTART;TZID=Europe/Berlin:${toICSLocalDate(startTime)}`,
+                `DTEND;TZID=Europe/Berlin:${toICSLocalDate(endTime)}`,
+                `DTSTAMP:${dtstamp}`,
+                d.room ? `LOCATION:${d.room}` : "",
+                "END:VEVENT",
+              ]),
+            );
+          }
 
-              result.push(
-                makeVEvent([
-                  "BEGIN:VEVENT",
-                  `UID:${uid}-${startTime.getTime()}`,
-                  `SUMMARY:${e.name} - ${sub.name}`,
-                  `DTSTART;TZID=Europe/Berlin:${toICSLocalDate(startTime)}`,
-                  `DTEND;TZID=Europe/Berlin:${toICSLocalDate(endTime)}`,
-                  `DTSTAMP:${dtstamp}`,
-                  d.room ? `LOCATION:${d.room}` : "",
-                  "END:VEVENT",
-                ]),
-              );
-            }
-
-            return result;
-          }),
-        );
-      }
-    });
+          return result;
+        }),
+      );
+    }
+  });
 
   return [
     "BEGIN:VCALENDAR",
