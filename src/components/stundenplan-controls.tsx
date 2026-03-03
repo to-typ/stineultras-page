@@ -66,6 +66,7 @@ export function StundenplanControls({
   );
   const [renamePlanId, setRenamePlanId] = useState<string | null>(null);
   const [renamePlanName, setRenamePlanName] = useState("");
+  const [deleteOpenedFromRename, setDeleteOpenedFromRename] = useState(false);
 
   const handleCreate = () => {
     const semesterId = newPlanSemesterId || currentSemesterId;
@@ -86,7 +87,11 @@ export function StundenplanControls({
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: string, fromRename = false) => {
+    if (fromRename) {
+      setDeleteOpenedFromRename(true);
+      setShowRenameDialog(false);
+    }
     setDeleteId(id);
     setShowDeleteDialog(true);
   };
@@ -95,8 +100,19 @@ export function StundenplanControls({
     if (deleteId) {
       onDeleteStundenplan(deleteId);
       setDeleteId(null);
+      setDeleteOpenedFromRename(false);
       setShowDeleteDialog(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteDialog(false);
+    if (deleteOpenedFromRename && currentPlan) {
+      setRenamePlanId(currentPlan.id);
+      setRenamePlanName(currentPlan.name);
+      setShowRenameDialog(true);
+    }
+    setDeleteOpenedFromRename(false);
   };
 
   const currentPlan = stundenplaene.find(
@@ -108,7 +124,8 @@ export function StundenplanControls({
       <div className="flex items-center gap-0 rounded-md border border-neutral-200 bg-white shadow-sm">
         <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
           <DialogTrigger asChild>
-            <Button variant="outline" 
+            <Button
+              variant="outline"
               className="rounded-r-[0px] border-0 shadow-none"
               onClick={() => {
                 if (!currentPlan) return;
@@ -125,7 +142,9 @@ export function StundenplanControls({
               <DialogTitle>Stundenplan bearbeiten</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <label className="text-sm font-medium mb-2 block">Neuer Name</label>
+              <label className="text-sm font-medium mb-2 block">
+                Neuer Name
+              </label>
               <Input
                 placeholder="Neuer Name"
                 value={renamePlanName}
@@ -141,7 +160,7 @@ export function StundenplanControls({
                 variant="destructive"
                 onClick={() => {
                   if (!currentPlan) return;
-                  handleDelete(currentPlan.id);
+                  handleDelete(currentPlan.id, true);
                 }}
                 title="Aktuellen Stundenplan löschen">
                 <Trash2 className="h-4 w-4" />
@@ -170,7 +189,9 @@ export function StundenplanControls({
         <Select
           value={currentStundenplanId || ""}
           onValueChange={onLoadStundenplan}>
-          <SelectTrigger className="w-[200px] rounded-[0px] h-9 border-0 shadow-none" title="Stundenplan auswählen">
+          <SelectTrigger
+            className="w-[200px] rounded-[0px] h-9 border-0 shadow-none"
+            title="Stundenplan auswählen">
             <SelectValue placeholder="Stundenplan wählen" />
           </SelectTrigger>
           <SelectContent>
@@ -213,7 +234,9 @@ export function StundenplanControls({
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">Semester</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Semester
+                </label>
                 <Select
                   value={
                     newPlanSemesterId?.toString() ||
@@ -248,7 +271,8 @@ export function StundenplanControls({
               <Button
                 onClick={handleCreate}
                 disabled={
-                  !newPlanName.trim() || !(newPlanSemesterId || currentSemesterId)
+                  !newPlanName.trim() ||
+                  !(newPlanSemesterId || currentSemesterId)
                 }
                 title="Neuen Stundenplan erstellen">
                 Erstellen
@@ -259,19 +283,17 @@ export function StundenplanControls({
       </div>
 
       {/* Löschen Bestätigung */}
-      <AlertDialog
-        open={showDeleteDialog}
-        onOpenChange={setShowDeleteDialog}>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Stundenplan löschen</AlertDialogTitle>
             <AlertDialogDescription>
-              Möchtest du diesen Stundenplan wirklich löschen? Diese Aktion
-              kann nicht rückgängig gemacht werden.
+              Möchtest du diesen Stundenplan wirklich löschen? Diese Aktion kann
+              nicht rückgängig gemacht werden.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel title="Löschen abbrechen">
+            <AlertDialogCancel onClick={cancelDelete} title="Löschen abbrechen">
               Abbrechen
             </AlertDialogCancel>
             <AlertDialogAction

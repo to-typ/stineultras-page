@@ -19,6 +19,7 @@ export function useStundenplan() {
   >(null);
   const [currentStundenplan, setCurrentStundenplan] =
     useState<Stundenplan | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Lade Stundenpläne aus LocalStorage
   useEffect(() => {
@@ -45,6 +46,7 @@ export function useStundenplan() {
         console.error("Fehler beim Laden der Stundenpläne:", error);
       }
     }
+    setIsInitialized(true);
   }, []);
 
   // Speichere Stundenpläne in LocalStorage
@@ -56,9 +58,16 @@ export function useStundenplan() {
   // Erstelle neuen Stundenplan
   const createStundenplan = useCallback(
     (name: string, semesterId: number) => {
+      // Eindeutigen Namen sicherstellen (Duplikat-Handling)
+      let uniqueName = name;
+      let counter = 2;
+      while (stundenplaene.some((sp) => sp.name === uniqueName)) {
+        uniqueName = `${name} (${counter++})`;
+      }
+
       const newPlan: Stundenplan = {
         id: crypto.randomUUID(),
-        name,
+        name: uniqueName,
         semesterId,
         events: [],
         createdAt: new Date().toISOString(),
@@ -120,9 +129,16 @@ export function useStundenplan() {
       saveToStorage(filtered);
 
       if (currentStundenplanId === id) {
-        setCurrentStundenplanId(null);
-        setCurrentStundenplan(null);
-        localStorage.removeItem("stineultras-active-stundenplan");
+        const next = filtered[0] ?? null;
+        if (next) {
+          setCurrentStundenplanId(next.id);
+          setCurrentStundenplan(next);
+          localStorage.setItem("stineultras-active-stundenplan", next.id);
+        } else {
+          setCurrentStundenplanId(null);
+          setCurrentStundenplan(null);
+          localStorage.removeItem("stineultras-active-stundenplan");
+        }
       }
     },
     [stundenplaene, currentStundenplanId, saveToStorage],
@@ -149,6 +165,7 @@ export function useStundenplan() {
     stundenplaene,
     currentStundenplan,
     currentStundenplanId,
+    isInitialized,
     createStundenplan,
     loadStundenplan,
     saveCurrentStundenplan,

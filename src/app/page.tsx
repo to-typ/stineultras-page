@@ -19,7 +19,11 @@ import { NewEventData } from "@/components/add-event-modal";
 import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
-import { createShareLink, exportICS, importStundeplan } from "@/lib/import-export";
+import {
+  createShareLink,
+  exportICS,
+  importStundeplan,
+} from "@/lib/import-export";
 import { toast } from "sonner";
 
 type Semester = {
@@ -43,6 +47,7 @@ export default function Planer() {
     stundenplaene,
     currentStundenplan,
     currentStundenplanId,
+    isInitialized,
     createStundenplan,
     loadStundenplan,
     saveCurrentStundenplan,
@@ -148,29 +153,39 @@ export default function Planer() {
     }
   }, [showSearchDialog, clearSearch]);
 
-  // Lade Stundenplan aus URL-Parameter (nur einmalig beim Start)
+  // Lade Stundenplan aus URL-Parameter (einmalig, sobald LocalStorage initialisiert ist)
   useEffect(() => {
+    if (!isInitialized) return;
     const params = new URLSearchParams(window.location.search);
-    if (!params.has("data")) return; 
+    if (!params.has("import")) return;
     importStundeplan(
       createStundenplan,
       addEvent,
       addSearchResult,
       toggleSubEvent,
       changeEventColor,
-      params
+      params,
     );
-  }, );
+    // URL bereinigen damit kein erneuter Import ausgelöst wird
+    window.history.replaceState({}, "", window.location.pathname);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized]);
 
   const handleShare = () => {
     const link = createShareLink(currentStundenplan!);
     navigator.clipboard.writeText(link);
     toast.success("Link zum Teilen wurde in die Zwischenablage kopiert!");
-  }
+  };
 
   const handleExport = () => {
-    const icsContent = exportICS(events, semesters.find(s => s.id === currentStundenplan?.semesterId)?.name || "");
-    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
+    const icsContent = exportICS(
+      events,
+      semesters.find((s) => s.id === currentStundenplan?.semesterId)?.name ||
+        "",
+    );
+    const blob = new Blob([icsContent], {
+      type: "text/calendar;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
