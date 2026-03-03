@@ -67,6 +67,8 @@ export default function Planer() {
     setEvents,
     prioritizeEvent,
     prioritizeSubEvent,
+    changeEventIcsName,
+    changeSubEventIcsName,
   } = useEvents([]);
 
   const { search, setSearch, searchedEvents, isSearching, clearSearch } =
@@ -163,6 +165,7 @@ export default function Planer() {
       addEvent,
       addSearchResult,
       toggleSubEvent,
+      toggleEvent,
       changeEventColor,
       params,
     );
@@ -355,8 +358,17 @@ export default function Planer() {
       {/* Modal für Event-Details */}
       <EventInfoModal
         open={showEventDetailsModal}
-        event={selectedEvent}
+        event={
+          events.find((ev) => ev.id === selectedEvent?.id) ?? selectedEvent
+        }
         onClose={() => setShowEventDetailsModal(false)}
+        onChangeEventIcsName={(name) =>
+          selectedEvent && changeEventIcsName(selectedEvent.id, name)
+        }
+        onChangeSubIcsName={(subName, name) =>
+          selectedEvent &&
+          changeSubEventIcsName(selectedEvent.id, subName, name)
+        }
       />
 
       {/* Dialog für Veranstaltungssuche */}

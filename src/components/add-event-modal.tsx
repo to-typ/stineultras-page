@@ -12,9 +12,23 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Pipette, Plus, Trash2, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { DAYS } from "@/lib/planner-utils";
-import { ColorPickerComponent } from "./color-picker";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  ColorPicker,
+  ColorPickerArea,
+  ColorPickerContent,
+  ColorPickerHueSlider,
+  ColorPickerTrigger,
+} from "@/components/ui/color-picker";
+import { COLORS } from "@/lib/planner-utils";
 
 type EventDate = {
   day: string;
@@ -45,7 +59,6 @@ export default function AddEventModal({
   onCancel,
 }: AddEventModalProps) {
   const [name, setName] = useState("");
-  const [colorPickerOpen, setColorPickerOpen] = useState(false);
   const [color, setColor] = useState("#d32f2f");
   const [groups, setGroups] = useState<EventGroup[]>([
     {
@@ -141,7 +154,6 @@ export default function AddEventModal({
 
   const handleCancel = () => {
     onCancel();
-    // Reset
     setName("");
     setColor("#d32f2f");
     setGroups([
@@ -165,7 +177,7 @@ export default function AddEventModal({
 
         <div className="space-y-4">
           {/* Name und Farbe */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 items-center">
             <Input
               type="text"
               value={name}
@@ -173,29 +185,41 @@ export default function AddEventModal({
               placeholder="Event-Name"
               className="flex-1"
             />
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setColorPickerOpen(true)}
-                className="flex-1 flex items-center justify-center gap-2 border border-gray-300 rounded h-8"
-                style={{ backgroundColor: color }}
-              >
-                <Pipette className="h-4 w-4 text-white" />
-              </Button>
-              <ColorPickerComponent
-                open={colorPickerOpen}
-                onClose={() => setColorPickerOpen(false)}
-                defaultColor={color}
-                onColorChange={(e) => setColor(e)}
-              />
-            </div>
+            <ColorPicker
+              defaultFormat="hex"
+              value={color}
+              onValueChange={(v) => setColor(v)}>
+              <ColorPickerTrigger asChild>
+                <button
+                  type="button"
+                  className="h-9 w-9 flex-shrink-0 rounded-md border-2 border-border shadow-sm hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  style={{ backgroundColor: color }}
+                  title="Farbe auswählen"
+                />
+              </ColorPickerTrigger>
+              <ColorPickerContent style={{ zIndex: 9999 }}>
+                <ColorPickerArea />
+                <ColorPickerHueSlider />
+                <div className="grid grid-cols-8 gap-1.5 pt-1">
+                  {COLORS.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      className="size-7 rounded border-2 border-transparent hover:border-border focus:border-ring focus:outline-none"
+                      style={{ backgroundColor: c }}
+                      onClick={() => setColor(c)}
+                      aria-label={`Farbe ${c}`}
+                    />
+                  ))}
+                </div>
+              </ColorPickerContent>
+            </ColorPicker>
           </div>
 
           <Separator />
 
           {/* Gruppen */}
-          <ScrollArea className="h-[400px] pr-4">
+          <ScrollArea className="h-[380px] pr-4">
             <div className="space-y-4">
               {groups.map((group, groupIndex) => (
                 <Card key={groupIndex}>
@@ -226,25 +250,24 @@ export default function AddEventModal({
                     {group.dates.map((date, dateIndex) => (
                       <div
                         key={dateIndex}
-                        className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
-                        <select
+                        className="flex items-center gap-2 w-full">
+                        <Select
                           value={date.day}
-                          onChange={(e) =>
-                            handleDateChange(
-                              groupIndex,
-                              dateIndex,
-                              "day",
-                              e.target.value,
-                            )
-                          }
-                          className="border rounded px-2 py-1 text-xs flex-shrink-0">
-                          {DAYS.map((d) => (
-                            <option key={d} value={d}>
-                              {d}
-                            </option>
-                          ))}
-                        </select>
-                        <input
+                          onValueChange={(v) =>
+                            handleDateChange(groupIndex, dateIndex, "day", v)
+                          }>
+                          <SelectTrigger className="w-[72px] h-8 text-xs flex-shrink-0">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DAYS.map((d) => (
+                              <SelectItem key={d} value={d} className="text-xs">
+                                {d}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
                           type="time"
                           value={date.start}
                           onChange={(e) =>
@@ -255,10 +278,12 @@ export default function AddEventModal({
                               e.target.value,
                             )
                           }
-                          className="flex-1 border rounded px-2 py-1 text-xs"
+                          className="flex-1 min-w-0 h-8 text-xs"
                         />
-                        <span className="text-xs text-muted-foreground">-</span>
-                        <input
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
+                          –
+                        </span>
+                        <Input
                           type="time"
                           value={date.end}
                           onChange={(e) =>
@@ -269,19 +294,21 @@ export default function AddEventModal({
                               e.target.value,
                             )
                           }
-                          className="flex-1 border rounded px-2 py-1 text-xs"
+                          className="flex-1 min-w-0 h-8 text-xs"
                         />
-                        {group.dates.length > 1 && (
+                        {group.dates.length > 1 ? (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() =>
                               handleRemoveDate(groupIndex, dateIndex)
                             }
-                            className="h-6 w-6 p-0 hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
+                            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive flex-shrink-0"
                             title="Termin entfernen">
-                            <X className="h-3 w-3" />
+                            <X className="h-3.5 w-3.5" />
                           </Button>
+                        ) : (
+                          <div className="h-8 w-8 flex-shrink-0" />
                         )}
                       </div>
                     ))}

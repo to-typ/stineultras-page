@@ -20,6 +20,7 @@ export function importStundeplan(
   addEvent: (eventData: NewEventData) => number | undefined,
   addSearchResult: (result: SearchResult) => number | null,
   toggleSubEvent: (eventId: number, subEventName: string) => void,
+  toggleEvent: (eventId: number) => void,
   changeEventColor: (eventId: number, color: string) => void,
   params: URLSearchParams,
 ) {
@@ -60,6 +61,7 @@ export function importStundeplan(
           const [namePart, visPart, colorPart, subPart, datesPart] = evStr
             .substring(1)
             .split("-");
+          // visPart[0] = Event-Visibility, visPart[1..] = SubEvent-Visibilities
 
           ownEvents.push({
             name: namePart,
@@ -78,6 +80,7 @@ export function importStundeplan(
           ownEventVisibility.push(visPart);
         } else {
           // Normales Event
+          // visPart[0] = Event-Visibility, visPart[1..] = SubEvent-Visibilities
           const [idPart, visPart, colorPart] = evStr.split("-");
           const url = "/api/search?id=" + idPart;
           const response = await fetch(url);
@@ -92,8 +95,10 @@ export function importStundeplan(
       ownEvents.forEach((e, index) => {
         const event = addEvent(e);
         if (event) {
+          // Index 0 = Event-Visibility, danach SubEvent-Visibilities
+          if (ownEventVisibility[index][0] === "0") toggleEvent(event);
           for (let i = 0; i < e.groups.length; i++) {
-            const vis = ownEventVisibility[index][i];
+            const vis = ownEventVisibility[index][i + 1];
             if (vis === "0") toggleSubEvent(event, e.groups[i]?.name);
           }
         }
@@ -103,11 +108,15 @@ export function importStundeplan(
         if (index < searchResultColors.length && searchResultColors[index]) {
           changeEventColor(r.veranstaltung.id, searchResultColors[index]);
         }
-        if (event && r.uebungsgruppen) {
-          for (let i = 0; i < r.uebungsgruppen.length; i++) {
-            const vis = searchResultVisibility[index][i];
-            if (vis === "0")
-              toggleSubEvent(event, r.uebungsgruppen[i].uebungsgruppe.name);
+        if (event) {
+          // Index 0 = Event-Visibility, danach SubEvent-Visibilities
+          if (searchResultVisibility[index]?.[0] === "0") toggleEvent(event);
+          if (r.uebungsgruppen) {
+            for (let i = 0; i < r.uebungsgruppen.length; i++) {
+              const vis = searchResultVisibility[index]?.[i + 1];
+              if (vis === "0")
+                toggleSubEvent(event, r.uebungsgruppen[i].uebungsgruppe.name);
+            }
           }
         }
       });
@@ -120,10 +129,12 @@ export function createShareLink(stundenplan: Stundenplan) {
   const sem = stundenplan?.semesterId;
   const eventdata = stundenplan?.events
     .map((e) => {
+      const eventVis = e.active === Visibility.Hidden ? "0" : "1";
       if (e.info != null) {
         return (
           e.id +
           "-" +
+          eventVis +
           e.events
             .map((sub) => (sub.active === Visibility.Visible ? "1" : "0"))
             .join("") +
@@ -135,6 +146,7 @@ export function createShareLink(stundenplan: Stundenplan) {
           "*" +
           e.name +
           "-" +
+          eventVis +
           e.events
             .map((sub) => (sub.active === Visibility.Visible ? "1" : "0"))
             .join("") +
@@ -161,7 +173,7 @@ export function createShareLink(stundenplan: Stundenplan) {
     data: eventdata || "",
   });
   const base64 = btoa(unescape(encodeURIComponent(payload)));
-  return `www.stineultras.de?import=${encodeURIComponent(base64)}`;
+  return `www.stineultras.de/?import=${encodeURIComponent(base64)}`;
 }
 
 // Kombiniert Datum aus `dateObj` und Uhrzeit aus `timeObj` zu ICS-Lokalzeit
@@ -173,16 +185,6 @@ const toICSLocalDateTime = (dateObj: Date, timeObj: Date) => {
   const day = String(d.getDate()).padStart(2, "0");
   const hours = String(t.getHours()).padStart(2, "0");
   const minutes = String(t.getMinutes()).padStart(2, "0");
-  return `${year}${month}${day}T${hours}${minutes}00`;
-};
-
-// Nur Datum + Uhrzeit aus demselben Date-Objekt
-const toICSLocalDate = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
   return `${year}${month}${day}T${hours}${minutes}00`;
 };
 
@@ -213,78 +215,172 @@ const VTIMEZONE_BERLIN = [
   "END:VTIMEZONE",
 ].join("\r\n");
 
+// Hilfsfunktion: Montag der Woche, die `date` enthält
+function getMondayOfWeek(date: Date): Date {
+  const d = new Date(date);
+  const dow = d.getDay(); // 0=So, 1=Mo, ..., 6=Sa
+  const daysToMonday = (dow + 6) % 7;
+  d.setDate(d.getDate() - daysToMonday);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+// Datumsbereich aller sichtbaren externen Termine (für eigene Events)
+function getExternalDateRange(
+  events: Event[],
+): { weekStart: Date; weekEnd: Date } | null {
+  const timestamps: number[] = [];
+  for (const e of events) {
+    if (!e.info || e.active === Visibility.Hidden) continue;
+    for (const t of e.info.termine || []) {
+      timestamps.push(new Date(t.tag).getTime());
+    }
+    for (const ug of e.info.uebungsgruppen || []) {
+      const sub = e.events.find((s) => s.name === ug.uebungsgruppe.name);
+      if (sub && sub.active === Visibility.Hidden) continue;
+      for (const t of ug.termine || []) {
+        timestamps.push(new Date(t.tag).getTime());
+      }
+    }
+  }
+  if (timestamps.length === 0) return null;
+
+  const weekStart = getMondayOfWeek(new Date(Math.min(...timestamps)));
+  const weekEnd = getMondayOfWeek(new Date(Math.max(...timestamps)));
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  return { weekStart, weekEnd };
+}
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const formatDatePart = (d: Date) =>
+  `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
+
 const makeVEvent = (lines: string[]) => lines.filter(Boolean).join("\r\n");
 
 export function exportICS(events: Event[], semester: string) {
   const dtstamp = toICSDTSTAMP(new Date());
 
-  const icsEvents = events.flatMap((e) => {
-    if (e.info) {
-      // Normale Events
-      const allTermine = [
-        ...(e.info.termine || []),
-        ...(e.info.uebungsgruppen?.flatMap((ug) => ug.termine || []) || []),
-      ];
-
-      return allTermine.map((termin, index) => {
-        const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
-        return makeVEvent([
-          "BEGIN:VEVENT",
-          `UID:${uid}`,
-          `SUMMARY:${e.name}`,
-          `DTSTART;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.startZeit))}`,
-          `DTEND;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.endZeit))}`,
-          `DTSTAMP:${dtstamp}`,
-          termin.raum ? `LOCATION:${termin.raum}` : "",
-          "END:VEVENT",
-        ]);
-      });
-    } else {
-      // Eigene Events
-      const semStartBase = semesterZeit.get(semester)?.[0] || new Date();
-      const semesterEnd =
+  // Datumsbereich für eigene Events aus externen Terminen ableiten
+  const externalRange = getExternalDateRange(events);
+  const { weekStart, weekEnd } =
+    externalRange ??
+    (() => {
+      const semBase = semesterZeit.get(semester)?.[0] || new Date();
+      const ws = getMondayOfWeek(semBase);
+      const semEnd =
         semesterZeit.get(semester)?.[1] ||
-        new Date(semStartBase.getTime() + 1000 * 60 * 60 * 24 * 7 * 16);
+        new Date(semBase.getTime() + 1000 * 60 * 60 * 24 * 7 * 16);
+      const we = getMondayOfWeek(semEnd);
+      we.setDate(we.getDate() + 6);
+      we.setHours(23, 59, 59, 999);
+      return { weekStart: ws, weekEnd: we };
+    })();
 
-      return e.events.flatMap((sub) =>
-        sub.dates.flatMap((d, index) => {
-          const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
-          const [startHour, startMinute] = d.start.split(":").map(Number);
-          const [endHour, endMinute] = d.end.split(":").map(Number);
-          const dayOffset = DAYS.indexOf(d.day);
+  const icsEvents = events.flatMap((e) => {
+    // Komplett ausgeblendete Events überspringen
+    if (e.active === Visibility.Hidden) return [];
 
-          const result = [];
-          // Kopie damit semStartBase nicht mutiert wird
-          for (
-            let date = new Date(semStartBase);
-            date <= semesterEnd;
-            date = new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000)
-          ) {
-            const startTime = new Date(date);
-            startTime.setDate(startTime.getDate() + dayOffset);
-            startTime.setHours(startHour, startMinute, 0, 0);
+    if (e.info) {
+      // Normale Events – nur sichtbare SubEvents exportieren
+      const result: string[] = [];
 
-            const endTime = new Date(date);
-            endTime.setDate(endTime.getDate() + dayOffset);
-            endTime.setHours(endHour, endMinute, 0, 0);
-
+      // Haupttermine (wenn vorhanden und SubEvent sichtbar)
+      if (e.info.termine && e.info.termine.length > 0) {
+        const mainSub = e.events.find(
+          (sub) => sub.name === e.info!.veranstaltung.name,
+        );
+        if (!mainSub || mainSub.active !== Visibility.Hidden) {
+          const summary = e.icsName || e.name;
+          e.info.termine.forEach((termin, index) => {
+            const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
             result.push(
               makeVEvent([
                 "BEGIN:VEVENT",
-                `UID:${uid}-${startTime.getTime()}`,
-                `SUMMARY:${e.name} - ${sub.name}`,
-                `DTSTART;TZID=Europe/Berlin:${toICSLocalDate(startTime)}`,
-                `DTEND;TZID=Europe/Berlin:${toICSLocalDate(endTime)}`,
+                `UID:${uid}`,
+                `SUMMARY:${summary}`,
+                `DTSTART;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.startZeit))}`,
+                `DTEND;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.endZeit))}`,
                 `DTSTAMP:${dtstamp}`,
-                d.room ? `LOCATION:${d.room}` : "",
+                termin.raum ? `LOCATION:${termin.raum}` : "",
                 "END:VEVENT",
               ]),
             );
-          }
+          });
+        }
+      }
 
-          return result;
-        }),
-      );
+      // Übungsgruppen – SubEvent-Namen als SUMMARY, nur sichtbare
+      if (e.info.uebungsgruppen) {
+        for (const ug of e.info.uebungsgruppen) {
+          const sub = e.events.find((s) => s.name === ug.uebungsgruppe.name);
+          if (sub && sub.active === Visibility.Hidden) continue;
+
+          const summary = sub?.icsName || ug.uebungsgruppe.name;
+          (ug.termine || []).forEach((termin, index) => {
+            const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
+            result.push(
+              makeVEvent([
+                "BEGIN:VEVENT",
+                `UID:${uid}`,
+                `SUMMARY:${summary}`,
+                `DTSTART;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.startZeit))}`,
+                `DTEND;TZID=Europe/Berlin:${toICSLocalDateTime(new Date(termin.tag), new Date(termin.endZeit))}`,
+                `DTSTAMP:${dtstamp}`,
+                termin.raum ? `LOCATION:${termin.raum}` : "",
+                "END:VEVENT",
+              ]),
+            );
+          });
+        }
+      }
+
+      return result;
+    } else {
+      // Eigene Events – wöchentlich in korrektem Datumsbereich, weekStart ist immer Montag
+      const hasMultipleSubs = e.events.length > 1;
+
+      return e.events
+        .filter((sub) => sub.active !== Visibility.Hidden)
+        .flatMap((sub) =>
+          sub.dates.flatMap((d, index) => {
+            const uid = `${Date.now()}-${Math.random().toString(36).slice(2)}-${index}@stine-ultras`;
+            const [startHour, startMinute] = d.start.split(":").map(Number);
+            const [endHour, endMinute] = d.end.split(":").map(Number);
+            // Mo=0, Di=1, Mi=2, Do=3, Fr=4
+            const dayOffset = DAYS.indexOf(d.day);
+            const summary = hasMultipleSubs
+              ? sub.icsName || sub.name
+              : e.icsName || e.name;
+
+            const result: string[] = [];
+            for (
+              let weekMs = weekStart.getTime();
+              weekMs <= weekEnd.getTime();
+              weekMs += 7 * 24 * 60 * 60 * 1000
+            ) {
+              const targetDay = new Date(weekMs);
+              targetDay.setDate(targetDay.getDate() + dayOffset);
+              const dtDate = formatDatePart(targetDay);
+              const dtstart = `${dtDate}T${pad2(startHour)}${pad2(startMinute)}00`;
+              const dtend = `${dtDate}T${pad2(endHour)}${pad2(endMinute)}00`;
+
+              result.push(
+                makeVEvent([
+                  "BEGIN:VEVENT",
+                  `UID:${uid}-${dtDate}`,
+                  `SUMMARY:${summary}`,
+                  `DTSTART;TZID=Europe/Berlin:${dtstart}`,
+                  `DTEND;TZID=Europe/Berlin:${dtend}`,
+                  `DTSTAMP:${dtstamp}`,
+                  d.room ? `LOCATION:${d.room}` : "",
+                  "END:VEVENT",
+                ]),
+              );
+            }
+            return result;
+          }),
+        );
     }
   });
 

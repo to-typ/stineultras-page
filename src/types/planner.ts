@@ -20,6 +20,7 @@ export type SubEvent = {
   dates: EventDate[];
   prioritized?: boolean;
   hiddenByPriority?: boolean;
+  icsName?: string;
 };
 
 export type Event = {
@@ -32,6 +33,7 @@ export type Event = {
   info: SearchResult | null;
   events: SubEvent[];
   prioritized?: boolean;
+  icsName?: string;
 };
 
 export type SearchResult = {

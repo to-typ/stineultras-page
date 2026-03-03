@@ -590,6 +590,30 @@ export function useEvents(
     [events, timesOverlap],
   );
 
+  const changeEventIcsName = useCallback((id: number, icsName: string) => {
+    setEvents((events) =>
+      events.map((ev) => (ev.id === id ? { ...ev, icsName } : ev)),
+    );
+  }, []);
+
+  const changeSubEventIcsName = useCallback(
+    (eventId: number, subName: string, icsName: string) => {
+      setEvents((events) =>
+        events.map((ev) =>
+          ev.id === eventId
+            ? {
+                ...ev,
+                events: ev.events.map((sub) =>
+                  sub.name === subName ? { ...sub, icsName } : sub,
+                ),
+              }
+            : ev,
+        ),
+      );
+    },
+    [],
+  );
+
   return {
     events,
     setEvents,
@@ -602,5 +626,7 @@ export function useEvents(
     changeEventColor,
     prioritizeEvent,
     prioritizeSubEvent,
+    changeEventIcsName,
+    changeSubEventIcsName,
   };
 }
