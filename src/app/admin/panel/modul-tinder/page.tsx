@@ -152,13 +152,21 @@ export default function Admin() {
 
         {!searchResults.length && (
           <>
-            <Input value={modulId} onChange={(e) => setModulId(Number(e.target.value))} placeholder="Modul ID" />
+            <Input
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setModulId(Number((e.target as HTMLInputElement).value));
+                }
+              }}
+              placeholder="Modul ID"
+            />
             {modulData && (
               <div className="w-full items-center justify-center flex">
                 <Card className="p-4 w-1/3 flex flex-row justify-between">
                   <div>
                     <CardTitle>{modulData.name}</CardTitle>
                     <p>Anzahl Veranstaltungen: {modulData.veranstaltungen.length}</p>
+                    <p>ID: {modulData.id}</p>
                   </div>
                   <Popover>
                     <PopoverTrigger asChild>
