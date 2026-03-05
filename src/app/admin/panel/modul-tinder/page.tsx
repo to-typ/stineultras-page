@@ -31,7 +31,7 @@ export default function Admin() {
 
   useEffect(() => {
     async function fetchNextId() {
-      if (modulData == null) {
+      if (modulData == null || modulData.name.toLowerCase().includes("modul")) {
         setLoading(true);
         const response = await fetch(`/api/admin/moduls?next=${modulId}`, {
           method: "GET",
