@@ -1,19 +1,7 @@
-import { SearchResult } from "@/types/planner";
+import { ModulResult, SearchResult } from "@/types/planner";
 import { Badge } from "@/components/ui/badge";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Loader2 } from "lucide-react";
 
@@ -23,6 +11,7 @@ interface SearchDialogProps {
   search: string;
   onSearchChange: (search: string) => void;
   searchResults: SearchResult[];
+  modulResults: ModulResult[];
   isSearching: boolean;
   onSelectResult: (result: SearchResult) => void;
 }
@@ -33,6 +22,7 @@ export function SearchDialog({
   search,
   onSearchChange,
   searchResults,
+  modulResults,
   isSearching,
   onSelectResult,
 }: SearchDialogProps) {
@@ -44,9 +34,7 @@ export function SearchDialog({
             <Search className="h-5 w-5" />
             Vorlesungsverzeichnis durchsuchen
           </DialogTitle>
-          <DialogDescription>
-            Suche nach Name, STiNE-ID, Lehrenden oder Typ (mind. 2 Zeichen)
-          </DialogDescription>
+          <DialogDescription>Suche nach Name, STiNE-ID, Lehrenden oder Typ (mind. 2 Zeichen)</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center border rounded-md px-3">
@@ -70,13 +58,9 @@ export function SearchDialog({
                   </CommandEmpty>
                 )}
 
-                {search.trim().length >= 2 &&
-                  searchResults.length === 0 &&
-                  !isSearching && (
-                    <CommandEmpty className="py-6 text-center text-sm">
-                      Keine Veranstaltungen gefunden
-                    </CommandEmpty>
-                  )}
+                {search.trim().length >= 2 && searchResults.length === 0 && !isSearching && (
+                  <CommandEmpty className="py-6 text-center text-sm">Keine Veranstaltungen gefunden</CommandEmpty>
+                )}
 
                 {isSearching && (
                   <CommandEmpty className="py-6 text-center text-sm">
@@ -86,27 +70,56 @@ export function SearchDialog({
                 )}
 
                 {searchResults.length > 0 && (
-                  <CommandGroup
-                    heading={`${searchResults.length} Ergebnis${searchResults.length !== 1 ? "se" : ""}`}>
+                  <CommandGroup heading={`${searchResults.length} Ergebnis${searchResults.length !== 1 ? "se" : ""}`}>
                     {searchResults.map((ev) => (
                       <CommandItem
                         key={ev.veranstaltung.id + "-" + ev.veranstaltung.name}
                         onSelect={() => onSelectResult(ev)}
                         onClick={() => onSelectResult(ev)}
-                        className="flex flex-col items-start py-3 cursor-pointer">
-                        <div className="font-semibold text-sm mb-1">
-                          {ev.veranstaltung.name}
-                        </div>
+                        className="flex flex-col items-start py-3 cursor-pointer"
+                      >
+                        <div className="font-semibold text-sm mb-1">{ev.veranstaltung.name}</div>
                         <div className="flex flex-wrap gap-2 items-center">
                           <Badge variant="secondary" className="text-xs">
                             {ev.veranstaltung.typ}
                           </Badge>
-                          <span className="text-xs text-muted-foreground">
-                            {ev.veranstaltung.stineId}
-                          </span>
+                          <span className="text-xs text-muted-foreground">{ev.veranstaltung.stineId}</span>
                         </div>
                         <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
                           {ev.veranstaltung.lehrende}
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
+              </CommandList>
+            </Command>
+          </ScrollArea>
+          <ScrollArea className="">
+            <Command>
+              <CommandList>
+                {search.trim().length > 0 && search.trim().length < 2 && (
+                  <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
+                    Noch {2 - search.trim().length} Zeichen eingeben...
+                  </CommandEmpty>
+                )}
+
+                {search.trim().length >= 2 && modulResults.length === 0 && !isSearching && (
+                  <CommandEmpty className="py-6 text-center text-sm">Keine Module gefunden</CommandEmpty>
+                )}
+
+                {modulResults.length > 0 && (
+                  <CommandGroup heading={`${modulResults.length} Modul${modulResults.length !== 1 ? "e" : ""}`}>
+                    {modulResults.map((modul) => (
+                      <CommandItem
+                        key={modul.id}
+                        //onSelect={() => onSelectResult(modul)}
+                        //onClick={() => onSelectResult(modul)}
+                        className="flex flex-col items-start py-3 cursor-pointer"
+                      >
+                        <div className="font-semibold text-sm mb-1">{modul.name}</div>
+                        <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
+                          Beinhaltet {modul.veranstaltungen.length} Veranstaltungen
                         </div>
                       </CommandItem>
                     ))}

@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -61,9 +55,7 @@ export function StundenplanControls({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newPlanName, setNewPlanName] = useState("");
-  const [newPlanSemesterId, setNewPlanSemesterId] = useState<number | null>(
-    null,
-  );
+  const [newPlanSemesterId, setNewPlanSemesterId] = useState<number | null>(null);
   const [renamePlanId, setRenamePlanId] = useState<string | null>(null);
   const [renamePlanName, setRenamePlanName] = useState("");
   const [deleteOpenedFromRename, setDeleteOpenedFromRename] = useState(false);
@@ -115,9 +107,7 @@ export function StundenplanControls({
     setDeleteOpenedFromRename(false);
   };
 
-  const currentPlan = stundenplaene.find(
-    (sp) => sp.id === currentStundenplanId,
-  );
+  const currentPlan = stundenplaene.find((sp) => sp.id === currentStundenplanId);
 
   return (
     <div className="flex items-center gap-3">
@@ -133,7 +123,8 @@ export function StundenplanControls({
                 setRenamePlanName(currentPlan.name);
                 setShowRenameDialog(true);
               }}
-              title="Stundenplan bearbeiten">
+              title="Stundenplan bearbeiten"
+            >
               <Pencil className="h-4 w-4" />
             </Button>
           </DialogTrigger>
@@ -142,9 +133,7 @@ export function StundenplanControls({
               <DialogTitle>Stundenplan bearbeiten</DialogTitle>
             </DialogHeader>
             <div className="py-4">
-              <label className="text-sm font-medium mb-2 block">
-                Neuer Name
-              </label>
+              <label className="text-sm font-medium mb-2 block">Neuer Name</label>
               <Input
                 placeholder="Neuer Name"
                 value={renamePlanName}
@@ -162,7 +151,8 @@ export function StundenplanControls({
                   if (!currentPlan) return;
                   handleDelete(currentPlan.id, true);
                 }}
-                title="Aktuellen Stundenplan löschen">
+                title="Aktuellen Stundenplan löschen"
+              >
                 <Trash2 className="h-4 w-4" />
                 Löschen
               </Button>
@@ -170,13 +160,15 @@ export function StundenplanControls({
                 <Button
                   variant="outline"
                   onClick={() => setShowRenameDialog(false)}
-                  title="Dialog schließen ohne umzubenennen">
+                  title="Dialog schließen ohne umzubenennen"
+                >
                   Abbrechen
                 </Button>
                 <Button
                   onClick={handleRename}
                   disabled={!renamePlanName.trim()}
-                  title="Stundenplan mit neuem Namen speichern">
+                  title="Stundenplan mit neuem Namen speichern"
+                >
                   Speichern
                 </Button>
               </div>
@@ -186,12 +178,8 @@ export function StundenplanControls({
         <Separator orientation="vertical" className="h-6 -mr-px" />
 
         {/* Stundenplan Auswahl */}
-        <Select
-          value={currentStundenplanId || ""}
-          onValueChange={onLoadStundenplan}>
-          <SelectTrigger
-            className="w-[200px] rounded-[0px] h-9 border-0 shadow-none"
-            title="Stundenplan auswählen">
+        <Select value={currentStundenplanId || ""} onValueChange={onLoadStundenplan}>
+          <SelectTrigger className="w-[200px] rounded-[0px] h-9 border-0 shadow-none" title="Stundenplan auswählen">
             <SelectValue placeholder="Stundenplan wählen" />
           </SelectTrigger>
           <SelectContent>
@@ -210,16 +198,15 @@ export function StundenplanControls({
             <Button
               variant="outline"
               className="rounded-l-[0px] border-0 shadow-none"
-              title="Neuen Stundenplan erstellen">
+              title="Neuen Stundenplan erstellen"
+            >
               <Plus className="h-4 w-4" />
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Neuer Stundenplan</DialogTitle>
-              <DialogDescription>
-                Erstelle einen neuen Stundenplan für ein Semester.
-              </DialogDescription>
+              <DialogDescription>Erstelle einen neuen Stundenplan für ein Semester.</DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
               <div>
@@ -234,26 +221,17 @@ export function StundenplanControls({
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-2 block">
-                  Semester
-                </label>
+                <label className="text-sm font-medium mb-2 block">Semester</label>
                 <Select
-                  value={
-                    newPlanSemesterId?.toString() ||
-                    currentSemesterId?.toString() ||
-                    ""
-                  }
-                  onValueChange={(value) =>
-                    setNewPlanSemesterId(parseInt(value, 10))
-                  }>
+                  value={newPlanSemesterId?.toString() || currentSemesterId?.toString() || ""}
+                  onValueChange={(value) => setNewPlanSemesterId(parseInt(value, 10))}
+                >
                   <SelectTrigger title="Wähle das Semester für den neuen Stundenplan">
                     <SelectValue placeholder="Semester auswählen" />
                   </SelectTrigger>
                   <SelectContent>
                     {semesters.map((semester) => (
-                      <SelectItem
-                        key={semester.id}
-                        value={semester.id.toString()}>
+                      <SelectItem key={semester.id} value={semester.id.toString()}>
                         {semester.name}
                       </SelectItem>
                     ))}
@@ -265,16 +243,15 @@ export function StundenplanControls({
               <Button
                 variant="outline"
                 onClick={() => setShowCreateDialog(false)}
-                title="Dialog schließen ohne zu erstellen">
+                title="Dialog schließen ohne zu erstellen"
+              >
                 Abbrechen
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={
-                  !newPlanName.trim() ||
-                  !(newPlanSemesterId || currentSemesterId)
-                }
-                title="Neuen Stundenplan erstellen">
+                disabled={!newPlanName.trim() || !(newPlanSemesterId || currentSemesterId)}
+                title="Neuen Stundenplan erstellen"
+              >
                 Erstellen
               </Button>
             </DialogFooter>
@@ -288,8 +265,7 @@ export function StundenplanControls({
           <AlertDialogHeader>
             <AlertDialogTitle>Stundenplan löschen</AlertDialogTitle>
             <AlertDialogDescription>
-              Möchtest du diesen Stundenplan wirklich löschen? Diese Aktion kann
-              nicht rückgängig gemacht werden.
+              Möchtest du diesen Stundenplan wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -299,7 +275,8 @@ export function StundenplanControls({
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
-              title="Stundenplan endgültig löschen">
+              title="Stundenplan endgültig löschen"
+            >
               Löschen
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -313,7 +290,8 @@ export function StundenplanControls({
           variant="outline"
           className="border-0 rounded-r-[0px] shadow-none"
           onClick={() => onShareStundenplan()}
-          title="Stundenplan-Link teilen">
+          title="Stundenplan-Link teilen"
+        >
           <Upload className="h-4 w-4" />
         </Button>
         <Separator orientation="vertical" className="h-6" />
@@ -323,7 +301,8 @@ export function StundenplanControls({
           variant="outline"
           className="border-0 rounded-l-[0px] shadow-none"
           onClick={() => onExportStundenplan()}
-          title="Stundenplan exportieren">
+          title="Stundenplan exportieren"
+        >
           <CalendarArrowDown className="h-4 w-4" />
         </Button>
       </div>

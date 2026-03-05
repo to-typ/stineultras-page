@@ -19,11 +19,7 @@ import { NewEventData } from "@/components/add-event-modal";
 import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
-import {
-  createShareLink,
-  exportICS,
-  importStundeplan,
-} from "@/lib/import-export";
+import { createShareLink, exportICS, importStundeplan } from "@/lib/import-export";
 import { toast } from "sonner";
 
 type Semester = {
@@ -38,9 +34,7 @@ export default function Planer() {
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [semesters, setSemesters] = useState<Semester[]>([]);
-  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(
-    null,
-  );
+  const [selectedSemesterId, setSelectedSemesterId] = useState<number | null>(null);
   const isLoadingStundenplan = useRef(false);
 
   const {
@@ -71,8 +65,7 @@ export default function Planer() {
     changeSubEventIcsName,
   } = useEvents([]);
 
-  const { search, setSearch, searchedEvents, isSearching, clearSearch } =
-    useSearch(selectedSemesterId);
+  const { search, setSearch, searchedEvents, searchedModuls, isSearching, clearSearch } = useSearch(selectedSemesterId);
 
   // Lade Semester beim Start
   useEffect(() => {
@@ -90,16 +83,9 @@ export default function Planer() {
 
   // Erstelle automatisch einen Stundenplan, wenn keiner existiert
   useEffect(() => {
-    if (
-      semesters.length > 0 &&
-      stundenplaene.length === 0 &&
-      !currentStundenplan
-    ) {
+    if (semesters.length > 0 && stundenplaene.length === 0 && !currentStundenplan) {
       const neuestesSemester = semesters[0];
-      createStundenplan(
-        `Stundenplan ${neuestesSemester.name}`,
-        neuestesSemester.id,
-      );
+      createStundenplan(`Stundenplan ${neuestesSemester.name}`, neuestesSemester.id);
     }
   }, [semesters, stundenplaene.length, currentStundenplan, createStundenplan]);
 
@@ -121,11 +107,7 @@ export default function Planer() {
   // Speichere Events automatisch, wenn sie sich ändern
   useEffect(() => {
     // Nur speichern wenn wir nicht gerade laden
-    if (
-      currentStundenplan &&
-      events.length >= 0 &&
-      !isLoadingStundenplan.current
-    ) {
+    if (currentStundenplan && events.length >= 0 && !isLoadingStundenplan.current) {
       saveCurrentStundenplan(events);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -133,15 +115,10 @@ export default function Planer() {
 
   // Synchronisiere Semester mit Stundenplan
   useEffect(() => {
-    if (
-      currentStundenplan &&
-      selectedSemesterId !== currentStundenplan.semesterId
-    ) {
+    if (currentStundenplan && selectedSemesterId !== currentStundenplan.semesterId) {
       // Wenn ein anderes Semester gewählt wird, erstelle neuen Stundenplan
       if (selectedSemesterId) {
-        const semesterName =
-          semesters.find((s) => s.id === selectedSemesterId)?.name ||
-          "Unbekannt";
+        const semesterName = semesters.find((s) => s.id === selectedSemesterId)?.name || "Unbekannt";
         createStundenplan(`Stundenplan ${semesterName}`, selectedSemesterId);
       }
     }
@@ -181,11 +158,7 @@ export default function Planer() {
   };
 
   const handleExport = () => {
-    const icsContent = exportICS(
-      events,
-      semesters.find((s) => s.id === currentStundenplan?.semesterId)?.name ||
-        "",
-    );
+    const icsContent = exportICS(events, semesters.find((s) => s.id === currentStundenplan?.semesterId)?.name || "");
     const blob = new Blob([icsContent], {
       type: "text/calendar;charset=utf-8",
     });
@@ -270,12 +243,8 @@ export default function Planer() {
               <Image src={logo} alt="STiNE Ultras" height={64} />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-[#0261bb] bg-clip-text text-transparent">
-                Stundenplan Editor
-              </h1>
-              <p className="text-sm text-slate-600 mt-1">
-                Erstelle deinen individuellen Stundenplan
-              </p>
+              <h1 className="text-4xl font-bold bg-[#0261bb] bg-clip-text text-transparent">Stundenplan Editor</h1>
+              <p className="text-sm text-slate-600 mt-1">Erstelle deinen individuellen Stundenplan</p>
             </div>
           </div>
           {/* Stundenplan Controls */}
@@ -306,7 +275,8 @@ export default function Planer() {
               className="w-full h-12"
               variant="default"
               disabled={!currentStundenplan}
-              title="Durchsuche das Vorlesungsverzeichnis nach Veranstaltungen">
+              title="Durchsuche das Vorlesungsverzeichnis nach Veranstaltungen"
+            >
               <Search className="h-4 w-4 mr-2" />
               Vorlesungsverzeichnis durchsuchen
             </Button>
@@ -315,7 +285,8 @@ export default function Planer() {
               className="w-full h-12"
               variant="outline"
               disabled={!currentStundenplan}
-              title="Füge eine eigene Veranstaltung oder einen Termin hinzu">
+              title="Füge eine eigene Veranstaltung oder einen Termin hinzu"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Eigenes Event hinzufügen
             </Button>
@@ -349,26 +320,15 @@ export default function Planer() {
       </div>
 
       {/* Modal für neues Event */}
-      <AddEventModal
-        open={showAddEventModal}
-        onAdd={handleAddEvent}
-        onCancel={() => setShowAddEventModal(false)}
-      />
+      <AddEventModal open={showAddEventModal} onAdd={handleAddEvent} onCancel={() => setShowAddEventModal(false)} />
 
       {/* Modal für Event-Details */}
       <EventInfoModal
         open={showEventDetailsModal}
-        event={
-          events.find((ev) => ev.id === selectedEvent?.id) ?? selectedEvent
-        }
+        event={events.find((ev) => ev.id === selectedEvent?.id) ?? selectedEvent}
         onClose={() => setShowEventDetailsModal(false)}
-        onChangeEventIcsName={(name) =>
-          selectedEvent && changeEventIcsName(selectedEvent.id, name)
-        }
-        onChangeSubIcsName={(subName, name) =>
-          selectedEvent &&
-          changeSubEventIcsName(selectedEvent.id, subName, name)
-        }
+        onChangeEventIcsName={(name) => selectedEvent && changeEventIcsName(selectedEvent.id, name)}
+        onChangeSubIcsName={(subName, name) => selectedEvent && changeSubEventIcsName(selectedEvent.id, subName, name)}
       />
 
       {/* Dialog für Veranstaltungssuche */}
@@ -378,6 +338,7 @@ export default function Planer() {
         search={search}
         onSearchChange={setSearch}
         searchResults={searchedEvents}
+        modulResults={searchedModuls}
         isSearching={isSearching}
         onSelectResult={handleAddSearchResult}
       />

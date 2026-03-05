@@ -93,7 +93,6 @@ async function searchJoin(eventId: number) {
   }
 }
 
-
 async function searchID(id: number) {
   const v = await prisma.veranstaltung.findUnique({
     where: {
@@ -111,7 +110,6 @@ async function searchID(id: number) {
   };
 }
 
-
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const search = url.searchParams.get("search") || "";
@@ -126,9 +124,7 @@ export async function GET(req: NextRequest) {
     }
   }
   const semesterIdParam = url.searchParams.get("semesterId");
-  const semesterId = semesterIdParam
-    ? parseInt(semesterIdParam, 10)
-    : undefined;
+  const semesterId = semesterIdParam ? parseInt(semesterIdParam, 10) : undefined;
 
   const searched = await searchDB(search, semesterId);
   return NextResponse.json(searched);

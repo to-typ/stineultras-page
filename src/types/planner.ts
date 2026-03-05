@@ -46,3 +46,9 @@ export type SearchResult = {
       }[]
     | null;
 };
+
+export type ModulResult = {
+  id: number;
+  name: string;
+  veranstaltungen: number[];
+};
