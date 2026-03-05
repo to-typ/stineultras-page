@@ -56,11 +56,14 @@ model Semester {
   name            String
   isSelectable    Boolean         @default(true)
   veranstaltungen Veranstaltung[]
+  module          Modul[]
 }
 
 model Modul {
   id              Int             @id @default(autoincrement())
   name            String
+  semesterId      Int?
+  semester        Semester?        @relation(fields: [semesterId], references: [id])
   veranstaltungen VeranstaltungInModul[]
 }
 
