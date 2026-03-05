@@ -4,6 +4,8 @@ import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Search, Loader2 } from "lucide-react";
+import { Separator } from "./ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 
 interface SearchDialogProps {
   open: boolean;
@@ -118,9 +120,23 @@ export function SearchDialog({
                         className="flex flex-col items-start py-3 cursor-pointer"
                       >
                         <div className="font-semibold text-sm mb-1">{modul.name}</div>
-                        <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
-                          Beinhaltet {modul.veranstaltungen.length} Veranstaltungen
-                        </div>
+                        <Separator />
+                        <Accordion type="single" collapsible>
+                          <AccordionItem value="sub-events" className="border-none">
+                            <AccordionTrigger className="text-xs font-medium py-2 hover:no-underline">
+                              {modul.veranstaltungen.length} Veranstaltung
+                              {modul.veranstaltungen.length !== 1 ? "en" : ""}
+                            </AccordionTrigger>
+                            <AccordionContent>
+                              <div className="space-y-1.5 pt-2">
+                                {modul.veranstaltungen.map((veranstaltung, idx) => {
+                                  console.log(veranstaltung);
+                                  return <div key={idx}>{String(veranstaltung.veranstaltungsId)}</div>;
+                                })}
+                              </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                       </CommandItem>
                     ))}
                   </CommandGroup>

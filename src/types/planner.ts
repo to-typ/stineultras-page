@@ -50,5 +50,8 @@ export type SearchResult = {
 export type ModulResult = {
   id: number;
   name: string;
-  veranstaltungen: number[];
+  veranstaltungen: {
+    veranstaltungsId: number;
+    name: string;
+  }[];
 };
