@@ -48,14 +48,17 @@ async function searchDB(search: string, semesterId?: number) {
       veranstaltung: v,
       termine: details.termine,
       uebungsgruppen: details.uebungsgruppen,
+      module: details.module,
     });
   }
   return results;
 }
 
 async function searchJoin(eventId: number) {
+  let termine = null;
+  let uebungsgruppen = null;
   // Prüfe zuerst, ob Übungsgruppen existieren
-  const uebungsgruppen = await prisma.uebungsgruppe.findMany({
+  uebungsgruppen = await prisma.uebungsgruppe.findMany({
     where: {
       veranstaltungsId: eventId,
     },
@@ -75,22 +78,29 @@ async function searchJoin(eventId: number) {
         termine: termine,
       });
     }
-    return {
-      termine: null,
-      uebungsgruppen: uebungsgruppenWithTermine,
-    };
   } else {
     // Keine Übungsgruppen, hole direkte Termine der Veranstaltung
-    const termine = await prisma.termin.findMany({
+    termine = await prisma.termin.findMany({
       where: {
         veranstaltungsId: eventId,
       },
     });
-    return {
-      termine: termine,
-      uebungsgruppen: null,
-    };
   }
+
+  const inModuls = await prisma.modul.findMany({
+    where: {
+      veranstaltungen: {
+        some: {
+          veranstaltungsId: eventId,
+        },
+      },
+    },
+  });
+  return {
+    termine: termine,
+    uebungsgruppen: uebungsgruppen,
+    module: inModuls,
+  };
 }
 
 async function searchID(id: number) {

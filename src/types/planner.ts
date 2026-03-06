@@ -45,13 +45,16 @@ export type SearchResult = {
         termine: Termin[];
       }[]
     | null;
+  module:
+    | {
+        id: number;
+        name: string;
+      }[]
+    | null;
 };
 
 export type ModulResult = {
   id: number;
   name: string;
-  veranstaltungen: {
-    veranstaltungsId: number;
-    name: string;
-  }[];
+  veranstaltungen: SearchResult[];
 };

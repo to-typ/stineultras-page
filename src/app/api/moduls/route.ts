@@ -18,7 +18,11 @@ async function searchDB(search: string, semesterId?: number) {
   return await prisma.modul.findMany({
     where: whereClause,
     include: {
-      veranstaltungen: true,
+      veranstaltungen: {
+        include: {
+          veranstaltung: true,
+        },
+      },
     },
   });
 }

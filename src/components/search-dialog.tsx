@@ -90,6 +90,23 @@ export function SearchDialog({
                         <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
                           {ev.veranstaltung.lehrende}
                         </div>
+                        {ev.module && Array.isArray(ev.module) && ev.module.length > 0 && ev.module[0]?.name && (
+                          <Accordion type="single" collapsible>
+                            <AccordionItem value="sub-events" className="border-none">
+                              <AccordionTrigger className="text-xs font-medium py-2 hover:no-underline">
+                                Auch enthalten in {ev.module.length} Modul
+                                {ev.module.length !== 1 ? "e" : ""}
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="space-y-1.5 pt-2">
+                                  {ev.module.map((modul, idx) => {
+                                    return <div key={idx}>{String(modul.name)} </div>;
+                                  })}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        )}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -130,8 +147,17 @@ export function SearchDialog({
                             <AccordionContent>
                               <div className="space-y-1.5 pt-2">
                                 {modul.veranstaltungen.map((veranstaltung, idx) => {
-                                  console.log(veranstaltung);
-                                  return <div key={idx}>{String(veranstaltung.veranstaltungsId)}</div>;
+                                  return (
+                                    <div key={idx}>
+                                      {String(veranstaltung.veranstaltung.name)}{" "}
+                                      <Badge variant="secondary" className="text-xs">
+                                        {veranstaltung.veranstaltung.typ}
+                                      </Badge>
+                                      <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1">
+                                        {veranstaltung.veranstaltung.lehrende}
+                                      </div>
+                                    </div>
+                                  );
                                 })}
                               </div>
                             </AccordionContent>
