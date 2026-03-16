@@ -183,8 +183,8 @@ const toICSLocalDateTime = (dateObj: Date, timeObj: Date) => {
   const year = d.getFullYear();
   const month = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
-  const hours = String(t.getHours()).padStart(2, "0");
-  const minutes = String(t.getMinutes()).padStart(2, "0");
+  const hours = String(t.getUTCHours()).padStart(2, "0");
+  const minutes = String(t.getUTCMinutes()).padStart(2, "0");
   return `${year}${month}${day}T${hours}${minutes}00`;
 };
 
