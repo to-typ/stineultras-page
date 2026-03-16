@@ -1,28 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { Event, SearchResult, Visibility } from "@/types/planner";
-import {
-  LOCAL_STORAGE_KEY,
-  getInterval,
-  getContrastColor,
-  generateRandomColor,
-} from "@/lib/planner-utils";
+import { LOCAL_STORAGE_KEY, getInterval, getContrastColor, generateRandomColor } from "@/lib/planner-utils";
 import { toast } from "sonner";
 import { NewEventData } from "@/components/add-event-modal";
 
-export function useEvents(
-  initialEvents: Event[] = [],
-  useLocalStorage: boolean = true,
-) {
+export function useEvents(initialEvents: Event[] = [], useLocalStorage: boolean = true) {
   const [events, setEvents] = useState<Event[]>(initialEvents);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Lade Events aus localStorage beim ersten Render (nur wenn useLocalStorage true ist)
   useEffect(() => {
     if (useLocalStorage) {
-      const stored =
-        typeof window !== "undefined"
-          ? localStorage.getItem(LOCAL_STORAGE_KEY)
-          : null;
+      const stored = typeof window !== "undefined" ? localStorage.getItem(LOCAL_STORAGE_KEY) : null;
       if (stored) {
         setEvents(JSON.parse(stored));
       }
@@ -151,22 +140,33 @@ export function useEvents(
     [events],
   );
 
+  const addModuleByID = useCallback(
+    async (moduleId: number) => {
+      const res = await fetch(`/api/moduls?id=${moduleId}`);
+      const data = await res.json();
+      const modul = data[0];
+      if (!modul.veranstaltungen || modul.veranstaltungen.length === 0) {
+        toast.error("Keine Veranstaltungen in diesem Modul gefunden");
+        return false;
+      }
+      modul.veranstaltungen.forEach((veranstaltung: SearchResult) => {
+        addSearchResult(veranstaltung);
+      });
+      return true;
+    },
+    [addSearchResult],
+  );
+
   const toggleEvent = useCallback((id: number) => {
     setEvents((events) =>
       events.map((ev) =>
         ev.id === id
           ? {
               ...ev,
-              active:
-                ev.active === Visibility.Visible
-                  ? Visibility.Hidden
-                  : Visibility.Visible,
+              active: ev.active === Visibility.Visible ? Visibility.Hidden : Visibility.Visible,
               events: ev.events.map((subEv) => ({
                 ...subEv,
-                active:
-                  ev.active === Visibility.Visible
-                    ? Visibility.Hidden
-                    : Visibility.Visible,
+                active: ev.active === Visibility.Visible ? Visibility.Hidden : Visibility.Visible,
               })),
             }
           : ev,
@@ -195,10 +195,7 @@ export function useEvents(
             subEv.name === subName
               ? {
                   ...subEv,
-                  active:
-                    subEv.active === Visibility.Visible
-                      ? Visibility.Hidden
-                      : Visibility.Visible,
+                  active: subEv.active === Visibility.Visible ? Visibility.Hidden : Visibility.Visible,
                 }
               : subEv,
           ),
@@ -218,23 +215,12 @@ export function useEvents(
 
   const changeEventColor = useCallback((id: number, color: string) => {
     const textcolor = getContrastColor(color);
-    setEvents((events) =>
-      events.map((ev) =>
-        ev.id === id ? { ...ev, bgcolor: color, textcolor } : ev,
-      ),
-    );
+    setEvents((events) => events.map((ev) => (ev.id === id ? { ...ev, bgcolor: color, textcolor } : ev)));
   }, []);
 
   // Prüft ob zwei Zeitslots überlappen
   const timesOverlap = useCallback(
-    (
-      day1: string,
-      start1: string,
-      end1: string,
-      day2: string,
-      start2: string,
-      end2: string,
-    ) => {
+    (day1: string, start1: string, end1: string, day2: string, start2: string, end2: string) => {
       if (day1 !== day2) return false;
 
       const [h1Start, m1Start] = start1.split(":").map(Number);
@@ -275,14 +261,7 @@ export function useEvents(
                     (targetSubEv) =>
                       targetSubEv.active === Visibility.Visible &&
                       targetSubEv.dates.some((targetDate) =>
-                        timesOverlap(
-                          date.day,
-                          date.start,
-                          date.end,
-                          targetDate.day,
-                          targetDate.start,
-                          targetDate.end,
-                        ),
+                        timesOverlap(date.day, date.start, date.end, targetDate.day, targetDate.start, targetDate.end),
                       ),
                   ),
                 );
@@ -298,14 +277,7 @@ export function useEvents(
                         otherSubEv.active === Visibility.Visible &&
                         otherSubEv.dates.some((otherDate) =>
                           subEv.dates.some((date) =>
-                            timesOverlap(
-                              date.day,
-                              date.start,
-                              date.end,
-                              otherDate.day,
-                              otherDate.start,
-                              otherDate.end,
-                            ),
+                            timesOverlap(date.day, date.start, date.end, otherDate.day, otherDate.start, otherDate.end),
                           ),
                         ),
                     ),
@@ -323,21 +295,13 @@ export function useEvents(
             });
 
             // Update Event visibility
-            const allHidden = restoredSubEvents.every(
-              (se) => se.active === Visibility.Hidden,
-            );
-            const allVisible = restoredSubEvents.every(
-              (se) => se.active === Visibility.Visible,
-            );
+            const allHidden = restoredSubEvents.every((se) => se.active === Visibility.Hidden);
+            const allVisible = restoredSubEvents.every((se) => se.active === Visibility.Visible);
 
             return {
               ...ev,
               events: restoredSubEvents,
-              active: allHidden
-                ? Visibility.Hidden
-                : allVisible
-                  ? Visibility.Visible
-                  : Visibility.Partial,
+              active: allHidden ? Visibility.Hidden : allVisible ? Visibility.Visible : Visibility.Partial,
             };
           }),
         );
@@ -367,14 +331,7 @@ export function useEvents(
             // Prüfe ob dieses SubEvent mit einem Priority-Slot überlappt
             const hasOverlap = subEv.dates.some((date) =>
               prioritySlots.some((pSlot) =>
-                timesOverlap(
-                  date.day,
-                  date.start,
-                  date.end,
-                  pSlot.day,
-                  pSlot.start,
-                  pSlot.end,
-                ),
+                timesOverlap(date.day, date.start, date.end, pSlot.day, pSlot.start, pSlot.end),
               ),
             );
 
@@ -389,21 +346,13 @@ export function useEvents(
           });
 
           // Update Event visibility basierend auf SubEvents
-          const allHidden = updatedSubEvents.every(
-            (se) => se.active === Visibility.Hidden,
-          );
-          const allVisible = updatedSubEvents.every(
-            (se) => se.active === Visibility.Visible,
-          );
+          const allHidden = updatedSubEvents.every((se) => se.active === Visibility.Hidden);
+          const allVisible = updatedSubEvents.every((se) => se.active === Visibility.Visible);
 
           return {
             ...ev,
             events: updatedSubEvents,
-            active: allHidden
-              ? Visibility.Hidden
-              : allVisible
-                ? Visibility.Visible
-                : Visibility.Partial,
+            active: allHidden ? Visibility.Hidden : allVisible ? Visibility.Visible : Visibility.Partial,
           };
         }),
       );
@@ -417,11 +366,8 @@ export function useEvents(
       const targetEvent = events.find((ev) => ev.id === eventId);
       if (!targetEvent) return;
 
-      const targetSubEvent = targetEvent.events.find(
-        (se) => se.name === subName,
-      );
-      if (!targetSubEvent || targetSubEvent.active === Visibility.Hidden)
-        return;
+      const targetSubEvent = targetEvent.events.find((se) => se.name === subName);
+      if (!targetSubEvent || targetSubEvent.active === Visibility.Hidden) return;
 
       // Toggle: Wenn bereits priorisiert, stelle vorherigen Zustand wieder her
       if (targetSubEvent.prioritized) {
@@ -431,9 +377,7 @@ export function useEvents(
             if (ev.id === eventId) {
               return {
                 ...ev,
-                events: ev.events.map((se) =>
-                  se.name === subName ? { ...se, prioritized: false } : se,
-                ),
+                events: ev.events.map((se) => (se.name === subName ? { ...se, prioritized: false } : se)),
               };
             }
 
@@ -443,14 +387,7 @@ export function useEvents(
                 subEv.hiddenByPriority &&
                 subEv.dates.some((date) =>
                   targetSubEvent.dates.some((targetDate) =>
-                    timesOverlap(
-                      date.day,
-                      date.start,
-                      date.end,
-                      targetDate.day,
-                      targetDate.start,
-                      targetDate.end,
-                    ),
+                    timesOverlap(date.day, date.start, date.end, targetDate.day, targetDate.start, targetDate.end),
                   ),
                 );
 
@@ -460,20 +397,12 @@ export function useEvents(
                   (otherEv) =>
                     otherEv.events.some(
                       (otherSubEv) =>
-                        (otherEv.id !== eventId ||
-                          otherSubEv.name !== subName) &&
+                        (otherEv.id !== eventId || otherSubEv.name !== subName) &&
                         otherSubEv.prioritized &&
                         otherSubEv.active === Visibility.Visible &&
                         otherSubEv.dates.some((otherDate) =>
                           subEv.dates.some((date) =>
-                            timesOverlap(
-                              date.day,
-                              date.start,
-                              date.end,
-                              otherDate.day,
-                              otherDate.start,
-                              otherDate.end,
-                            ),
+                            timesOverlap(date.day, date.start, date.end, otherDate.day, otherDate.start, otherDate.end),
                           ),
                         ),
                     ) ||
@@ -509,21 +438,13 @@ export function useEvents(
             });
 
             // Update Event visibility
-            const allHidden = restoredSubEvents.every(
-              (se) => se.active === Visibility.Hidden,
-            );
-            const allVisible = restoredSubEvents.every(
-              (se) => se.active === Visibility.Visible,
-            );
+            const allHidden = restoredSubEvents.every((se) => se.active === Visibility.Hidden);
+            const allVisible = restoredSubEvents.every((se) => se.active === Visibility.Visible);
 
             return {
               ...ev,
               events: restoredSubEvents,
-              active: allHidden
-                ? Visibility.Hidden
-                : allVisible
-                  ? Visibility.Visible
-                  : Visibility.Partial,
+              active: allHidden ? Visibility.Hidden : allVisible ? Visibility.Visible : Visibility.Partial,
             };
           }),
         );
@@ -545,14 +466,7 @@ export function useEvents(
             // Prüfe ob dieses SubEvent mit dem Priority-SubEvent überlappt
             const hasOverlap = subEv.dates.some((date) =>
               prioritySlots.some((pSlot) =>
-                timesOverlap(
-                  date.day,
-                  date.start,
-                  date.end,
-                  pSlot.day,
-                  pSlot.start,
-                  pSlot.end,
-                ),
+                timesOverlap(date.day, date.start, date.end, pSlot.day, pSlot.start, pSlot.end),
               ),
             );
 
@@ -567,21 +481,13 @@ export function useEvents(
           });
 
           // Update Event visibility basierend auf SubEvents
-          const allHidden = updatedSubEvents.every(
-            (se) => se.active === Visibility.Hidden,
-          );
-          const allVisible = updatedSubEvents.every(
-            (se) => se.active === Visibility.Visible,
-          );
+          const allHidden = updatedSubEvents.every((se) => se.active === Visibility.Hidden);
+          const allVisible = updatedSubEvents.every((se) => se.active === Visibility.Visible);
 
           return {
             ...ev,
             events: updatedSubEvents,
-            active: allHidden
-              ? Visibility.Hidden
-              : allVisible
-                ? Visibility.Visible
-                : Visibility.Partial,
+            active: allHidden ? Visibility.Hidden : allVisible ? Visibility.Visible : Visibility.Partial,
           };
         }),
       );
@@ -591,34 +497,28 @@ export function useEvents(
   );
 
   const changeEventIcsName = useCallback((id: number, icsName: string) => {
-    setEvents((events) =>
-      events.map((ev) => (ev.id === id ? { ...ev, icsName } : ev)),
-    );
+    setEvents((events) => events.map((ev) => (ev.id === id ? { ...ev, icsName } : ev)));
   }, []);
 
-  const changeSubEventIcsName = useCallback(
-    (eventId: number, subName: string, icsName: string) => {
-      setEvents((events) =>
-        events.map((ev) =>
-          ev.id === eventId
-            ? {
-                ...ev,
-                events: ev.events.map((sub) =>
-                  sub.name === subName ? { ...sub, icsName } : sub,
-                ),
-              }
-            : ev,
-        ),
-      );
-    },
-    [],
-  );
+  const changeSubEventIcsName = useCallback((eventId: number, subName: string, icsName: string) => {
+    setEvents((events) =>
+      events.map((ev) =>
+        ev.id === eventId
+          ? {
+              ...ev,
+              events: ev.events.map((sub) => (sub.name === subName ? { ...sub, icsName } : sub)),
+            }
+          : ev,
+      ),
+    );
+  }, []);
 
   return {
     events,
     setEvents,
     addEvent,
     addSearchResult,
+    addModuleByID,
     toggleEvent,
     removeEvent,
     toggleSubEvent,

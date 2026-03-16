@@ -16,6 +16,8 @@ interface SearchDialogProps {
   modulResults: ModulResult[];
   isSearching: boolean;
   onSelectResult: (result: SearchResult) => void;
+  onSelectModulResult: (modul: ModulResult) => void;
+  onSelectModuleByID: (moduleId: number) => void;
 }
 
 export function SearchDialog({
@@ -27,6 +29,8 @@ export function SearchDialog({
   modulResults,
   isSearching,
   onSelectResult,
+  onSelectModulResult,
+  onSelectModuleByID,
 }: SearchDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,40 +78,56 @@ export function SearchDialog({
                 {searchResults.length > 0 && (
                   <CommandGroup heading={`${searchResults.length} Ergebnis${searchResults.length !== 1 ? "se" : ""}`}>
                     {searchResults.map((ev) => (
-                      <CommandItem
-                        key={ev.veranstaltung.id + "-" + ev.veranstaltung.name}
-                        onSelect={() => onSelectResult(ev)}
-                        onClick={() => onSelectResult(ev)}
-                        className="flex flex-col items-start py-3 cursor-pointer"
-                      >
-                        <div className="font-semibold text-sm mb-1">{ev.veranstaltung.name}</div>
-                        <div className="flex flex-wrap gap-2 items-center">
-                          <Badge variant="secondary" className="text-xs">
-                            {ev.veranstaltung.typ}
-                          </Badge>
-                          <span className="text-xs text-muted-foreground">{ev.veranstaltung.stineId}</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
-                          {ev.veranstaltung.lehrende}
-                        </div>
-                        {ev.module && Array.isArray(ev.module) && ev.module.length > 0 && ev.module[0]?.name && (
-                          <Accordion type="single" collapsible>
-                            <AccordionItem value="sub-events" className="border-none">
-                              <AccordionTrigger className="text-xs font-medium py-2 hover:no-underline">
-                                Auch enthalten in {ev.module.length} Modul
-                                {ev.module.length !== 1 ? "e" : ""}
-                              </AccordionTrigger>
-                              <AccordionContent>
-                                <div className="space-y-1.5 pt-2">
-                                  {ev.module.map((modul, idx) => {
-                                    return <div key={idx}>{String(modul.name)} </div>;
-                                  })}
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
-                        )}
-                      </CommandItem>
+                      <div key={ev.veranstaltung.id} className="mt-2">
+                        <CommandItem
+                          onSelect={() => onSelectResult(ev)}
+                          onClick={() => onSelectResult(ev)}
+                          className="border rounded-md flex flex-col items-stretch p-2 cursor-pointer w-full shadow-sm"
+                        >
+                          <div className="font-semibold text-sm mb-1">{ev.veranstaltung.name}</div>
+                          <div className="flex flex-wrap gap-2 items-center">
+                            <Badge variant="secondary" className="text-xs">
+                              {ev.veranstaltung.typ}
+                            </Badge>
+                            <span className="text-xs text-muted-foreground">{ev.veranstaltung.stineId}</span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1 w-full">
+                            {ev.veranstaltung.lehrende}
+                          </div>
+                          {ev.module && Array.isArray(ev.module) && ev.module.length > 0 && ev.module[0]?.name && (
+                            <Accordion type="single" collapsible>
+                              <AccordionItem value="sub-events" className="border-none">
+                                <AccordionTrigger
+                                  className="text-xs w-full font-medium p-2 hover:no-underline relative z-10 pointer-events-auto bg-gray-200 rounded-md"
+                                  onMouseDown={(e) => e.stopPropagation()}
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  Auch enthalten in {ev.module.length} Modul
+                                  {ev.module.length !== 1 ? "e" : ""}
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <div className="space-y-1.5 p-2">
+                                    {ev.module.map((modul, idx) => {
+                                      return (
+                                        <div
+                                          key={idx}
+                                          onMouseDown={(e) => {
+                                            onSelectModuleByID(modul.id);
+                                            e.stopPropagation();
+                                          }}
+                                          onClick={(e) => e.stopPropagation()}
+                                        >
+                                          {String(modul.name)}{" "}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          )}
+                        </CommandItem>
+                      </div>
                     ))}
                   </CommandGroup>
                 )}
@@ -117,12 +137,6 @@ export function SearchDialog({
           <ScrollArea className="">
             <Command>
               <CommandList>
-                {search.trim().length > 0 && search.trim().length < 2 && (
-                  <CommandEmpty className="py-6 text-center text-sm text-muted-foreground">
-                    Noch {2 - search.trim().length} Zeichen eingeben...
-                  </CommandEmpty>
-                )}
-
                 {search.trim().length >= 2 && modulResults.length === 0 && !isSearching && (
                   <CommandEmpty className="py-6 text-center text-sm">Keine Module gefunden</CommandEmpty>
                 )}
@@ -130,40 +144,53 @@ export function SearchDialog({
                 {modulResults.length > 0 && (
                   <CommandGroup heading={`${modulResults.length} Modul${modulResults.length !== 1 ? "e" : ""}`}>
                     {modulResults.map((modul) => (
-                      <CommandItem
-                        key={modul.id}
-                        //onSelect={() => onSelectResult(modul)}
-                        //onClick={() => onSelectResult(modul)}
-                        className="flex flex-col items-start py-3 cursor-pointer"
-                      >
-                        <div className="font-semibold text-sm mb-1">{modul.name}</div>
-                        <Separator />
-                        <Accordion type="single" collapsible>
-                          <AccordionItem value="sub-events" className="border-none">
-                            <AccordionTrigger className="text-xs font-medium py-2 hover:no-underline">
-                              {modul.veranstaltungen.length} Veranstaltung
-                              {modul.veranstaltungen.length !== 1 ? "en" : ""}
-                            </AccordionTrigger>
-                            <AccordionContent>
-                              <div className="space-y-1.5 pt-2">
-                                {modul.veranstaltungen.map((veranstaltung, idx) => {
-                                  return (
-                                    <div key={idx}>
-                                      {String(veranstaltung.veranstaltung.name)}{" "}
-                                      <Badge variant="secondary" className="text-xs">
-                                        {veranstaltung.veranstaltung.typ}
-                                      </Badge>
-                                      <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1">
-                                        {veranstaltung.veranstaltung.lehrende}
+                      <div key={modul.id} className="mt-2">
+                        <CommandItem
+                          onSelect={() => onSelectModulResult(modul)}
+                          onClick={() => onSelectModulResult(modul)}
+                          className="flex flex-col items-start py-3 cursor-pointer"
+                        >
+                          <div className="font-semibold text-sm mb-1">{modul.name}</div>
+                          <Separator />
+                          <Accordion type="single" collapsible>
+                            <AccordionItem value="sub-events" className="border-none">
+                              <AccordionTrigger
+                                className="text-xs font-medium py-2 hover:no-underline w-full relative z-10 pointer-events-auto"
+                                onMouseDown={(e) => e.stopPropagation()}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {modul.veranstaltungen.length} Veranstaltung
+                                {modul.veranstaltungen.length !== 1 ? "en" : ""}
+                              </AccordionTrigger>
+                              <AccordionContent>
+                                <div className="space-y-1.5 pt-2">
+                                  {modul.veranstaltungen.map((veranstaltung, idx) => {
+                                    return (
+                                      <div
+                                        key={idx}
+                                        onMouseDown={(e) => {
+                                          onSelectResult(veranstaltung);
+                                          e.stopPropagation();
+                                        }}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="cursor-pointer"
+                                      >
+                                        {String(veranstaltung.veranstaltung.name)}{" "}
+                                        <Badge variant="secondary" className="text-xs">
+                                          {veranstaltung.veranstaltung.typ}
+                                        </Badge>
+                                        <div className="text-xs text-muted-foreground mt-1 italic line-clamp-1">
+                                          {veranstaltung.veranstaltung.lehrende}
+                                        </div>
                                       </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        </Accordion>
-                      </CommandItem>
+                                    );
+                                  })}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </CommandItem>
+                      </div>
                     ))}
                   </CommandGroup>
                 )}

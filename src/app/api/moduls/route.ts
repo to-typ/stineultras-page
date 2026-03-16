@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient, Prisma } from "@prisma/client";
+import { searchJoin } from "@/lib/search-utils";
 
 const prisma = new PrismaClient();
 
@@ -15,7 +16,7 @@ async function searchDB(search: string, semesterId?: number) {
     whereClause.semesterId = semesterId;
   }
 
-  return await prisma.modul.findMany({
+  const moduls = await prisma.modul.findMany({
     where: whereClause,
     include: {
       veranstaltungen: {
@@ -25,18 +26,60 @@ async function searchDB(search: string, semesterId?: number) {
       },
     },
   });
+
+  // Für jede Veranstaltung die Termine fetchen
+  const results = [];
+  for (const modul of moduls) {
+    const veranstaltungen = [];
+    for (const v of modul.veranstaltungen) {
+      const details = await searchJoin(v.veranstaltung.id);
+      veranstaltungen.push({
+        veranstaltung: v.veranstaltung,
+        termine: details.termine,
+        uebungsgruppen: details.uebungsgruppen,
+        module: details.module,
+      });
+    }
+    results.push({
+      id: modul.id,
+      name: modul.name,
+      veranstaltungen: veranstaltungen,
+    });
+  }
+  return results;
 }
 
 async function searchID(id: number) {
-  const results = await prisma.modul.findMany({
-    where: {
+  const moduls = await prisma.modul.findMany({
+    where: { id },
+    include: {
       veranstaltungen: {
-        some: {
-          id,
+        include: {
+          veranstaltung: true,
         },
       },
     },
   });
+
+  // Für jede Veranstaltung die Termine fetchen
+  const results = [];
+  for (const modul of moduls) {
+    const veranstaltungen = [];
+    for (const v of modul.veranstaltungen) {
+      const details = await searchJoin(v.veranstaltung.id);
+      veranstaltungen.push({
+        veranstaltung: v.veranstaltung,
+        termine: details.termine,
+        uebungsgruppen: details.uebungsgruppen,
+        module: details.module,
+      });
+    }
+    results.push({
+      id: modul.id,
+      name: modul.name,
+      veranstaltungen: veranstaltungen,
+    });
+  }
   return results;
 }
 
@@ -46,6 +89,7 @@ export async function GET(req: NextRequest) {
   const search = url.searchParams.get("search");
   const semesterIdParam = url.searchParams.get("semesterId");
   const semesterId = semesterIdParam ? parseInt(semesterIdParam, 10) : undefined;
+
   if (idParam) {
     const id = parseInt(idParam);
     const result = await searchID(id);

@@ -13,7 +13,7 @@ import { Search, Plus } from "lucide-react";
 import { useEvents } from "@/hooks/use-events";
 import { useSearch } from "@/hooks/use-search";
 import { useStundenplan } from "@/hooks/use-stundenplan";
-import { Visibility, SearchResult, Event } from "@/types/planner";
+import { Visibility, SearchResult, Event, ModulResult } from "@/types/planner";
 import { DAYS } from "@/lib/planner-utils";
 import { NewEventData } from "@/components/add-event-modal";
 import Image from "next/image";
@@ -53,6 +53,7 @@ export default function Planer() {
     events,
     addEvent,
     addSearchResult,
+    addModuleByID,
     toggleEvent,
     removeEvent,
     toggleSubEvent,
@@ -183,6 +184,25 @@ export default function Planer() {
 
   const handleAddSearchResult = (result: SearchResult) => {
     const success = addSearchResult(result);
+    if (success) {
+      setShowSearchDialog(false);
+    }
+  };
+
+  const handleAddModuleResult = (modul: ModulResult) => {
+    let addedCount = 0;
+    modul.veranstaltungen.forEach((ev) => {
+      const success = addSearchResult(ev);
+      if (success) {
+        addedCount++;
+      }
+    });
+    toast.success(`${addedCount} Veranstaltung(en) aus Modul "${modul.name}" wurden hinzugefügt!`);
+    setShowSearchDialog(false);
+  };
+
+  const handleAddModuleByID = async (moduleId: number) => {
+    const success = await addModuleByID(moduleId);
     if (success) {
       setShowSearchDialog(false);
     }
@@ -341,6 +361,8 @@ export default function Planer() {
         modulResults={searchedModuls}
         isSearching={isSearching}
         onSelectResult={handleAddSearchResult}
+        onSelectModulResult={handleAddModuleResult}
+        onSelectModuleByID={handleAddModuleByID}
       />
     </main>
   );
