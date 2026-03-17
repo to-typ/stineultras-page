@@ -253,7 +253,7 @@ export default function Planer() {
   return (
     <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
       {/* Header */}
-      <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm">
+      <div className="w-full border-b border-slate-200 bg-white/80 backdrop-blur-sm sticky top-0 z-20 shadow-sm">
         <div className="container mx-auto px-6 py-6 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div>
