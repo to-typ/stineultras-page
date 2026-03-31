@@ -284,7 +284,7 @@ export function StundenplanControls({
       </AlertDialog>
 
       {/* Export */}
-      <div className="flex items-center gap-0 rounded-md border border-neutral-200 bg-white shadow-sm">
+      <div className="flex items-center gap-0 rounded-md border border-neutral-200 bg-white shadow-sm" data-tour="share-export">
         {/* Teilen Button */}
         <Button
           variant="outline"

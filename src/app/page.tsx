@@ -21,6 +21,9 @@ import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
 import { createShareLink, exportICS, importStundeplan } from "@/lib/import-export";
 import { toast } from "sonner";
+import { Onboarding } from "@/components/onboarding";
+import { useOnboarding } from "@/hooks/use-onboarding";
+import { MobileWarning } from "@/components/mobile-warning";
 
 type Semester = {
   id: number;
@@ -29,6 +32,7 @@ type Semester = {
 };
 
 export default function Planer() {
+  const { showOnboarding, completeOnboarding } = useOnboarding();
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [showAddEventModal, setShowAddEventModal] = useState(false);
   const [showEventDetailsModal, setShowEventDetailsModal] = useState(false);
@@ -268,7 +272,7 @@ export default function Planer() {
             </div>
           </div>
           {/* Stundenplan Controls */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4" data-tour="stundenplan-controls">
             <StundenplanControls
               stundenplaene={stundenplaene}
               currentStundenplanId={currentStundenplanId}
@@ -296,6 +300,7 @@ export default function Planer() {
               variant="default"
               disabled={!currentStundenplan}
               title="Durchsuche das Vorlesungsverzeichnis nach Veranstaltungen"
+              data-tour="search-button"
             >
               <Search className="h-4 w-4 mr-2" />
               Vorlesungsverzeichnis durchsuchen
@@ -306,6 +311,7 @@ export default function Planer() {
               variant="outline"
               disabled={!currentStundenplan}
               title="Füge eine eigene Veranstaltung oder einen Termin hinzu"
+              data-tour="add-event-button"
             >
               <Plus className="h-4 w-4 mr-2" />
               Eigenes Event hinzufügen
@@ -313,23 +319,25 @@ export default function Planer() {
           </div>
 
           {/* Events Liste */}
-          <EventList
-            events={events}
-            onToggleEvent={toggleEvent}
-            onRemoveEvent={removeEvent}
-            onToggleSubEvent={toggleSubEvent}
-            onClearAll={clearAllEvents}
-            onShowInfo={showEventDetails}
-            onColorChange={changeEventColor}
-            onPrioritizeEvent={prioritizeEvent}
-            onPrioritizeSubEvent={prioritizeSubEvent}
-          />
+          <div data-tour="event-list">
+            <EventList
+              events={events}
+              onToggleEvent={toggleEvent}
+              onRemoveEvent={removeEvent}
+              onToggleSubEvent={toggleSubEvent}
+              onClearAll={clearAllEvents}
+              onShowInfo={showEventDetails}
+              onColorChange={changeEventColor}
+              onPrioritizeEvent={prioritizeEvent}
+              onPrioritizeSubEvent={prioritizeSubEvent}
+            />
+          </div>
         </aside>
 
         {/* Rechte Seite: Stundenplan */}
         <section className="flex-1 flex flex-col min-w-0">
           <Card className="shadow-md flex-1 flex flex-col overflow-hidden">
-            <CardHeader className="flex-shrink-0">
+            <CardHeader className="flex-shrink-0" data-tour="calendar-header">
               <CardTitle className="text-xl">Dein Stundenplan</CardTitle>
             </CardHeader>
             <CardContent className="flex-1 p-6 pt-0 overflow-auto">
@@ -350,6 +358,12 @@ export default function Planer() {
         onChangeEventIcsName={(name) => selectedEvent && changeEventIcsName(selectedEvent.id, name)}
         onChangeSubIcsName={(subName, name) => selectedEvent && changeSubEventIcsName(selectedEvent.id, subName, name)}
       />
+
+      {/* Mobile-Warnung */}
+      <MobileWarning />
+
+      {/* Onboarding für neue Benutzer */}
+      {showOnboarding && <Onboarding onComplete={completeOnboarding} />}
 
       {/* Dialog für Veranstaltungssuche */}
       <SearchDialog
