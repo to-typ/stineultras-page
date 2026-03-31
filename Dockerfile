@@ -4,11 +4,15 @@ WORKDIR /app
 
 # Installer für Dependencies
 FROM base AS deps
+RUN apt-get update && apt-get install -y --no-install-recommends libvips-dev && rm -rf /var/lib/apt/lists/*
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile --production
 
 # Builder für die App
 FROM base AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends libvips-dev && rm -rf /var/lib/apt/lists/*
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 COPY . .
@@ -27,6 +31,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV SHARP_IGNORE_GLOBAL_LIBVIPS=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends libvips && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r -g 1001 nodejs && \
     useradd -r -u 1001 -g nodejs nextjs
