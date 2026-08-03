@@ -31,6 +31,8 @@ const stineURL2526 =
   "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AyWhCKzswcs-c6Byp9xtolWBxvzFmFk0QpruFGBmRNFjlPz43J2ag0L5ha5-89vKhj2PvYDbIdNHfyXlIqS0Cb3gY7vrV-05CVsDJOmjltPkq6ijPzRVeUo9twJDU4IjTtgSJ0Afq0Cv4ClqOyuTKiMzzHYRORro8iznXvXszKJ~RxZSouhqsq~klyQ__";
 const stineURL26 =
   "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AKASswnuYGaqGHKVIEzr78JS8XTsQ2rjXfsNr0DDrEtf5z3fuUMOHbPtzKrF39qCiCCJS0jT9UUDe4yRDIvwHSpkmQPQmoTQCnSd78HQttnxA1jheEvE5DPnc8vdkNqgpTi1O1uRvibRV7CAnOxwZuZUlmcbrpHCIqSQVzFIcfmJe9NeoSYCefsFjOQ__";
+const stineURL2627 =
+  "https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=ACTION&ARGUMENTS=-AsepwprUqMaIX~p3ftKO89x6SLDEsMzDj7oNX1r2XsYZpLEM7ytMN4gznnN1zB2eEPmn2JVN2ew0-A7JqoAWb472Ursx6fnNCNtbkJoT~m9FXpwa-ONrQPsdD0sDvzK5lfAD8YGhSMYkxozNMT4HW3kwoFJRR1s8nZk8Wgm8o1fax2fDp1RX0poYnhw__";
 
 //---------------------------------------------------
 //    _____                    _
@@ -50,8 +52,13 @@ async function crawlSemester(semester: string) {
     switch (semester) {
       case "WiSe 25/26":
         url = stineURL2526;
+        break;
       case "SoSe 26":
         url = stineURL26;
+        break;
+      case "WiSe 26/27":
+        url = stineURL2627;
+        break;
     }
     if (url === "") {
       console.log(`Crawling menu: no url for semester ${semester}`);
@@ -72,9 +79,7 @@ async function crawlMenu(url: string, semesterId: number): Promise<object> {
     console.log(`Crawling menu: null url`);
     return {};
   } else {
-    await new Promise((r) =>
-      setTimeout(r, standardTimeout + Math.random() * randomTimeout),
-    );
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
     console.log(`Crawling menu: ${url}`);
 
     const website = async () => {
@@ -89,10 +94,7 @@ async function crawlMenu(url: string, semesterId: number): Promise<object> {
       if (html.includes("Veranstaltungen / Module")) {
         const veranstaltungen = findVeranstaltungen(html);
         for (const veranstaltung of veranstaltungen) {
-          await crawlVeranstaltung(
-            stineBaseURL + veranstaltung.url,
-            semesterId,
-          );
+          await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId);
         }
       }
       const submenuLinks = findSubmenus(html);
@@ -119,9 +121,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
     console.log(`Crawling event: null url`);
     return null;
   } else {
-    await new Promise((r) =>
-      setTimeout(r, standardTimeout + Math.random() * randomTimeout),
-    );
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
     console.log(`Crawling event: ${url}`);
     const website = async () => {
       return await fetch(url, {
@@ -136,9 +136,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
       where: { stineId: eventData.stineId },
     });
     if (existing.length > 0) {
-      console.log(
-        `Veranstaltung mit STiNE-ID ${eventData.stineId} bereits vorhanden`,
-      );
+      console.log(`Veranstaltung mit STiNE-ID ${eventData.stineId} bereits vorhanden`);
       return null;
     }
 
@@ -157,9 +155,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
       const subgroups = findUebungsgruppen(html);
       const results = [];
       for (const subgroup of subgroups) {
-        results.push(
-          await crawlUebungsgruppe(stineBaseURL + subgroup.href, result.id),
-        );
+        results.push(await crawlUebungsgruppe(stineBaseURL + subgroup.href, result.id));
       }
       return { subgroups: results };
     } else {
@@ -172,9 +168,7 @@ async function crawlUebungsgruppe(url: string, eventId: number) {
   if (url === null || url === undefined || url === "") {
     return null;
   } else {
-    await new Promise((r) =>
-      setTimeout(r, standardTimeout + Math.random() * randomTimeout),
-    );
+    await new Promise((r) => setTimeout(r, standardTimeout + Math.random() * randomTimeout));
     console.log(`Crawling subgroup: ${url}`);
     const website = async () => {
       return await fetch(url, {
@@ -196,11 +190,7 @@ async function crawlUebungsgruppe(url: string, eventId: number) {
   }
 }
 
-async function crawlTermin(
-  html: string,
-  subgroupId?: number,
-  eventId?: number,
-) {
+async function crawlTermin(html: string, subgroupId?: number, eventId?: number) {
   const dates = findTermine(html);
   for (const date of dates) {
     // Behandle die Zeiten als UTC (ohne Timezone-Konvertierung)
@@ -247,17 +237,14 @@ async function crawlTermin(
 
 function findSubmenus(html: string): Array<{ title: string; href: string }> {
   const links: Array<{ title: string; href: string }> = [];
-  const listMatch = html.match(
-    /<ul class="auditRegistrationList"[^>]*>([\s\S]*?)<\/ul>/,
-  );
+  const listMatch = html.match(/<ul class="auditRegistrationList"[^>]*>([\s\S]*?)<\/ul>/);
 
   if (!listMatch) {
     return links;
   }
 
   const listContent = listMatch[1];
-  const linkRegex =
-    /<a class="auditRegNodeLink" href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
+  const linkRegex = /<a class="auditRegNodeLink" href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
 
   let match;
   while ((match = linkRegex.exec(listContent)) !== null) {
@@ -271,12 +258,9 @@ function findSubmenus(html: string): Array<{ title: string; href: string }> {
   return links;
 }
 
-function findVeranstaltungen(
-  html: string,
-): Array<{ name: string; url: string }> {
+function findVeranstaltungen(html: string): Array<{ name: string; url: string }> {
   const events: Array<{ name: string; url: string }> = [];
-  const eventRegex =
-    /<a name="eventLink"\s+href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
+  const eventRegex = /<a name="eventLink"\s+href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
 
   let match;
   while ((match = eventRegex.exec(html)) !== null) {
@@ -305,8 +289,7 @@ function findTermine(html: string): Array<{
     location: string;
     number: number;
   }> = [];
-  const dateRegex =
-    /<div class="courseListCell[^"]*"[^>]*title="([^"]*)"[^>]*>\s*<span[^>]*>([^<]*)<span/g;
+  const dateRegex = /<div class="courseListCell[^"]*"[^>]*title="([^"]*)"[^>]*>\s*<span[^>]*>([^<]*)<span/g;
 
   let match;
   while ((match = dateRegex.exec(html)) !== null) {
@@ -357,13 +340,10 @@ function findTermine(html: string): Array<{
   return dates;
 }
 
-function findUebungsgruppen(
-  html: string,
-): Array<{ name: string; href: string }> {
+function findUebungsgruppen(html: string): Array<{ name: string; href: string }> {
   const subgroups: Array<{ name: string; href: string }> = [];
 
-  const kleingruppenRegex =
-    /<ul class="dl-ul-listview[^"]*"[^>]*>([\s\S]*?)<\/ul>/g;
+  const kleingruppenRegex = /<ul class="dl-ul-listview[^"]*"[^>]*>([\s\S]*?)<\/ul>/g;
   const sectionMatch = kleingruppenRegex.exec(html);
 
   if (!sectionMatch) {
@@ -372,17 +352,14 @@ function findUebungsgruppen(
 
   const listContent = sectionMatch[1];
 
-  const groupRegex =
-    /<p class="dl-ul-li-headline"><strong>(.*?)<\/strong><\/p>/g;
+  const groupRegex = /<p class="dl-ul-li-headline"><strong>(.*?)<\/strong><\/p>/g;
   let match;
 
   while ((match = groupRegex.exec(listContent)) !== null) {
     const name = match[1].trim();
 
     const afterGroupName = listContent.substring(match.index);
-    const linkMatch = afterGroupName.match(
-      /<a href="([^"]*)"[^>]*>\s*Kleingruppe anzeigen\s*<\/a>/,
-    );
+    const linkMatch = afterGroupName.match(/<a href="([^"]*)"[^>]*>\s*Kleingruppe anzeigen\s*<\/a>/);
 
     const href = linkMatch ? linkMatch[1].replace(/&amp;/g, "&") : "";
 
@@ -425,16 +402,13 @@ function getVeranstaltungData(html: string): {
   const typeRegex = /Veranstaltungsart:[\s\S]*?<div[^>]*>\s*([^\n<]+)/;
   const nameRegex = /<h1[^>]*>\s*([\d-\.\w]+)[\s\S]+?(.*?)\s*<\/h1>/;
   const personRegex = /<span[^>]*id="dozenten"[^>]*>([^<]*)<\/span>/;
-  const stineNameRegex =
-    /Anzeige im Stundenplan: [\s\S]*?<div[^>]*>\s*([^\n<]+)/;
+  const stineNameRegex = /Anzeige im Stundenplan: [\s\S]*?<div[^>]*>\s*([^\n<]+)/;
   const typeMatch = typeRegex.exec(html);
   const nameMatch = nameRegex.exec(html);
   const personMatch = personRegex.exec(html);
   const stineNameMatch = stineNameRegex.exec(html);
 
-  const type = typeMatch
-    ? mapVeranstaltungsTyp(typeMatch[1].trim())
-    : VeranstaltungsTyp.UNDEFINED;
+  const type = typeMatch ? mapVeranstaltungsTyp(typeMatch[1].trim()) : VeranstaltungsTyp.UNDEFINED;
 
   let stineId = "";
   let name = "";
@@ -710,8 +684,7 @@ export async function POST(req: NextRequest) {
       const errorJob = jobs.get(jobId);
       if (errorJob) {
         errorJob.status = "error";
-        errorJob.error =
-          error instanceof Error ? error.message : "Unknown error";
+        errorJob.error = error instanceof Error ? error.message : "Unknown error";
         errorJob.completedAt = new Date();
         jobs.set(jobId, errorJob);
       }
@@ -735,10 +708,7 @@ export async function GET(req: NextRequest) {
   const jobId = searchParams.get("jobId");
 
   if (!jobId) {
-    return NextResponse.json(
-      { error: "jobId parameter is required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "jobId parameter is required" }, { status: 400 });
   }
 
   const job = jobs.get(jobId);

@@ -31,7 +31,7 @@ export default function Admin() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        semester: "SoSe 26",
+        semester: "WiSe 2627",
       }),
     });
     const result = await response.json();
@@ -142,7 +142,8 @@ export default function Admin() {
             <button
               onClick={createAdmin}
               disabled={createAdminLoading}
-              className="bg-green-600 p-3 rounded-lg hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+              className="bg-green-600 p-3 rounded-lg hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {createAdminLoading ? "Wird erstellt..." : "Admin erstellen"}
             </button>
           </div>
@@ -171,12 +172,7 @@ export default function Admin() {
           onClick={crawlModuls}
           className="bg-blue-800 p-4 rounded-lg hover:bg-blue-900 cursor-pointer"
         />
-        <input
-          type="text"
-          placeholder="Job ID"
-          id="jobId"
-          className="p-4 rounded-lg text-black"
-        />
+        <input type="text" placeholder="Job ID" id="jobId" className="p-4 rounded-lg text-black" />
         <input
           type="button"
           value="Crawl-Status prüfen"
