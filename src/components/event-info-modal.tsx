@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -55,21 +49,31 @@ export default function EventInfoModal({
         <div className="space-y-4">
           {event?.info && (
             <>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Kürzel:</span>
-                <span className="text-sm">{event?.shortname || "-"}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Lehrende:</span>
-                <span className="text-sm">
-                  {event?.info?.veranstaltung.lehrende || "-"}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Typ:</span>
-                <span className="text-sm">
-                  {event?.info?.veranstaltung.typ || "-"}
-                </span>
+              <div className="flex flex-row">
+                <div className="w-3/4 gap-2 flex flex-col">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Kürzel:</span>
+                    <span className="text-sm">{event?.shortname || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Lehrende:</span>
+                    <span className="text-sm">{event.info.veranstaltung.lehrende || "-"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium">Typ:</span>
+                    <span className="text-sm">{event.info.veranstaltung.typ || "-"}</span>
+                  </div>
+                </div>
+                <div className="flex w-1/4 items-center justify-center">
+                  <a
+                    href={event.info.veranstaltung.url}
+                    className="text-sm text-blue-600 hover:underline"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    In STiNE ansehen
+                  </a>
+                </div>
               </div>
               <Separator />
             </>
@@ -87,23 +91,17 @@ export default function EventInfoModal({
               }}
               className="h-8 text-sm"
             />
-            <p className="text-xs text-muted-foreground">
-              Überschreibt den Namen im ICS-Export für dieses Event.
-            </p>
+            <p className="text-xs text-muted-foreground">Überschreibt den Namen im ICS-Export für dieses Event.</p>
           </div>
 
           {hasMultipleSubs && (
             <>
               <Separator />
               <div className="space-y-2">
-                <p className="text-sm font-medium">
-                  Gruppen-Bezeichnungen im Kalender
-                </p>
+                <p className="text-sm font-medium">Gruppen-Bezeichnungen im Kalender</p>
                 {event?.events.map((sub) => (
                   <div key={sub.name} className="flex items-center gap-2">
-                    <span
-                      className="text-sm text-muted-foreground w-48 truncate"
-                      title={sub.name}>
+                    <span className="text-sm text-muted-foreground w-48 truncate" title={sub.name}>
                       {sub.name}
                     </span>
                     <Input
@@ -135,25 +133,17 @@ export default function EventInfoModal({
                       <CardHeader className="pb-3">
                         {event.events.length > 1 && (
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium">
-                              {group.uebungsgruppe.name}
-                            </span>
+                            <span className="text-sm font-medium">{group.uebungsgruppe.name}</span>
                           </div>
                         )}
                         <div className="flex">
-                          <span className="text-xs text-muted-foreground">
-                            Termine:
-                          </span>
+                          <span className="text-xs text-muted-foreground">Termine:</span>
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
                         {group.termine.map((date, dateIndex) => (
-                          <div
-                            key={dateIndex}
-                            className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
-                            <span className="text-sm font-medium">
-                              {date.nummer}
-                            </span>
+                          <div key={dateIndex} className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
+                            <span className="text-sm font-medium">{date.nummer}</span>
                             <span className="text-sm">
                               {new Date(date.tag).toLocaleDateString("de-DE", {
                                 weekday: "short",
@@ -162,24 +152,57 @@ export default function EventInfoModal({
                                 year: "numeric",
                               })}
                               :{" "}
-                              {new Date(date.startZeit).toLocaleTimeString(
-                                "de-DE",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}{" "}
+                              {new Date(date.startZeit).toLocaleTimeString("de-DE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
                               -{" "}
-                              {new Date(date.endZeit).toLocaleTimeString(
-                                "de-DE",
-                                { hour: "2-digit", minute: "2-digit" },
-                              )}
+                              {new Date(date.endZeit).toLocaleTimeString("de-DE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
                             </span>
-                            <span className="text-sm font-medium">
-                              {date.raum}
-                            </span>
+                            <span className="text-sm font-medium">{date.raum}</span>
                           </div>
                         ))}
                       </CardContent>
                     </Card>
                   ))}
+                  {event.info.termine && (
+                    <Card key={1}>
+                      <CardHeader className="pb-3">
+                        <div className="flex">
+                          <span className="text-sm font-medium">Termine:</span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                        {event.info.termine.map((date, dateIndex) => (
+                          <div key={dateIndex} className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
+                            <span className="text-sm font-medium">{date.nummer}</span>
+                            <span className="text-sm">
+                              {new Date(date.tag).toLocaleDateString("de-DE", {
+                                weekday: "short",
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                              :{" "}
+                              {new Date(date.startZeit).toLocaleTimeString("de-DE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}{" "}
+                              -{" "}
+                              {new Date(date.endZeit).toLocaleTimeString("de-DE", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                            <span className="text-sm font-medium">{date.raum}</span>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </ScrollArea>
             </>

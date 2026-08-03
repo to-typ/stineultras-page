@@ -25,6 +25,7 @@ export async function searchJoin(eventId: number) {
         uebungsgruppe: u,
         termine: termine,
       });
+      uebungsgruppen = uebungsgruppenWithTermine;
     }
   } else {
     // Keine Übungsgruppen, hole direkte Termine der Veranstaltung

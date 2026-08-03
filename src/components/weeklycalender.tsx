@@ -24,13 +24,7 @@ export type Entry = {
   textcolor: string;
 };
 
-export default function WeeklyCalender({
-  days,
-  entrys,
-}: {
-  days: string[];
-  entrys: Entry[];
-}) {
+export default function WeeklyCalender({ days, entrys }: { days: string[]; entrys: Entry[] }) {
   // Hilfsfunktion: Zeit-String (z.B. "18:10") in Minuten umwandeln
   function timeStringToMinutes(time: string): number {
     const [h, m] = time.split(":").map(Number);
@@ -52,18 +46,15 @@ export default function WeeklyCalender({
       const dayIdx = days.indexOf(d.day);
       if (dayIdx === -1) return null;
       const startSlotIdx = timeSlots.findIndex(
-        (slot) =>
-          slot.hour + slot.min / 60 >= timeStringToMinutes(d.start) / 60,
+        (slot) => slot.hour + slot.min / 60 >= timeStringToMinutes(d.start) / 60,
       );
-      const endSlotIdx = timeSlots.findIndex(
-        (slot) => slot.hour + slot.min / 60 >= timeStringToMinutes(d.end) / 60,
-      );
+      const endSlotIdx = timeSlots.findIndex((slot) => slot.hour + slot.min / 60 >= timeStringToMinutes(d.end) / 60);
       if (startSlotIdx === -1 || endSlotIdx === -1) return null;
       return {
         key: d.id + "-" + d.text + "-" + d.day + "-" + d.start,
         content: d.text,
         room: d.room,
-        gridColumn: (dayIdx + 2).toString(),
+        gridColumn: (dayIdx + 1).toString(),
         start: d.start,
         end: d.end,
         position: "1/1",
@@ -82,9 +73,7 @@ export default function WeeklyCalender({
 
   for (const day in dayMap) {
     const dayEntries = dayMap[day];
-    dayEntries.sort(
-      (a, b) => timeStringToMinutes(a.start) - timeStringToMinutes(b.start),
-    );
+    dayEntries.sort((a, b) => timeStringToMinutes(a.start) - timeStringToMinutes(b.start));
 
     // Berechne für jedes Event die maximale Anzahl gleichzeitiger Events
     for (let i = 0; i < dayEntries.length; i++) {
@@ -139,80 +128,89 @@ export default function WeeklyCalender({
   }
 
   return (
-    <div className="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+    <div className="flex flex-row">
       <div
-        className="grid relative"
+        className="grid"
         style={{
-          gridTemplateColumns: `90px repeat(${days.length}, minmax(120px, 1fr))`,
-          gridTemplateRows: `50px repeat(${timeSlots.length}, 40px)`,
-          minWidth: "800px",
-        }}>
-        {/* Header - Zeit */}
-        <div
-          className="bg-gradient-to-br from-slate-100 to-slate-50 border-r border-b border-slate-200 flex items-center justify-center font-semibold text-slate-700"
-          style={{ gridRow: 1, gridColumn: 1 }}>
-          Zeit
-        </div>
-
-        {/* Header - Tage */}
-        {days.map((day, i) => (
-          <div
-            key={day}
-            className="bg-gradient-to-br from-blue-50 to-indigo-50 border-r border-b border-slate-200 flex items-center justify-center font-semibold text-slate-700"
-            style={{ gridRow: 1, gridColumn: i + 2 }}>
-            {day}
-          </div>
-        ))}
-
+          gridTemplateRows: `30px repeat(${timeSlots.length}, 40px)`,
+        }}
+      >
         {/* Zeitspalten */}
         {timeSlots.map((slot, rowIdx) => (
           <div
             key={slot.label}
-            className="bg-slate-50 border-r border-b border-slate-200 flex items-center justify-center text-xs text-slate-600 font-medium"
-            style={{ gridRow: rowIdx + 2, gridColumn: 1 }}>
-            {slot.label}
+            className={`flex items-center text-xs text-slate-600 font-medium ${slot.min === 30 ? "hidden" : ""}`}
+            style={{ gridRow: rowIdx + 2, gridColumn: 1 }}
+          >
+            <span className="w-full text-right px-3">{slot.label}</span>
           </div>
         ))}
+      </div>
 
-        {/* Grid-Zellen */}
-        {days.map((day, i) =>
-          timeSlots.map((slot, rowIdx) => (
+      <div className="w-full overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div
+          className="grid relative"
+          style={{
+            gridTemplateColumns: `repeat(${days.length}, minmax(120px, 1fr))`,
+            gridTemplateRows: `50px repeat(${timeSlots.length}, 40px)`,
+            minWidth: "800px",
+          }}
+        >
+          {/* Header - Tage */}
+          {days.map((day, i) => (
             <div
-              key={`${day}-${slot.label}`}
-              className="border-r border-b border-slate-100 bg-white hover:bg-slate-50 transition-colors"
-              style={{ gridRow: rowIdx + 2, gridColumn: i + 2 }}
-            />
-          )),
-        )}
-
-        {/* Eventfelder */}
-        {fields.map((entry) => (
-          <div
-            key={entry.key}
-            className="rounded-md px-2 py-1 flex flex-col items-center justify-center text-xs font-semibold border-2 shadow-sm hover:shadow-md transition-all cursor-default overflow-hidden"
-            style={{
-              position: "relative",
-              gridRow: `2/${timeSlots.length + 1}`,
-              gridColumn: entry.gridColumn,
-              zIndex: 3,
-              width: `calc(${100 / parseInt(entry.position.split("/")[1])}% - 8px)`,
-              left: `calc(${(parseInt(entry.position.split("/")[0]) - 1) * (100 / parseInt(entry.position.split("/")[1]))}% + 4px)`,
-              top: `${((timeStringToMinutes(entry.start) - timeStringToMinutes("8:00")) / 30) * 40 + 4}px`,
-              height: `${((timeStringToMinutes(entry.end) - timeStringToMinutes(entry.start)) / 30) * 40 - 8}px`,
-              backgroundColor: entry.bgcolor,
-              color: ((parseInt(entry.bgcolor.slice(1, 3), 16) * 299 + parseInt(entry.bgcolor.slice(3, 5), 16) * 587 + parseInt(entry.bgcolor.slice(5, 7), 16) * 114) / 1000 > 128 ? "#242424" : "#ffffff"),
-              borderColor: entry.textcolor + "40",
-            }}>
-            <div className="w-full text-center leading-tight break-words">
-              {entry.content}
+              key={day}
+              className={`bg-gradient-to-br from-blue-50 to-indigo-50 ${i != days.length - 1 ? "border-r" : ""} border-b border-slate-200 flex items-center justify-center font-semibold text-slate-700`}
+              style={{ gridRow: 1, gridColumn: i + 1 }}
+            >
+              {day}
             </div>
-            {entry.room && (
-              <div className="w-full text-center text-[10px] opacity-80 mt-1 break-words">
-                {entry.room}
-              </div>
-            )}
-          </div>
-        ))}
+          ))}
+
+          {/* Grid-Zellen */}
+          {days.map((day, i) =>
+            timeSlots.map((slot, rowIdx) => (
+              <div
+                key={`${day}-${slot.label}`}
+                className={`${i != days.length - 1 ? "border-r" : ""} ${rowIdx != timeSlots.length - 1 ? "border-b" : ""} border-slate-100 bg-white hover:bg-slate-50 transition-colors`}
+                style={{ gridRow: rowIdx + 2, gridColumn: i + 1 }}
+              />
+            )),
+          )}
+
+          {/* Eventfelder */}
+          {fields.map((entry) => (
+            <div
+              key={entry.key}
+              className="rounded-md px-2 py-1 flex flex-col items-center justify-center text-xs font-semibold border-2 shadow-sm hover:shadow-md transition-all cursor-default overflow-hidden"
+              style={{
+                position: "relative",
+                gridRow: `2/${timeSlots.length + 1}`,
+                gridColumn: entry.gridColumn,
+                zIndex: 3,
+                width: `calc(${100 / parseInt(entry.position.split("/")[1])}% - 8px)`,
+                left: `calc(${(parseInt(entry.position.split("/")[0]) - 1) * (100 / parseInt(entry.position.split("/")[1]))}% + 4px)`,
+                top: `${((timeStringToMinutes(entry.start) - timeStringToMinutes("8:00")) / 30) * 40 + 4}px`,
+                height: `${((timeStringToMinutes(entry.end) - timeStringToMinutes(entry.start)) / 30) * 40 - 8}px`,
+                backgroundColor: entry.bgcolor,
+                color:
+                  (parseInt(entry.bgcolor.slice(1, 3), 16) * 299 +
+                    parseInt(entry.bgcolor.slice(3, 5), 16) * 587 +
+                    parseInt(entry.bgcolor.slice(5, 7), 16) * 114) /
+                    1000 >
+                  128
+                    ? "#242424"
+                    : "#ffffff",
+                borderColor: entry.textcolor + "40",
+              }}
+            >
+              <div className="w-full text-center leading-tight break-words">{entry.content}</div>
+              {entry.room && (
+                <div className="w-full text-center text-[10px] opacity-80 mt-1 break-words">{entry.room}</div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
