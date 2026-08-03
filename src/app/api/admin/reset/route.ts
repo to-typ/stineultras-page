@@ -21,7 +21,6 @@ async function deleteDB(data: string) {
       case "modul":
         await prisma.veranstaltungInModul.deleteMany({});
         return await prisma.modul.deleteMany({});
-
       default:
         throw new Error("Unknown type");
     }

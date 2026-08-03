@@ -70,11 +70,11 @@ async function crawlSemester(semester: string) {
         name: semester,
       },
     });
-    return crawlMenu(url, sem.id);
+    return crawlMenu("Übersicht", url, sem.id);
   }
 }
 
-async function crawlMenu(url: string, semesterId: number): Promise<object> {
+async function crawlMenu(name: string, url: string, semesterId: number): Promise<object> {
   if (url === null || url === undefined || url === "") {
     console.log(`Crawling menu: null url`);
     return {};
@@ -90,29 +90,46 @@ async function crawlMenu(url: string, semesterId: number): Promise<object> {
     const response = await website();
     const html = await response.text();
 
-    if (html.includes("auditRegistrationList")) {
-      if (html.includes("Veranstaltungen / Module")) {
-        const veranstaltungen = findVeranstaltungen(html);
+    if (!html.includes("auditRegistrationList") || html.includes("Veranstaltungen / Module")) {
+      const veranstaltungen = findVeranstaltungen(html);
+      if (veranstaltungen.length > 0) {
+        //Modul
+        const modul = await prisma.modul.create({
+          data: {
+            name: name,
+            semester: { connect: { id: semesterId } },
+          },
+        });
+
         for (const veranstaltung of veranstaltungen) {
-          await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId);
+          //Veranstaltung
+          const id = await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId);
+
+          //Connection Modul <=> Veranstaltung
+          if (id) {
+            await prisma.veranstaltungInModul.create({
+              data: {
+                modul: { connect: { id: modul.id } },
+                veranstaltung: { connect: { id: id } },
+              },
+            });
+          }
         }
       }
+    }
+
+    if (html.includes("auditRegistrationList")) {
       const submenuLinks = findSubmenus(html);
       const results = [];
       for (const submenu of submenuLinks) {
         if (crawlStopFlag) {
           return { submenus: results };
         }
-        results.push(await crawlMenu(stineBaseURL + submenu.href, semesterId));
+        results.push(await crawlMenu(submenu.title, stineBaseURL + submenu.href, semesterId));
       }
       return { submenus: results };
-    } else {
-      const veranstaltungen = findVeranstaltungen(html);
-      for (const veranstaltung of veranstaltungen) {
-        await crawlVeranstaltung(stineBaseURL + veranstaltung.url, semesterId);
-      }
-      return {};
     }
+    return {};
   }
 }
 
@@ -133,11 +150,10 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
     const eventData = getVeranstaltungData(html);
 
     const existing = await prisma.veranstaltung.findMany({
-      where: { stineId: eventData.stineId },
+      where: { stineId: eventData.stineId, semesterId: semesterId },
     });
-    if (existing.length > 0) {
-      console.log(`Veranstaltung mit STiNE-ID ${eventData.stineId} bereits vorhanden`);
-      return null;
+    if (existing.length > 0 && eventData.stineId) {
+      return existing[0].id;
     }
 
     const result = await prisma.veranstaltung.create({
@@ -154,14 +170,13 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
 
     if (html.includes("Kleingruppe(n)")) {
       const subgroups = findUebungsgruppen(html);
-      const results = [];
       for (const subgroup of subgroups) {
-        results.push(await crawlUebungsgruppe(stineBaseURL + subgroup.href, result.id));
+        await crawlUebungsgruppe(stineBaseURL + subgroup.href, result.id);
       }
-      return { subgroups: results };
     } else {
       await crawlTermin(html, undefined, result.id);
     }
+    return result.id;
   }
 }
 

@@ -77,37 +77,33 @@ async function crawlMenu(name: string, url: string, semesterId: number): Promise
     const response = await website();
     const html = await response.text();
 
-    if (!html.includes("auditRegistrationList" ) || html.includes("Veranstaltungen / Module")) {
+    if (!html.includes("auditRegistrationList") || html.includes("Veranstaltungen / Module")) {
       const modul = await prisma.modul.create({
-          data: {
-            name: name,
-          },
-        });
+        data: {
+          name: name,
+        },
+      });
 
       const veranstaltungen = findVeranstaltungen(html);
       for (const veranstaltung of veranstaltungen) {
-          const stineId = veranstaltung.name.split(" ")[0];
-          await prisma.veranstaltung.updateMany({
-            where: { stineId: stineId, },
-            data: { url: stineBaseURL + veranstaltung.url, },
-          });
+        const stineId = veranstaltung.name.split(" ")[0];
 
-          const updatedVeranstaltung = await prisma.veranstaltung.findFirst({
-            where: { stineId: stineId, },
-          });
-          if(updatedVeranstaltung) {
-            await prisma.veranstaltungInModul.create({
-              data: {
-                modul: {
-                  connect: { id: modul.id, },
-                },
-                veranstaltung: {  
-                  connect: { id: updatedVeranstaltung.id,},
-                },
+        const stineVeranstaltung = await prisma.veranstaltung.findFirst({
+          where: { stineId: stineId },
+        });
+        if (stineVeranstaltung) {
+          await prisma.veranstaltungInModul.create({
+            data: {
+              modul: {
+                connect: { id: modul.id },
               },
-            });
-          }
+              veranstaltung: {
+                connect: { id: stineVeranstaltung.id },
+              },
+            },
+          });
         }
+      }
     }
     if (html.includes("auditRegistrationList")) {
       const submenuLinks = findSubmenus(html);
@@ -119,7 +115,7 @@ async function crawlMenu(name: string, url: string, semesterId: number): Promise
         results.push(await crawlMenu(submenu.title, stineBaseURL + submenu.href, semesterId));
       }
       return { submenus: results };
-    } 
+    }
     return {};
   }
 }
@@ -135,17 +131,14 @@ async function crawlMenu(name: string, url: string, semesterId: number): Promise
 
 function findSubmenus(html: string): Array<{ title: string; href: string }> {
   const links: Array<{ title: string; href: string }> = [];
-  const listMatch = html.match(
-    /<ul class="auditRegistrationList"[^>]*>([\s\S]*?)<\/ul>/,
-  );
+  const listMatch = html.match(/<ul class="auditRegistrationList"[^>]*>([\s\S]*?)<\/ul>/);
 
   if (!listMatch) {
     return links;
   }
 
   const listContent = listMatch[1];
-  const linkRegex =
-    /<a class="auditRegNodeLink" href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
+  const linkRegex = /<a class="auditRegNodeLink" href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
 
   let match;
   while ((match = linkRegex.exec(listContent)) !== null) {
@@ -159,12 +152,9 @@ function findSubmenus(html: string): Array<{ title: string; href: string }> {
   return links;
 }
 
-function findVeranstaltungen(
-  html: string,
-): Array<{ name: string; url: string }> {
+function findVeranstaltungen(html: string): Array<{ name: string; url: string }> {
   const events: Array<{ name: string; url: string }> = [];
-  const eventRegex =
-    /<a name="eventLink"\s+href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
+  const eventRegex = /<a name="eventLink"\s+href="([^"]*)"[^>]*>\s*([^<]*)\s*<\/a>/g;
 
   let match;
   while ((match = eventRegex.exec(html)) !== null) {
@@ -228,8 +218,7 @@ export async function POST(req: NextRequest) {
       const errorJob = jobs.get(jobId);
       if (errorJob) {
         errorJob.status = "error";
-        errorJob.error =
-          error instanceof Error ? error.message : "Unknown error";
+        errorJob.error = error instanceof Error ? error.message : "Unknown error";
         errorJob.completedAt = new Date();
         jobs.set(jobId, errorJob);
       }
@@ -253,10 +242,7 @@ export async function GET(req: NextRequest) {
   const jobId = searchParams.get("jobId");
 
   if (!jobId) {
-    return NextResponse.json(
-      { error: "jobId parameter is required" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "jobId parameter is required" }, { status: 400 });
   }
 
   const job = jobs.get(jobId);
