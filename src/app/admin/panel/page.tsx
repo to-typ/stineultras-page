@@ -31,7 +31,7 @@ export default function Admin() {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        semester: "WiSe 2627",
+        semester: "WiSe 26/27",
       }),
     });
     const result = await response.json();

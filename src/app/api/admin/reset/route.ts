@@ -6,6 +6,8 @@ async function deleteDB(data: string) {
     return await prisma.$transaction([
       prisma.termin.deleteMany({}),
       prisma.uebungsgruppe.deleteMany({}),
+      prisma.veranstaltungInModul.deleteMany({}),
+      prisma.modul.deleteMany({}),
       prisma.veranstaltung.deleteMany({}),
     ]);
   } else {
@@ -16,6 +18,10 @@ async function deleteDB(data: string) {
         return await prisma.uebungsgruppe.deleteMany({});
       case "veranstaltung":
         return await prisma.veranstaltung.deleteMany({});
+      case "modul":
+        await prisma.veranstaltungInModul.deleteMany({});
+        return await prisma.modul.deleteMany({});
+
       default:
         throw new Error("Unknown type");
     }

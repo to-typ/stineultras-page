@@ -147,6 +147,7 @@ async function crawlVeranstaltung(url: string, semesterId: number) {
         typ: eventData.type,
         stineName: eventData.stineName,
         lehrende: eventData.person,
+        url: url,
         semester: { connect: { id: semesterId } },
       },
     });
