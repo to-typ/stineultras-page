@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { searchJoin } from "@/lib/search-utils";
-
-const prisma = new PrismaClient();
 
 async function searchDB(search: string, semesterId?: number) {
   const results = [];

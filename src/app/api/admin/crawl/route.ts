@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { VeranstaltungsTyp, PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { VeranstaltungsTyp } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
 type JobStatus = "pending" | "running" | "completed" | "stopped" | "error";
 type Job = {
