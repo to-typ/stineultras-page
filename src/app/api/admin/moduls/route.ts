@@ -33,7 +33,9 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get("search");
     if (!search) {
       const next = req.nextUrl.searchParams.get("next");
-      const moduls = await prisma.modul.findMany({ orderBy: { id: "asc" } });
+      const semesterId = parseInt(req.nextUrl.searchParams.get("semesterId") ?? "0");
+      const filter = semesterId ? { semesterId } : {};
+      const moduls = await prisma.modul.findMany({ orderBy: { id: "asc" }, where: filter });
       if (next) {
         const nextId = parseInt(next);
         const nextModul = moduls.find((modul) => modul.id > nextId);
