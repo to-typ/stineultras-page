@@ -54,9 +54,12 @@ export default function Admin() {
     async function fetchNextId() {
       if (modulData == null) {
         setLoading(true);
-        const response = await fetch(`/api/admin/moduls?next=${modulId}`, {
-          method: "GET",
-        });
+        const response = await fetch(
+          `/api/admin/moduls?next=${modulId}${semesterId ? `&semesterId=${semesterId.id}` : ""}`,
+          {
+            method: "GET",
+          },
+        );
         const nextId = await response.json();
         setModulId(nextId.id ? nextId.id : modulId + 1);
       } else {
