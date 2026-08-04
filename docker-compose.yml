@@ -1,16 +1,15 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: stineultras-postgres
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: stineultras
       POSTGRES_PASSWORD: THcI4bwjTvIOHE
       POSTGRES_DB: stineultras
-    ports:
-      - "5432:5432"
+    # Port 5432 nicht mehr öffentlich exponiert
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -36,35 +35,16 @@ services:
         condition: service_healthy
     networks:
       - stineultras-network
+      - npm-proxy # NPM kann jetzt auf stineultras-app:3000 zugreifen
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: stineultras-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"  # HTTP/3
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-      - caddy_logs:/var/log/caddy
-    depends_on:
-      - app
-    networks:
-      - stineultras-network
+  # caddy entfernt
 
 volumes:
   postgres_data:
-    driver: local
-  caddy_data:
-    driver: local
-  caddy_config:
-    driver: local
-  caddy_logs:
     driver: local
 
 networks:
   stineultras-network:
     driver: bridge
+  npm-proxy:
+    external: true # wird von NPM und allen anderen Apps geteilt
