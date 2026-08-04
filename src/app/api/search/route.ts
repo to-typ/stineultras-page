@@ -83,10 +83,11 @@ export async function GET(req: NextRequest) {
     } else {
       return NextResponse.json({ error: "Veranstaltung nicht gefunden" }, { status: 404 });
     }
-  }
-  const semesterIdParam = url.searchParams.get("semesterId");
-  const semesterId = semesterIdParam ? parseInt(semesterIdParam, 10) : undefined;
+  } else {
+    const semesterIdParam = url.searchParams.get("semesterId");
+    const semesterId = semesterIdParam ? parseInt(semesterIdParam, 10) : undefined;
 
-  const searched = await searchDB(search, semesterId);
-  return NextResponse.json(searched);
+    const searched = await searchDB(search, semesterId);
+    return NextResponse.json(searched);
+  }
 }

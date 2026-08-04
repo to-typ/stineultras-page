@@ -6,7 +6,9 @@ const stringSimilarity = require("string-similarity");
 export async function GET(req: NextRequest) {
   const name = req.nextUrl.searchParams.get("name");
   if (name) {
-    const allModuls = await prisma.modul.findMany();
+    const semesterId = parseInt(req.nextUrl.searchParams.get("semesterId") ?? "0");
+    const filter = semesterId ? { semesterId } : {};
+    const allModuls = await prisma.modul.findMany({ where: filter });
     const matches = allModuls.filter(
       (m) => stringSimilarity.compareTwoStrings(m.name.toLowerCase(), name.toLowerCase()) > 0.8,
     );
