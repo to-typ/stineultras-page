@@ -10,6 +10,12 @@ export default function Admin() {
   const [createAdminLoading, setCreateAdminLoading] = useState(false);
 
   const reset = async () => {
+    if (
+      !confirm("Sind Sie sicher, dass Sie die Datenbank zurücksetzen möchten?")
+    ) {
+      return;
+    }
+
     const response = await fetch("/api/admin/reset", {
       method: "POST",
       headers: {
@@ -142,8 +148,7 @@ export default function Admin() {
             <button
               onClick={createAdmin}
               disabled={createAdminLoading}
-              className="bg-green-600 p-3 rounded-lg hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+              className="bg-green-600 p-3 rounded-lg hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
               {createAdminLoading ? "Wird erstellt..." : "Admin erstellen"}
             </button>
           </div>
@@ -154,12 +159,14 @@ export default function Admin() {
 
         {/* Database Management Section */}
         <h2 className="text-xl font-bold">Datenbank-Verwaltung</h2>
-        <input
-          type="button"
-          value="Datenbank zurücksetzen"
-          onClick={reset}
-          className="bg-red-600 p-4 rounded-lg hover:bg-red-700 cursor-pointer"
-        />
+        {process.env.NODE_ENV === "development" && (
+          <input
+            type="button"
+            value="Datenbank zurücksetzen"
+            onClick={reset}
+            className="bg-red-600 p-4 rounded-lg hover:bg-red-700 cursor-pointer"
+          />
+        )}
         <input
           type="button"
           value="Daten von STiNE crawlen"
@@ -172,7 +179,12 @@ export default function Admin() {
           onClick={crawlModuls}
           className="bg-blue-800 p-4 rounded-lg hover:bg-blue-900 cursor-pointer"
         />
-        <input type="text" placeholder="Job ID" id="jobId" className="p-4 rounded-lg text-black" />
+        <input
+          type="text"
+          placeholder="Job ID"
+          id="jobId"
+          className="p-4 rounded-lg text-black"
+        />
         <input
           type="button"
           value="Crawl-Status prüfen"
