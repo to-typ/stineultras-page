@@ -220,6 +220,10 @@ model CrawlJob {
   createdAt   DateTime  @default(now())
   startedAt   DateTime?
   completedAt DateTime?
+  /// Wird bei jedem Flush gesetzt. Nur Jobs ohne frischen Herzschlag gelten
+  /// als verwaist — eine Prozessvariable wäre nach jedem Modul-Reload wieder
+  /// leer und würde laufende Jobs abräumen.
+  heartbeatAt DateTime?
 
   @@index([status])
   @@index([createdAt])

@@ -25,6 +25,10 @@ export async function crawlVeranstaltungen(
 async function fetchHtml(ctx: CrawlContext, url: string): Promise<string> {
   await ctx.wait();
   ctx.trackRequest(url);
+  // Bei jedem Request flushen (intern auf 2 s gedrosselt). Sonst bliebe der
+  // Herzschlag während einer langen Kursliste minutenlang aus und der Job
+  // würde als verwaist abgeräumt.
+  await ctx.flush();
   console.log(`Crawling: ${url}`);
   const response = await fetch(url, { method: "GET" });
   return await response.text();

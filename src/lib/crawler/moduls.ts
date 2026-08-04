@@ -31,6 +31,8 @@ async function crawlMenu(
 
   await ctx.wait();
   ctx.trackRequest(url);
+  // Siehe veranstaltungen.ts: hält den Herzschlag am Leben, intern gedrosselt.
+  await ctx.flush();
   console.log(`Crawling menu: ${url}`);
 
   const response = await fetch(url, { method: "GET" });

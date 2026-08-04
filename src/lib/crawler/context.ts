@@ -140,10 +140,14 @@ export class CrawlContext {
           progress,
           currentUrl: this.currentUrl,
           samples: this.samples,
+          heartbeatAt: new Date(),
         },
-        select: { stopRequested: true },
+        select: { stopRequested: true, status: true },
       });
-      this.stopCache = job.stopRequested;
+      // Wurde der Job von außen beendet — abgeräumt, manuell auf ERROR gesetzt
+      // —, hört der Crawler auf, statt unsichtbar weiterzuschreiben.
+      this.stopCache =
+        job.stopRequested || (job.status !== "RUNNING" && job.status !== "PENDING");
     } catch (error) {
       console.error(`Fortschritt für Job ${this.jobId} konnte nicht geschrieben werden:`, error);
     }

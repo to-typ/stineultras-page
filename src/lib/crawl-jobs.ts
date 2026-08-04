@@ -48,20 +48,35 @@ function toDto(job: JobWithSemester, withSamples: boolean): CrawlJobDto {
   };
 }
 
-let reconciled = false;
+/**
+ * Ohne Herzschlag seit dieser Zeitspanne gilt ein Job als tot. Der Crawler
+ * schreibt bei jedem Request (gedrosselt auf 2 s), die Spanne ist also
+ * großzügig gewählt — lieber ein toter Job, der eine Minute zu lange als
+ * laufend gilt, als ein lebender, der abgeräumt wird.
+ */
+const STALE_AFTER_MS = 60000;
 
 /**
  * Ein Job, der einen Server-Neustart nicht überlebt hat, stünde für immer auf
  * RUNNING und würde durch die Ein-Job-Sperre jeden weiteren Start blockieren.
- * Deshalb wird beim ersten Zugriff nach dem Start aufgeräumt.
+ *
+ * Die Erkennung läuft ausschließlich über `heartbeatAt`: Ein Merker im Prozess
+ * wäre nach jedem Modul-Reload und in jeder zweiten Server-Instanz wieder
+ * leer und würde dann laufende Jobs als verwaist markieren, während sie im
+ * Hintergrund munter weitercrawlen.
  */
 export async function reconcileOrphans(): Promise<void> {
-  if (reconciled) {
-    return;
-  }
-  reconciled = true;
+  const cutoff = new Date(Date.now() - STALE_AFTER_MS);
+
   await prisma.crawlJob.updateMany({
-    where: { status: { in: ["PENDING", "RUNNING"] } },
+    where: {
+      status: { in: ["PENDING", "RUNNING"] },
+      OR: [
+        { heartbeatAt: { lt: cutoff } },
+        // Noch kein Flush passiert: dann zählt, wann der Job angelegt wurde.
+        { heartbeatAt: null, createdAt: { lt: cutoff } },
+      ],
+    },
     data: {
       status: "ERROR",
       error: "Server wurde neu gestartet",
@@ -178,7 +193,7 @@ async function runJob(
   try {
     await prisma.crawlJob.update({
       where: { id: jobId },
-      data: { status: "RUNNING", startedAt: new Date() },
+      data: { status: "RUNNING", startedAt: new Date(), heartbeatAt: new Date() },
     });
 
     console.log(`Starting crawl job ${jobId} (${typ}) for semester ${semesterId}`);
