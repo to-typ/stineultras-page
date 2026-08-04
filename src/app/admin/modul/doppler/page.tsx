@@ -167,7 +167,7 @@ export default function Admin() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-90">
-                        {modulData.veranstaltungen.map((veranstaltung: Veranstaltung) => (
+                        {match.veranstaltungen.map((veranstaltung: Veranstaltung) => (
                           <p className="py-1" key={veranstaltung.id}>
                             {veranstaltung.veranstaltung.name}
                           </p>
