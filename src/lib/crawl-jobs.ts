@@ -195,7 +195,13 @@ async function runJob(
 
     await prisma.crawlJob.update({
       where: { id: jobId },
-      data: { status: stopped ? "STOPPED" : "COMPLETED", completedAt: new Date() },
+      data: {
+        status: stopped ? "STOPPED" : "COMPLETED",
+        completedAt: new Date(),
+        // Ein durchgelaufener Crawl ist per Definition fertig; der aus der
+        // Baumposition geschätzte Wert bleibt sonst knapp darunter stehen.
+        ...(stopped ? {} : { progress: 1 }),
+      },
     });
   } catch (error) {
     console.error(`Crawl job ${jobId} fehlgeschlagen:`, error);

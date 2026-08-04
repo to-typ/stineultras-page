@@ -31,6 +31,12 @@ export class CrawlContext {
   private lastFlush = 0;
   private lastSample = 0;
   private stopCache = false;
+  /**
+   * Höchststand statt Momentanwert: beim Abbau der Rekursion werden alle
+   * Frames gepoppt, der Momentanwert fiele am Ende also auf 0 zurück und jeder
+   * beendete Job stünde in der Historie bei 0 %.
+   */
+  private maxProgress = 0;
 
   private menus = 0;
   private veranstaltungen = 0;
@@ -108,7 +114,8 @@ export class CrawlContext {
     }
     this.lastFlush = now;
 
-    const progress = computeProgress(this.frames);
+    this.maxProgress = Math.max(this.maxProgress, computeProgress(this.frames));
+    const progress = this.maxProgress;
 
     if (force || now - this.lastSample >= SAMPLE_INTERVAL_MS) {
       this.lastSample = now;
