@@ -9,6 +9,7 @@ import { Check, Trash, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Veranstaltung {
   id: number;
@@ -23,11 +24,29 @@ interface Modul {
   veranstaltungen: Veranstaltung[];
 }
 
+interface Semester {
+  id: number;
+  name: string;
+}
+
 export default function Admin() {
+  const [semesterId, setSemesterId] = useState<Semester | null>(null);
+  const [semesterOptions, setSemesterOptions] = useState<Semester[]>([]);
   const [modulId, setModulId] = useState<number>(0);
   const [modulData, setModulData] = useState<Modul | null>(null);
   const [matches, setMatches] = useState<Modul[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    async function fetchSemesterOptions() {
+      const response = await fetch("/api/semesters", {
+        method: "GET",
+      });
+      const data = await response.json();
+      setSemesterOptions(data);
+    }
+    fetchSemesterOptions();
+  }, []);
 
   useEffect(() => {
     async function fetchNextId() {
@@ -40,7 +59,7 @@ export default function Admin() {
         setModulId(nextId.id ? nextId.id : modulId + 1);
       } else {
         setLoading(true);
-        fetch(`/api/admin/moduls?name=${modulData.name}`, {
+        fetch(`/api/admin/moduls?name=${modulData.name}${semesterId ? `&semesterId=${semesterId.id}` : ""}`, {
           method: "GET",
         })
           .then((res) => res.json())
@@ -82,6 +101,21 @@ export default function Admin() {
   return (
     <>
       <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center">
+        <Select
+          value={semesterId?.name}
+          onValueChange={(v) => setSemesterId(semesterOptions.find((s) => s.id === Number(v)) || null)}
+        >
+          <SelectTrigger className="w-[72px] h-8 text-xs flex-shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {semesterOptions.map((d) => (
+              <SelectItem key={d.id} value={d.id.toString()} className="text-xs">
+                {d.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Input
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -133,7 +167,7 @@ export default function Admin() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-90">
-                        {modulData.veranstaltungen.map((veranstaltung: Veranstaltung) => (
+                        {match.veranstaltungen.map((veranstaltung: Veranstaltung) => (
                           <p className="py-1" key={veranstaltung.id}>
                             {veranstaltung.veranstaltung.name}
                           </p>
