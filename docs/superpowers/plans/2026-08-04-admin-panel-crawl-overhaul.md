@@ -31,6 +31,7 @@
 | `src/lib/crawler/veranstaltungs-typ.ts` | `mapVeranstaltungsTyp` |
 | `src/lib/crawler/progress.ts` | `computeProgress` — reine Fortschrittsmathematik über den Frame-Stack |
 | `src/lib/crawler/context.ts` | `CrawlContext`: Wartezeiten, Abbruchprüfung, Zähler, gedrosselte DB-Writes |
+| `src/lib/crawler/db.ts` | Schreibhelfer, die beide Crawler brauchen: `findOrCreateModul`, `linkVeranstaltungToModul` |
 | `src/lib/crawler/veranstaltungen.ts` | `crawlVeranstaltungen` samt `crawlMenu`/`crawlVeranstaltung`/`crawlUebungsgruppe`/`crawlTermin` |
 | `src/lib/crawler/moduls.ts` | `crawlModule` samt Modul-`crawlMenu` |
 | `src/lib/crawl-jobs.ts` | Job-Lebenszyklus: anlegen, starten, listen, stoppen, verwaiste aufräumen |
@@ -766,19 +767,68 @@ git commit -m "feat: CrawlContext mit Fortschrittsberechnung und gedrosselten Wr
 Traversierung und Datenbankzugriffe werden übernommen wie sie sind. Geändert werden ausschließlich: die Wartezeit kommt vom Context, die Abbruchprüfung ebenfalls, das Semester wird nicht mehr angelegt sondern übergeben, und Module werden nicht mehr doppelt erzeugt.
 
 **Files:**
+- Create: `src/lib/crawler/db.ts`
 - Create: `src/lib/crawler/veranstaltungen.ts`
 
 **Interfaces:**
 - Consumes: `CrawlContext` (Task 3), `parse.ts` (Task 1)
-- Produces: `crawlVeranstaltungen(ctx: CrawlContext, url: string, semesterId: number): Promise<void>`
+- Produces:
+  - `findOrCreateModul(name: string, semesterId: number): Promise<Modul>`
+  - `linkVeranstaltungToModul(veranstaltungsId: number, modulId: number): Promise<void>`
+  - `crawlVeranstaltungen(ctx: CrawlContext, url: string, semesterId: number): Promise<void>`
 
-- [ ] **Step 1: Datei anlegen**
+- [ ] **Step 1: Gemeinsame Schreibhelfer anlegen**
+
+Beide Crawler legen Module an und verknüpfen sie mit Veranstaltungen. Damit die Dublettenprüfung nur an einer Stelle existiert, liegen die Helfer in einer eigenen Datei.
+
+`src/lib/crawler/db.ts`:
+
+```ts
+import { prisma } from "@/lib/prisma";
+
+/**
+ * Beim Ergänzen eines bereits gecrawlten Semesters darf kein zweiter Satz
+ * Module entstehen — deshalb erst suchen, dann anlegen. Entspricht der
+ * stineId-Prüfung bei Veranstaltungen.
+ */
+export async function findOrCreateModul(name: string, semesterId: number) {
+  const existing = await prisma.modul.findFirst({ where: { name, semesterId } });
+  if (existing) {
+    return existing;
+  }
+  return prisma.modul.create({
+    data: { name, semester: { connect: { id: semesterId } } },
+  });
+}
+
+/** Verhindert doppelte Verknüpfungen beim erneuten Crawlen. */
+export async function linkVeranstaltungToModul(
+  veranstaltungsId: number,
+  modulId: number,
+): Promise<void> {
+  const existing = await prisma.veranstaltungInModul.findFirst({
+    where: { veranstaltungsId, modulId },
+  });
+  if (existing) {
+    return;
+  }
+  await prisma.veranstaltungInModul.create({
+    data: {
+      modul: { connect: { id: modulId } },
+      veranstaltung: { connect: { id: veranstaltungsId } },
+    },
+  });
+}
+```
+
+- [ ] **Step 2: Crawler-Datei anlegen**
 
 `src/lib/crawler/veranstaltungen.ts`:
 
 ```ts
 import { prisma } from "@/lib/prisma";
 import type { CrawlContext } from "@/lib/crawler/context";
+import { findOrCreateModul, linkVeranstaltungToModul } from "@/lib/crawler/db";
 import {
   findTermine,
   findUebungsgruppen,
@@ -956,37 +1006,6 @@ async function crawlTermin(
   }
   ctx.trackTermine(dates.length);
 }
-
-/**
- * Beim Ergänzen eines bereits gecrawlten Semesters darf kein zweiter Satz
- * Module entstehen — deshalb erst suchen, dann anlegen. Entspricht der
- * stineId-Prüfung bei Veranstaltungen.
- */
-async function findOrCreateModul(name: string, semesterId: number) {
-  const existing = await prisma.modul.findFirst({ where: { name, semesterId } });
-  if (existing) {
-    return existing;
-  }
-  return prisma.modul.create({
-    data: { name, semester: { connect: { id: semesterId } } },
-  });
-}
-
-/** Verhindert doppelte Verknüpfungen beim erneuten Crawlen. */
-async function linkVeranstaltungToModul(veranstaltungsId: number, modulId: number) {
-  const existing = await prisma.veranstaltungInModul.findFirst({
-    where: { veranstaltungsId, modulId },
-  });
-  if (existing) {
-    return;
-  }
-  await prisma.veranstaltungInModul.create({
-    data: {
-      modul: { connect: { id: modulId } },
-      veranstaltung: { connect: { id: veranstaltungsId } },
-    },
-  });
-}
 ```
 
 **Was sich gegenüber `src/app/api/admin/crawl/route.ts` bewusst geändert hat — und sonst nichts:**
@@ -995,20 +1014,20 @@ async function linkVeranstaltungToModul(veranstaltungsId: number, modulId: numbe
 2. `crawlStopFlag` → `ctx.shouldStop()`.
 3. `setTimeout(standardTimeout + …)` → `ctx.wait()`.
 4. Zählaufrufe (`trackMenu`, `trackVeranstaltung`, `trackUebungsgruppe`, `trackTermine`, `trackRequest`) und Frame-Verwaltung (`enterMenu`/`advanceMenu`/`exitMenu`) ergänzt.
-5. Module und Modul-Verknüpfungen werden gesucht statt blind angelegt (`findOrCreateModul`, `linkVeranstaltungToModul`).
+5. Module und Modul-Verknüpfungen werden gesucht statt blind angelegt (`findOrCreateModul`, `linkVeranstaltungToModul` aus `db.ts`).
 6. Die Rückgabe des Submenü-Baums entfällt. Sie wurde nie verwendet: `crawlSemester`s Ergebnis landete in einer Variablen mit `eslint-disable no-unused-vars`, und das `searchTree`-Feld am alten `Job`-Typ wurde nie beschrieben.
 
 Regexe, Reihenfolge der Traversierung, Abbruchbedingungen (`html.includes(...)`) und die Datums-/Zeitbehandlung sind unverändert.
 
-- [ ] **Step 2: Typprüfung und Lint**
+- [ ] **Step 3: Typprüfung und Lint**
 
 Run: `bunx tsc --noEmit && bun run lint`
 Expected: keine Fehler
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 4: Commit**
 
 ```bash
-git add src/lib/crawler/veranstaltungen.ts
+git add src/lib/crawler/db.ts src/lib/crawler/veranstaltungen.ts
 git commit -m "refactor: Veranstaltungs-Crawler in eigenes Modul mit CrawlContext"
 ```
 
@@ -1020,7 +1039,7 @@ git commit -m "refactor: Veranstaltungs-Crawler in eigenes Modul mit CrawlContex
 - Create: `src/lib/crawler/moduls.ts`
 
 **Interfaces:**
-- Consumes: `CrawlContext` (Task 3), `parse.ts` (Task 1)
+- Consumes: `CrawlContext` (Task 3), `parse.ts` (Task 1), `findOrCreateModul` und `linkVeranstaltungToModul` aus `db.ts` (Task 4)
 - Produces: `crawlModule(ctx: CrawlContext, url: string, semesterId: number): Promise<void>`
 
 - [ ] **Step 1: Datei anlegen**
@@ -1030,6 +1049,7 @@ git commit -m "refactor: Veranstaltungs-Crawler in eigenes Modul mit CrawlContex
 ```ts
 import { prisma } from "@/lib/prisma";
 import type { CrawlContext } from "@/lib/crawler/context";
+import { findOrCreateModul, linkVeranstaltungToModul } from "@/lib/crawler/db";
 import { findSubmenus, findVeranstaltungen } from "@/lib/crawler/parse";
 
 const stineBaseURL = "https://www.stine.uni-hamburg.de";
@@ -1077,17 +1097,7 @@ async function crawlMenu(
         where: { stineId: stineId, semesterId: semesterId },
       });
       if (stineVeranstaltung) {
-        const link = await prisma.veranstaltungInModul.findFirst({
-          where: { veranstaltungsId: stineVeranstaltung.id, modulId: modul.id },
-        });
-        if (!link) {
-          await prisma.veranstaltungInModul.create({
-            data: {
-              modul: { connect: { id: modul.id } },
-              veranstaltung: { connect: { id: stineVeranstaltung.id } },
-            },
-          });
-        }
+        await linkVeranstaltungToModul(stineVeranstaltung.id, modul.id);
         ctx.trackVeranstaltung();
       }
     }
@@ -1106,16 +1116,6 @@ async function crawlMenu(
     ctx.exitMenu();
   }
 }
-
-async function findOrCreateModul(name: string, semesterId: number) {
-  const existing = await prisma.modul.findFirst({ where: { name, semesterId } });
-  if (existing) {
-    return existing;
-  }
-  return prisma.modul.create({
-    data: { name, semester: { connect: { id: semesterId } } },
-  });
-}
 ```
 
 **Was sich gegenüber `src/app/api/admin/crawl-moduls/route.ts` bewusst geändert hat:**
@@ -1124,7 +1124,7 @@ async function findOrCreateModul(name: string, semesterId: number) {
 2. Der `switch` über Semesternamen entfällt komplett — damit auch der Bug der fehlenden `break`, durch den `"WiSe 25/26"` auf die SoSe-26-URL durchfiel.
 3. `prisma.modul.create` verknüpft jetzt das Semester (fehlte bisher vollständig — Module landeten ohne Semesterbezug in der DB).
 4. Die Suche nach der passenden Veranstaltung ist auf das Semester eingeschränkt (`semesterId` im `where`). Ohne das verknüpft ein Modul-Crawl von Semester X Veranstaltungen aus Semester Y — die `stineId` ist über Semester hinweg nicht eindeutig.
-5. Module und Verknüpfungen werden gesucht statt blind angelegt.
+5. Module und Verknüpfungen werden gesucht statt blind angelegt — über die gemeinsamen Helfer aus `db.ts` (Task 4), nicht über eine zweite Kopie.
 6. `crawlStopFlag` → `ctx.shouldStop()`, feste Timeouts → `ctx.wait()`, Zähler und Frames ergänzt.
 
 - [ ] **Step 2: Typprüfung und Lint**

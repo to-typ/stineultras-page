@@ -16,7 +16,7 @@ datasource db {
 
 //================
 model Veranstaltung {
-  id         Int               @id @default(autoincrement())
+  id         Int                    @id @default(autoincrement())
   stineId    String
   name       String
   stineName  String
@@ -25,9 +25,9 @@ model Veranstaltung {
   termine    Termin[]
   uebungen   Uebungsgruppe[]
   semesterId Int
-  semester   Semester          @relation(fields: [semesterId], references: [id])
+  semester   Semester               @relation(fields: [semesterId], references: [id])
   module     VeranstaltungInModul[]
-  url        String            @default("")
+  url        String                 @default("")
 }
 
 model Termin {
@@ -53,26 +53,29 @@ model Uebungsgruppe {
 
 model Semester {
   id              Int             @id @default(autoincrement())
-  name            String
+  name            String          @unique
   isSelectable    Boolean         @default(true)
+  crawlUrl        String?
+  modulCrawlUrl   String?
   veranstaltungen Veranstaltung[]
   module          Modul[]
+  crawlJobs       CrawlJob[]
 }
 
 model Modul {
-  id              Int             @id @default(autoincrement())
+  id              Int                    @id @default(autoincrement())
   name            String
   semesterId      Int?
-  semester        Semester?        @relation(fields: [semesterId], references: [id])
+  semester        Semester?              @relation(fields: [semesterId], references: [id])
   veranstaltungen VeranstaltungInModul[]
 }
 
 model VeranstaltungInModul {
   id               Int           @id @default(autoincrement())
   veranstaltung    Veranstaltung @relation(fields: [veranstaltungsId], references: [id])
-  veranstaltungsId Int           
+  veranstaltungsId Int
   modul            Modul         @relation(fields: [modulId], references: [id])
-  modulId          Int           
+  modulId          Int
 }
 
 //================
@@ -187,4 +190,50 @@ enum VeranstaltungsTyp {
   WISSENSCHAFTLICHES_PRAKTIKUM
   WORKSHOP
   UNDEFINED
+}
+
+//================
+// Crawl-Jobs
+//================
+model CrawlJob {
+  id         String         @id @default(cuid())
+  typ        CrawlJobTyp
+  status     CrawlJobStatus @default(PENDING)
+  semesterId Int
+  semester   Semester       @relation(fields: [semesterId], references: [id])
+
+  stopRequested Boolean @default(false)
+
+  delayBaseMs   Int @default(1000)
+  delayJitterMs Int @default(1000)
+
+  currentUrl      String?
+  menus           Int     @default(0)
+  veranstaltungen Int     @default(0)
+  uebungsgruppen  Int     @default(0)
+  termine         Int     @default(0)
+  requests        Int     @default(0)
+  progress        Float   @default(0)
+  samples         Json    @default("[]")
+
+  error       String?
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+enum CrawlJobTyp {
+  VERANSTALTUNGEN
+  MODULE
+}
+
+enum CrawlJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  STOPPED
+  ERROR
 }
