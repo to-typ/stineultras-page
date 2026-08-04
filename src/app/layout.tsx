@@ -52,8 +52,7 @@ export const metadata: Metadata = {
   appleWebApp: true,
   openGraph: {
     title: "STiNE Ultras",
-    description:
-      "Macht Kurse wählen ultra einfach.",
+    description: "Macht Kurse wählen ultra einfach.",
     url: "https://stineultras.de",
     type: "website",
     images: [
@@ -69,8 +68,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "STiNE Ultras",
-    description:
-      "Macht Kurse wählen ultra einfach.",
+    description: "Macht Kurse wählen ultra einfach.",
     images: ["https://stineultras.de/preview.png"],
   },
 };
@@ -89,7 +87,7 @@ export default function RootLayout({
         <div className="flex-grow">{children}</div>
         <div>
           <div className="text-white text-center text-lg sm:text-xl font-semibold mt-4">
-            <p>STiNE Ultras- Nicht affiliert mit UHH</p>
+            <p>STiNE Ultras – Nicht affiliert mit UHH</p>
           </div>
         </div>
         <footer className="w-full">
@@ -104,7 +102,7 @@ export default function RootLayout({
               Privacy
             </Link>
             <Link href="/admin/panel" className="">
-              <Lock className="h-3.5 w-3.5"/>
+              <Lock className="h-3.5 w-3.5" />
             </Link>
           </div>
         </footer>
