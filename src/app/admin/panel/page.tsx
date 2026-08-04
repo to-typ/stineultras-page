@@ -1,197 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { ActiveJobCard } from "@/components/admin/active-job-card";
+import { JobHistoryCard } from "@/components/admin/job-history-card";
+import { SemesterCard } from "@/components/admin/semester-card";
+import { StartCrawlCard } from "@/components/admin/start-crawl-card";
+import { SystemCard } from "@/components/admin/system-card";
+import { useCrawlJobs } from "@/hooks/use-crawl-jobs";
 
-export default function Admin() {
-  // New admin form state
-  const [newAdminUsername, setNewAdminUsername] = useState("");
-  const [newAdminPassword, setNewAdminPassword] = useState("");
-  const [newAdminName, setNewAdminName] = useState("");
-  const [createAdminLoading, setCreateAdminLoading] = useState(false);
-
-  const reset = async () => {
-    if (
-      !confirm("Sind Sie sicher, dass Sie die Datenbank zurücksetzen möchten?")
-    ) {
-      return;
-    }
-
-    const response = await fetch("/api/admin/reset", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        data: "",
-      }),
-    });
-    const result = await response.json();
-    console.log(JSON.stringify(result, null, 2));
-    alert(JSON.stringify(result, null, 2));
-  };
-
-  const crawl = async () => {
-    const response = await fetch("/api/admin/crawl", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        semester: "WiSe 26/27",
-      }),
-    });
-    const result = await response.json();
-    alert(JSON.stringify(result, null, 2));
-    console.log(JSON.stringify(result, null, 2));
-    const jobIdInput = document.getElementById("jobId") as HTMLInputElement;
-    jobIdInput.value = result.jobId;
-  };
-
-  const crawlModuls = async () => {
-    const response = await fetch("/api/admin/crawl-moduls", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        semester: "SoSe 26",
-      }),
-    });
-    const result = await response.json();
-    alert(JSON.stringify(result, null, 2));
-    console.log(JSON.stringify(result, null, 2));
-    const jobIdInput = document.getElementById("jobId") as HTMLInputElement;
-    jobIdInput.value = result.jobId;
-  };
-
-  const status = async () => {
-    const jobIdInput = document.getElementById("jobId") as HTMLInputElement;
-    const jobId = jobIdInput.value;
-    const response = await fetch(`/api/admin/crawl?jobId=${jobId}`, {
-      method: "GET",
-    });
-    const result = await response.json();
-    alert(JSON.stringify(result, null, 2));
-    console.log(JSON.stringify(result, null, 2));
-  };
-
-  const createAdmin = async () => {
-    if (!newAdminUsername || !newAdminPassword) {
-      alert("Username und Passwort sind erforderlich!");
-      return;
-    }
-
-    setCreateAdminLoading(true);
-    try {
-      const response = await fetch("/api/admin/create-admin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: newAdminUsername,
-          password: newAdminPassword,
-          name: newAdminName || undefined,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        alert(`Admin "${result.admin.username}" erfolgreich erstellt!`);
-        // Clear form
-        setNewAdminUsername("");
-        setNewAdminPassword("");
-        setNewAdminName("");
-      } else {
-        alert(`Fehler: ${result.error}`);
-      }
-    } catch {
-      alert("Fehler beim Erstellen des Admin-Accounts");
-    } finally {
-      setCreateAdminLoading(false);
-    }
-  };
+export default function AdminPanel() {
+  const { active, history, semesters, loading, refresh, startJob, stopJob } = useCrawlJobs();
 
   return (
-    <>
-      <div className="text-white flex flex-col m-8 gap-6">
-        {/* Admin Management Section */}
-        <div className="bg-white/5 p-6 rounded-lg border border-white/10">
-          <h2 className="text-xl font-bold mb-4">Neuen Admin erstellen</h2>
-          <div className="flex flex-col gap-3">
-            <input
-              type="text"
-              placeholder="Username *"
-              value={newAdminUsername}
-              onChange={(e) => setNewAdminUsername(e.target.value)}
-              className="p-3 rounded-lg text-black"
-              disabled={createAdminLoading}
-            />
-            <input
-              type="password"
-              placeholder="Passwort (min. 8 Zeichen) *"
-              value={newAdminPassword}
-              onChange={(e) => setNewAdminPassword(e.target.value)}
-              className="p-3 rounded-lg text-black"
-              disabled={createAdminLoading}
-              autoComplete="new-password"
-            />
-            <input
-              type="text"
-              placeholder="Name (optional)"
-              value={newAdminName}
-              onChange={(e) => setNewAdminName(e.target.value)}
-              className="p-3 rounded-lg text-black"
-              disabled={createAdminLoading}
-            />
-            <button
-              onClick={createAdmin}
-              disabled={createAdminLoading}
-              className="bg-green-600 p-3 rounded-lg hover:bg-green-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-              {createAdminLoading ? "Wird erstellt..." : "Admin erstellen"}
-            </button>
-          </div>
-        </div>
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-8">
+      <h1 className="text-2xl font-bold text-white">Admin-Panel</h1>
 
-        {/* Separator */}
-        <div className="border-t border-white/20 my-2"></div>
-
-        {/* Database Management Section */}
-        <h2 className="text-xl font-bold">Datenbank-Verwaltung</h2>
-        {process.env.NODE_ENV === "development" && (
-          <input
-            type="button"
-            value="Datenbank zurücksetzen"
-            onClick={reset}
-            className="bg-red-600 p-4 rounded-lg hover:bg-red-700 cursor-pointer"
-          />
-        )}
-        <input
-          type="button"
-          value="Daten von STiNE crawlen"
-          onClick={crawl}
-          className="bg-blue-600 p-4 rounded-lg hover:bg-blue-700 cursor-pointer"
-        />
-        <input
-          type="button"
-          value="Module crawlen"
-          onClick={crawlModuls}
-          className="bg-blue-800 p-4 rounded-lg hover:bg-blue-900 cursor-pointer"
-        />
-        <input
-          type="text"
-          placeholder="Job ID"
-          id="jobId"
-          className="p-4 rounded-lg text-black"
-        />
-        <input
-          type="button"
-          value="Crawl-Status prüfen"
-          onClick={status}
-          className="bg-yellow-600 p-4 rounded-lg hover:bg-yellow-700 cursor-pointer"
-        />
-      </div>
-    </>
+      {loading ? (
+        <p className="text-white/80">Wird geladen…</p>
+      ) : (
+        <>
+          {active && <ActiveJobCard job={active} history={history} onStop={stopJob} />}
+          <StartCrawlCard semesters={semesters} active={active} onStart={startJob} />
+          <JobHistoryCard history={history} semesters={semesters} />
+          <SemesterCard semesters={semesters} onChanged={refresh} />
+          <SystemCard onChanged={refresh} />
+        </>
+      )}
+    </main>
   );
 }

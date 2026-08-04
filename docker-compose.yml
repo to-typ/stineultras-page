@@ -1,16 +1,15 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:16-alpine
     container_name: stineultras-postgres
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
     environment:
       POSTGRES_USER: stineultras
       POSTGRES_PASSWORD: THcI4bwjTvIOHE
       POSTGRES_DB: stineultras
-    ports:
-      - "5432:5432"
+    # Port 5432 nicht mehr öffentlich exponiert
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,6 +17,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - stineultras-network
+
+  # Läuft einmal vor der App, wendet ausstehende Migrationen an und beendet
+  # sich. Nutzt die builder-Stage, weil die Prisma-CLI eine devDependency ist
+  # und im schlanken Runtime-Image der App nicht enthalten ist. Die Layer sind
+  # dieselben wie beim App-Build, kostet also keine zusätzliche Bauzeit.
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    container_name: stineultras-migrate
+    command: ["bunx", "prisma", "migrate", "deploy"]
+    restart: "no"
+    environment:
+      DATABASE_URL: postgresql://stineultras:THcI4bwjTvIOHE@postgres:5432/stineultras
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - stineultras-network
 
@@ -34,37 +53,22 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      # Startet erst, wenn die Migrationen sauber durchgelaufen sind. Schlägt
+      # eine fehl, bleibt die App unten, statt gegen ein altes Schema zu laufen.
+      migrate:
+        condition: service_completed_successfully
     networks:
       - stineultras-network
+      - npm-proxy # NPM kann jetzt auf stineultras-app:3000 zugreifen
 
-  caddy:
-    image: caddy:2-alpine
-    container_name: stineultras-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"  # HTTP/3
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - caddy_data:/data
-      - caddy_config:/config
-      - caddy_logs:/var/log/caddy
-    depends_on:
-      - app
-    networks:
-      - stineultras-network
+  # caddy entfernt
 
 volumes:
   postgres_data:
-    driver: local
-  caddy_data:
-    driver: local
-  caddy_config:
-    driver: local
-  caddy_logs:
     driver: local
 
 networks:
   stineultras-network:
     driver: bridge
+  npm-proxy:
+    external: true # wird von NPM und allen anderen Apps geteilt

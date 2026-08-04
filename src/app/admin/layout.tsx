@@ -35,8 +35,7 @@ export default function AdminLayout({
         router.refresh();
     };
   return (
-    <html lang="en">
-      <body>
+    <>
         <header
             className={`bg-ocean text-white flex gap-6 items-center justify-between px-4 h-24 py-4`}>
             <div className="flex items-center gap-6">
@@ -62,7 +61,6 @@ export default function AdminLayout({
             </div>
         </header>
         {children}
-      </body>
-    </html>
+    </>
   );
 }

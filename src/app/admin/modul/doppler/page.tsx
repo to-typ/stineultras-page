@@ -39,7 +39,9 @@ export default function Admin() {
 
   useEffect(() => {
     async function fetchSemesterOptions() {
-      const response = await fetch("/api/semesters", {
+      // Admin-Endpunkt statt /api/semesters: der öffentliche filtert auf
+      // isSelectable, ausgeblendete Semester hätten hier sonst keine Module.
+      const response = await fetch("/api/admin/semesters", {
         method: "GET",
       });
       const data = await response.json();
@@ -59,9 +61,14 @@ export default function Admin() {
         setModulId(nextId.id ? nextId.id : modulId + 1);
       } else {
         setLoading(true);
-        fetch(`/api/admin/moduls?name=${modulData.name}${semesterId ? `&semesterId=${semesterId.id}` : ""}`, {
-          method: "GET",
-        })
+        fetch(
+          `/api/admin/moduls?name=${encodeURIComponent(modulData.name)}${
+            semesterId ? `&semesterId=${semesterId.id}` : ""
+          }`,
+          {
+            method: "GET",
+          },
+        )
           .then((res) => res.json())
           .then((data) => data.matches)
           .then((data) => setMatches(Array.isArray(data) ? data : [data]))
@@ -72,7 +79,9 @@ export default function Admin() {
       }
     }
     fetchNextId();
-  }, [modulData]);
+    // semesterId gehört dazu, sonst greift der Semesterfilter erst beim
+    // nächsten Modulwechsel statt sofort beim Umschalten.
+  }, [modulData, semesterId]);
 
   useEffect(() => {
     if (modulId === 0) return;
@@ -102,11 +111,11 @@ export default function Admin() {
     <>
       <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center">
         <Select
-          value={semesterId?.name}
+          value={semesterId ? String(semesterId.id) : undefined}
           onValueChange={(v) => setSemesterId(semesterOptions.find((s) => s.id === Number(v)) || null)}
         >
-          <SelectTrigger className="w-[72px] h-8 text-xs flex-shrink-0">
-            <SelectValue />
+          <SelectTrigger className="w-[140px] h-8 text-xs flex-shrink-0">
+            <SelectValue placeholder="Alle Semester" />
           </SelectTrigger>
           <SelectContent>
             {semesterOptions.map((d) => (
