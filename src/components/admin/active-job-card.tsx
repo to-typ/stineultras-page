@@ -63,7 +63,7 @@ export function ActiveJobCard({ job, history, onStop }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <CardTitle>{job.semesterName}</CardTitle>
           <Badge variant="secondary">
-            {job.typ === "VERANSTALTUNGEN" ? "Veranstaltungen" : "Module"}
+            {job.typ === "VERANSTALTUNGEN" ? "Komplett" : "Nur Module"}
           </Badge>
           <Badge variant={job.stopRequested ? "destructive" : "default"}>
             {job.stopRequested ? "Stopp angefordert" : "Läuft"}

@@ -95,13 +95,13 @@ export function StartCrawlCard({ semesters, active, onStart }: Props) {
                 type="button"
                 variant={typ === "VERANSTALTUNGEN" ? "default" : "outline"}
                 onClick={() => setTyp("VERANSTALTUNGEN")}>
-                Veranstaltungen
+                Komplett
               </Button>
               <Button
                 type="button"
                 variant={typ === "MODULE" ? "default" : "outline"}
                 onClick={() => setTyp("MODULE")}>
-                Module
+                Nur Module
               </Button>
             </div>
           </div>

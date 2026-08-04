@@ -72,7 +72,7 @@ export function JobHistoryCard({
                     <Badge variant={statusVariant[job.status]}>{statusLabel[job.status]}</Badge>
                     <span className="font-medium">{job.semesterName}</span>
                     <span className="text-sm text-muted-foreground">
-                      {job.typ === "VERANSTALTUNGEN" ? "Veranstaltungen" : "Module"}
+                      {job.typ === "VERANSTALTUNGEN" ? "Komplett" : "Nur Module"}
                     </span>
                     <span className="text-sm text-muted-foreground">
                       {new Date(job.createdAt).toLocaleString("de-DE")}
