@@ -6,10 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Check, Trash, Info } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Veranstaltung {
   id: number;
@@ -112,17 +122,23 @@ export default function Admin() {
 
   return (
     <>
-      <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center">
+      <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center w-full">
         <Select
           value={semesterId ? String(semesterId.id) : undefined}
-          onValueChange={(v) => setSemesterId(semesterOptions.find((s) => s.id === Number(v)) || null)}
-        >
+          onValueChange={(v) =>
+            setSemesterId(
+              semesterOptions.find((s) => s.id === Number(v)) || null,
+            )
+          }>
           <SelectTrigger className="w-[140px] h-8 text-xs flex-shrink-0">
             <SelectValue placeholder="Alle Semester" />
           </SelectTrigger>
           <SelectContent>
             {semesterOptions.map((d) => (
-              <SelectItem key={d.id} value={d.id.toString()} className="text-xs">
+              <SelectItem
+                key={d.id}
+                value={d.id.toString()}
+                className="text-xs">
                 {d.name}
               </SelectItem>
             ))}
@@ -141,7 +157,9 @@ export default function Admin() {
             <Card className="p-4 w-1/3 flex flex-row justify-between">
               <div>
                 <CardTitle>{modulData.name}</CardTitle>
-                <p>Anzahl Veranstaltungen: {modulData.veranstaltungen.length}</p>
+                <p>
+                  Anzahl Veranstaltungen: {modulData.veranstaltungen.length}
+                </p>
                 <p>ID: {modulData.id}</p>
               </div>
               <Popover>
@@ -151,25 +169,33 @@ export default function Admin() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-90">
-                  {modulData.veranstaltungen.map((veranstaltung: Veranstaltung) => (
-                    <p className="py-1" key={veranstaltung.id}>
-                      {veranstaltung.veranstaltung.name}
-                    </p>
-                  ))}
+                  {modulData.veranstaltungen.map(
+                    (veranstaltung: Veranstaltung) => (
+                      <p className="py-1" key={veranstaltung.id}>
+                        {veranstaltung.veranstaltung.name}
+                      </p>
+                    ),
+                  )}
                 </PopoverContent>
               </Popover>
             </Card>
             <Separator />
             {matches.length > 0 &&
               matches.map((match) => (
-                <Card key={match.id} className="p-4 w-1/3 flex flex-row justify-between">
+                <Card
+                  key={match.id}
+                  className="p-4 w-1/3 flex flex-row justify-between">
                   <div>
                     <CardTitle>{match.name}</CardTitle>
-                    <p>Anzahl Veranstaltungen: {match.veranstaltungen.length}</p>
+                    <p>
+                      Anzahl Veranstaltungen: {match.veranstaltungen.length}
+                    </p>
                     <p>ID: {match.id}</p>
                   </div>
                   <div className="w-min gap-2 flex flex-col">
-                    <Button variant="destructive" onClick={() => handleDelete(match.id)}>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDelete(match.id)}>
                       <Trash className="h-5 w-5" />
                     </Button>
                     <Popover>
@@ -179,11 +205,13 @@ export default function Admin() {
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-90">
-                        {match.veranstaltungen.map((veranstaltung: Veranstaltung) => (
-                          <p className="py-1" key={veranstaltung.id}>
-                            {veranstaltung.veranstaltung.name}
-                          </p>
-                        ))}
+                        {match.veranstaltungen.map(
+                          (veranstaltung: Veranstaltung) => (
+                            <p className="py-1" key={veranstaltung.id}>
+                              {veranstaltung.veranstaltung.name}
+                            </p>
+                          ),
+                        )}
                       </PopoverContent>
                     </Popover>
                   </div>

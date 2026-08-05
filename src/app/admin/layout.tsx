@@ -36,9 +36,7 @@ export default function AdminLayout({
   };
   return (
     <div className="flex">
-      <aside
-        className="fixed left-0 top-0 w-64 bg-ocean p-4 flex flex-col gap-4"
-        style={{ height: "calc(100dvh)" }}>
+      <aside className="w-64 bg-ocean p-4 flex flex-col gap-4 h-dvh sticky top-0">
         <div className="flex items-center gap-6 pb-4">
           <Link href="/">
             <Image src={betterStine} alt="STiNE Ultras Logo" width={64} />
@@ -51,17 +49,17 @@ export default function AdminLayout({
         <h2 className="text-lg font-bold text-white pt-4">Navigation</h2>
         <nav className="flex flex-col gap-2">
           <Link
-            href="/panel"
+            href="/admin/panel"
             className="text-white hover:text-white/80 transition">
             Panel
           </Link>
           <Link
-            href="/modul/doppler"
+            href="/admin/modul/doppler"
             className="text-white hover:text-white/80 transition">
             Doppler
           </Link>
           <Link
-            href="/modul/tinder"
+            href="/admin/modul/tinder"
             className="text-white hover:text-white/80 transition">
             Tinder
           </Link>

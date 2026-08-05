@@ -6,7 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Check, Info, X } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 
 interface Veranstaltung {
@@ -95,15 +99,22 @@ export default function Admin() {
 
   return (
     <>
-      <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center">
+      <div className="text-white flex flex-col m-8 gap-6 h-fit justify-center w-full">
         <div className="flex flex-row gap-6">
-          <Button onClick={handleDeleteEmptys} variant="destructive" className="w-1/2">
+          <Button
+            onClick={handleDeleteEmptys}
+            variant="destructive"
+            className="w-1/2">
             Delete Emptys
           </Button>
           <Button onClick={handleSearch} className="w-1/2">
             Search
           </Button>
-          <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+          />
         </div>
 
         {searchResults.length > 0 && (
@@ -115,20 +126,26 @@ export default function Admin() {
                   setSearch("");
                 }}
                 variant="outline"
-                className="w-1/2 self-start text-gray-900"
-              >
+                className="w-1/2 self-start text-gray-900">
                 Clear Search Results
               </Button>
-              <Button onClick={handleDeleteAll} variant="destructive" className="w-1/2 self-end">
+              <Button
+                onClick={handleDeleteAll}
+                variant="destructive"
+                className="w-1/2 self-end">
                 Delete Search Results
               </Button>
             </div>
             <div className="flex flex-col gap-2 w-full items-center justify-center">
               {searchResults.map((modul) => (
-                <Card key={modul.id} className="p-4 w-1/3 flex flex-row justify-between">
+                <Card
+                  key={modul.id}
+                  className="p-4 w-1/3 flex flex-row justify-between">
                   <div>
                     <CardTitle>{modul.name}</CardTitle>
-                    <p>Anzahl Veranstaltungen: {modul.veranstaltungen.length}</p>
+                    <p>
+                      Anzahl Veranstaltungen: {modul.veranstaltungen.length}
+                    </p>
                   </div>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -137,11 +154,13 @@ export default function Admin() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-90">
-                      {modul.veranstaltungen.map((veranstaltung: Veranstaltung) => (
-                        <p className="py-1" key={veranstaltung.id}>
-                          {veranstaltung.veranstaltung.name}
-                        </p>
-                      ))}
+                      {modul.veranstaltungen.map(
+                        (veranstaltung: Veranstaltung) => (
+                          <p className="py-1" key={veranstaltung.id}>
+                            {veranstaltung.veranstaltung.name}
+                          </p>
+                        ),
+                      )}
                     </PopoverContent>
                   </Popover>
                 </Card>
@@ -165,7 +184,9 @@ export default function Admin() {
                 <Card className="p-4 w-1/3 flex flex-row justify-between">
                   <div>
                     <CardTitle>{modulData.name}</CardTitle>
-                    <p>Anzahl Veranstaltungen: {modulData.veranstaltungen.length}</p>
+                    <p>
+                      Anzahl Veranstaltungen: {modulData.veranstaltungen.length}
+                    </p>
                     <p>ID: {modulData.id}</p>
                   </div>
                   <Popover>
@@ -175,11 +196,13 @@ export default function Admin() {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-90">
-                      {modulData.veranstaltungen.map((veranstaltung: Veranstaltung) => (
-                        <p className="py-1" key={veranstaltung.id}>
-                          {veranstaltung.veranstaltung.name}
-                        </p>
-                      ))}
+                      {modulData.veranstaltungen.map(
+                        (veranstaltung: Veranstaltung) => (
+                          <p className="py-1" key={veranstaltung.id}>
+                            {veranstaltung.veranstaltung.name}
+                          </p>
+                        ),
+                      )}
                     </PopoverContent>
                   </Popover>
                 </Card>
