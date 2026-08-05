@@ -7,46 +7,60 @@ export function useSearch(semesterId: number | null) {
   const [searchedModuls, setSearchedModuls] = useState<ModulResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
-  const searchEvent = useCallback(async (searchTerm: string, semester: number | null) => {
-    const searchParam = searchTerm.trim().toLowerCase();
-    if (searchParam === "") {
-      setSearchedEvents([]);
-      return;
-    }
+  const searchEvent = useCallback(
+    async (searchTerm: string, semester: number | null) => {
+      const searchParam = searchTerm.trim().toLowerCase();
+      if (searchParam === "") {
+        setSearchedEvents([]);
+        return;
+      }
 
-    setIsSearching(true);
-    try {
-      const url = "/api/search?search=" + encodeURIComponent(searchParam) + "&semesterId=" + semester;
-      const response = await fetch(url);
-      const result = await response.json();
-      console.log(result);
-      setSearchedEvents(result);
-    } catch (error) {
-      console.error("Suche fehlgeschlagen:", error);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
+      setIsSearching(true);
+      try {
+        const url =
+          "/api/search?search=" +
+          encodeURIComponent(searchParam) +
+          "&semesterId=" +
+          semester;
+        const response = await fetch(url);
+        const result = await response.json();
+        // console.log(result);
+        setSearchedEvents(result);
+      } catch (error) {
+        console.error("Suche fehlgeschlagen:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [],
+  );
 
-  const searchModul = useCallback(async (searchTerm: string, semester: number | null) => {
-    const searchParam = searchTerm.trim().toLowerCase();
-    if (searchParam === "") {
-      setSearchedModuls([]);
-      return;
-    }
+  const searchModul = useCallback(
+    async (searchTerm: string, semester: number | null) => {
+      const searchParam = searchTerm.trim().toLowerCase();
+      if (searchParam === "") {
+        setSearchedModuls([]);
+        return;
+      }
 
-    setIsSearching(true);
-    try {
-      const url = "/api/moduls?search=" + encodeURIComponent(searchParam) + "&semesterId=" + semester;
-      const response = await fetch(url);
-      const result = await response.json();
-      setSearchedModuls(result);
-    } catch (error) {
-      console.error("Suche fehlgeschlagen:", error);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
+      setIsSearching(true);
+      try {
+        const url =
+          "/api/moduls?search=" +
+          encodeURIComponent(searchParam) +
+          "&semesterId=" +
+          semester;
+        const response = await fetch(url);
+        const result = await response.json();
+        setSearchedModuls(result);
+      } catch (error) {
+        console.error("Suche fehlgeschlagen:", error);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [],
+  );
 
   // Debounce Effekt für die Suche (nur ab 2 Zeichen)
   useEffect(() => {

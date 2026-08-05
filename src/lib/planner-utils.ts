@@ -32,12 +32,12 @@ export function getInterval(termine: Termin[]) {
   const raum = termine[0].raum;
 
   // Debug logging
-  console.log("getInterval input:", {
+  /* console.log("getInterval input:", {
     startZeit: termine[0].startZeit,
     endZeit: termine[0].endZeit,
     startDate: startDate.toISOString(),
     endDate: endDate.toISOString(),
-  });
+  }); */
 
   const days = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
   const tag = days[tagDate.getDay()];
