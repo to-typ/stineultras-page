@@ -35,7 +35,7 @@ export default function AdminLayout({
     router.refresh();
   };
   return (
-    <>
+    <div className="flex">
       <aside
         className="fixed left-0 top-0 w-64 bg-ocean p-4 flex flex-col gap-4"
         style={{ height: "calc(100dvh)" }}>
@@ -51,17 +51,17 @@ export default function AdminLayout({
         <h2 className="text-lg font-bold text-white pt-4">Navigation</h2>
         <nav className="flex flex-col gap-2">
           <Link
-            href="admin/panel"
+            href="/panel"
             className="text-white hover:text-white/80 transition">
             Panel
           </Link>
           <Link
-            href="admin/modul/doppler"
+            href="/modul/doppler"
             className="text-white hover:text-white/80 transition">
             Doppler
           </Link>
           <Link
-            href="admin/modul/tinder"
+            href="/modul/tinder"
             className="text-white hover:text-white/80 transition">
             Tinder
           </Link>
@@ -81,6 +81,6 @@ export default function AdminLayout({
         </div>
       </aside>
       {children}
-    </>
+    </div>
   );
 }
