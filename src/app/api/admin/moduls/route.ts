@@ -95,6 +95,82 @@ export async function DELETE(req: NextRequest) {
       }),
     );
   }
+
+  const duplicates = req.nextUrl.searchParams.get("duplicates");
+  if (duplicates) {
+    const groupModules = await prisma.modul.groupBy({
+      by: ["name"],
+      _count: {
+        name: true,
+      },
+    });
+    const duplicateNames = groupModules.filter((group) => group._count.name > 1).map((group) => group.name);
+    const duplicateModuls = await prisma.modul.findMany({
+      where: {
+        name: { in: duplicateNames },
+      },
+      include: {
+        veranstaltungen: {
+          include: { veranstaltung: true },
+        },
+      },
+    });
+
+    const trueDuplicates: { [name: string]: number[] } = {};
+    for (const name of duplicateNames) {
+      const modulsWithName = duplicateModuls.filter((modul) => modul.name === name);
+      for (let i = 0; i < modulsWithName.length; i++) {
+        for (let j = i + 1; j < modulsWithName.length; j++) {
+          const modulA = modulsWithName[i];
+          const modulB = modulsWithName[j];
+          if (
+            modulA.veranstaltungen
+              .flatMap((v) => v.veranstaltung.id)
+              .sort()
+              .join(",") ===
+            modulB.veranstaltungen
+              .flatMap((v) => v.veranstaltung.id)
+              .sort()
+              .join(",")
+          ) {
+            if (!trueDuplicates[name]) {
+              trueDuplicates[name] = [];
+            }
+            trueDuplicates[name].push(modulA.id);
+            trueDuplicates[name].push(modulB.id);
+          }
+        }
+      }
+    }
+
+    // delete duplicates, keeping the one with the lowest ID for each name
+    const idsToDelete = Object.values(trueDuplicates).flatMap((ids) => {
+      const minId = ids.reduce((min, id) => (id < min ? id : min), ids[0]);
+      return ids.filter((id) => id !== minId);
+    });
+
+    const dryRun = req.nextUrl.searchParams.get("dryRun");
+    if (dryRun != "true") {
+      await prisma.$transaction([
+        prisma.veranstaltungInModul.deleteMany({
+          where: {
+            modulId: {
+              in: idsToDelete,
+            },
+          },
+        }),
+        prisma.modul.deleteMany({
+          where: {
+            id: {
+              in: idsToDelete,
+            },
+          },
+        }),
+      ]);
+    }
+    return NextResponse.json({ success: true, deletedIds: idsToDelete });
+  }
+
   const id = req.nextUrl.searchParams.get("id");
   if (!id) {
     const ids = req.nextUrl.searchParams.get("ids");

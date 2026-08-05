@@ -100,6 +100,22 @@ export default function Admin() {
       });
   }, [modulId]);
 
+  const handleDeleteEmptys = async () => {
+    const response = await fetch("/api/admin/moduls?empty=true", {
+      method: "DELETE",
+    });
+    const result = await response.json();
+    console.log(result);
+  };
+
+  const handleDeleteTrueDuplicates = async (dryRun: boolean = false) => {
+    const response = await fetch(`/api/admin/moduls?duplicates=true${dryRun ? "&dryRun=true" : ""}`, {
+      method: "DELETE",
+    });
+    const result = await response.json();
+    console.log(result);
+  };
+
   const handleDelete = (id: number) => {
     fetch(`/api/admin/moduls?id=${id}`, {
       method: "DELETE",
@@ -128,6 +144,15 @@ export default function Admin() {
             ))}
           </SelectContent>
         </Select>
+        <Button onClick={handleDeleteEmptys} variant="destructive" className="w-1/2">
+          Delete Emptys
+        </Button>
+        <Button onClick={() => handleDeleteTrueDuplicates(true)} variant="destructive" className="w-1/2">
+          Delete True Duplicates (Dry Run)
+        </Button>
+        <Button onClick={() => handleDeleteTrueDuplicates(false)} variant="destructive" className="w-1/2">
+          Delete True Duplicates
+        </Button>
         <Input
           onKeyDown={(e) => {
             if (e.key === "Enter") {
