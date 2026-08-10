@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
@@ -23,6 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2, Pencil, CalendarArrowDown, Upload } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
+import { sortSemestersDesc } from "@/lib/semester-sort";
 import { Separator } from "./ui/separator";
 
 type StundenplanControlsProps = {
@@ -60,8 +61,14 @@ export function StundenplanControls({
   const [renamePlanName, setRenamePlanName] = useState("");
   const [deleteOpenedFromRename, setDeleteOpenedFromRename] = useState(false);
 
+  // Neuestes Semester zuerst — der erste Eintrag ist damit das aktuellste.
+  const sortedSemesters = useMemo(() => sortSemestersDesc(semesters), [semesters]);
+  // Beim Anlegen ist immer das aktuellste Semester vorausgewählt, unabhängig
+  // vom Semester des gerade geöffneten Stundenplans.
+  const defaultSemesterId = sortedSemesters[0]?.id ?? currentSemesterId;
+
   const handleCreate = () => {
-    const semesterId = newPlanSemesterId || currentSemesterId;
+    const semesterId = newPlanSemesterId || defaultSemesterId;
     if (newPlanName.trim() && semesterId) {
       onCreateStundenplan(newPlanName.trim(), semesterId);
       setNewPlanName("");
@@ -223,14 +230,14 @@ export function StundenplanControls({
               <div>
                 <label className="text-sm font-medium mb-2 block">Semester</label>
                 <Select
-                  value={newPlanSemesterId?.toString() || currentSemesterId?.toString() || ""}
+                  value={newPlanSemesterId?.toString() || defaultSemesterId?.toString() || ""}
                   onValueChange={(value) => setNewPlanSemesterId(parseInt(value, 10))}
                 >
                   <SelectTrigger title="Wähle das Semester für den neuen Stundenplan">
                     <SelectValue placeholder="Semester auswählen" />
                   </SelectTrigger>
                   <SelectContent>
-                    {semesters.map((semester) => (
+                    {sortedSemesters.map((semester) => (
                       <SelectItem key={semester.id} value={semester.id.toString()}>
                         {semester.name}
                       </SelectItem>
@@ -249,7 +256,7 @@ export function StundenplanControls({
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={!newPlanName.trim() || !(newPlanSemesterId || currentSemesterId)}
+                disabled={!newPlanName.trim() || !(newPlanSemesterId || defaultSemesterId)}
                 title="Neuen Stundenplan erstellen"
               >
                 Erstellen

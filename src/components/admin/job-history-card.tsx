@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import type { ChartConfig } from "@/components/ui/chart";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { formatDuration, ratesPerMinute } from "@/lib/crawl-metrics";
+import { sortSemestersAsc } from "@/lib/semester-sort";
 import type { CrawlJobDto, CrawlJobStatus, SemesterDto } from "@/types/crawl";
 
 const throughputConfig = {
@@ -48,7 +49,8 @@ export function JobHistoryCard({
   history: CrawlJobDto[];
   semesters: SemesterDto[];
 }) {
-  const semesterData = semesters.map((s) => ({
+  // Im Diagramm läuft die Zeit von links nach rechts: ältestes Semester zuerst.
+  const semesterData = sortSemestersAsc(semesters).map((s) => ({
     name: s.name,
     veranstaltungen: s.veranstaltungenCount,
     module: s.modulCount,

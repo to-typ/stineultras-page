@@ -34,6 +34,8 @@ type Draft = {
   crawlUrl: string;
   modulCrawlUrl: string;
   isSelectable: boolean;
+  startDatum: string;
+  endDatum: string;
 };
 
 const emptyDraft: Draft = {
@@ -42,6 +44,8 @@ const emptyDraft: Draft = {
   crawlUrl: "",
   modulCrawlUrl: "",
   isSelectable: true,
+  startDatum: "",
+  endDatum: "",
 };
 
 export function SemesterCard({
@@ -71,6 +75,8 @@ export function SemesterCard({
           crawlUrl: draft.crawlUrl,
           modulCrawlUrl: draft.modulCrawlUrl,
           isSelectable: draft.isSelectable,
+          startDatum: draft.startDatum,
+          endDatum: draft.endDatum,
         }),
       },
     );
@@ -151,6 +157,7 @@ export function SemesterCard({
                   {semester.veranstaltungenCount} Veranstaltungen · {semester.modulCount} Module
                 </span>
               </div>
+              <ZeitraumLine start={semester.startDatum} end={semester.endDatum} />
               <UrlLine label="Veranstaltungen" url={semester.crawlUrl} />
               <UrlLine label="Module" url={semester.modulCrawlUrl} />
             </div>
@@ -167,6 +174,8 @@ export function SemesterCard({
                     crawlUrl: semester.crawlUrl ?? "",
                     modulCrawlUrl: semester.modulCrawlUrl ?? "",
                     isSelectable: semester.isSelectable,
+                    startDatum: semester.startDatum ?? "",
+                    endDatum: semester.endDatum ?? "",
                   })
                 }>
                 <Pencil className="h-4 w-4" />
@@ -197,7 +206,9 @@ export function SemesterCard({
               {draft?.id === null ? "Semester anlegen" : "Semester bearbeiten"}
             </DialogTitle>
             <DialogDescription>
-              Die URLs sind die STiNE-Einstiegsseiten für den jeweiligen Crawl.
+              Die URLs sind die STiNE-Einstiegsseiten für den jeweiligen Crawl. Der
+              Vorlesungszeitraum bestimmt, über welche Wochen eigene Termine in den
+              Kalender-Export laufen.
             </DialogDescription>
           </DialogHeader>
 
@@ -211,6 +222,26 @@ export function SemesterCard({
                   placeholder="WiSe 26/27"
                   onChange={(e) => setDraft({ ...draft, name: e.target.value })}
                 />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex flex-1 flex-col gap-2">
+                  <Label htmlFor="sem-start">Vorlesungsbeginn</Label>
+                  <Input
+                    id="sem-start"
+                    type="date"
+                    value={draft.startDatum}
+                    onChange={(e) => setDraft({ ...draft, startDatum: e.target.value })}
+                  />
+                </div>
+                <div className="flex flex-1 flex-col gap-2">
+                  <Label htmlFor="sem-end">Vorlesungsende</Label>
+                  <Input
+                    id="sem-end"
+                    type="date"
+                    value={draft.endDatum}
+                    onChange={(e) => setDraft({ ...draft, endDatum: e.target.value })}
+                  />
+                </div>
               </div>
               <div className="flex flex-col gap-2">
                 <Label htmlFor="sem-crawl">Veranstaltungs-URL</Label>
@@ -252,6 +283,28 @@ export function SemesterCard({
       </Dialog>
     </Card>
   );
+}
+
+function ZeitraumLine({ start, end }: { start: string | null; end: string | null }) {
+  if (!start || !end) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        Vorlesungszeit: nicht hinterlegt — eigene Termine landen ohne sie nur in einem
+        Platzhalter-Zeitraum im ICS-Export.
+      </p>
+    );
+  }
+
+  return (
+    <p className="text-xs text-muted-foreground">
+      Vorlesungszeit: {formatDatum(start)} – {formatDatum(end)}
+    </p>
+  );
+}
+
+function formatDatum(iso: string) {
+  const [year, month, day] = iso.split("-");
+  return `${day}.${month}.${year}`;
 }
 
 function UrlLine({ label, url }: { label: string; url: string | null }) {

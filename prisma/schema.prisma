@@ -57,6 +57,9 @@ model Semester {
   isSelectable    Boolean         @default(true)
   crawlUrl        String?
   modulCrawlUrl   String?
+  /// Vorlesungszeitraum — Basis für den ICS-Export eigener (wöchentlicher) Events.
+  startDatum      DateTime?       @db.Date
+  endDatum        DateTime?       @db.Date
   veranstaltungen Veranstaltung[]
   module          Modul[]
   crawlJobs       CrawlJob[]

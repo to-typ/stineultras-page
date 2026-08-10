@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sortSemestersDesc } from "@/lib/semester-sort";
 
 export async function GET() {
   try {
@@ -7,12 +8,18 @@ export async function GET() {
       where: {
         isSelectable: true,
       },
-      orderBy: {
-        id: "asc", // Neueste Semester zuerst
+      // Nur was der Planer braucht — die Crawl-URLs bleiben im Admin-Endpunkt.
+      select: {
+        id: true,
+        name: true,
+        isSelectable: true,
+        startDatum: true,
+        endDatum: true,
       },
     });
 
-    return NextResponse.json(semesters);
+    // Chronologisch statt nach ID: neuestes Semester zuerst.
+    return NextResponse.json(sortSemestersDesc(semesters));
   } catch (error) {
     console.error("Fehler beim Laden der Semester:", error);
     return NextResponse.json({ error: "Semester konnten nicht geladen werden" }, { status: 500 });

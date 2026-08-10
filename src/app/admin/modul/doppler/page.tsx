@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { sortSemestersDesc } from "@/lib/semester-sort";
 
 interface Veranstaltung {
   id: number;
@@ -54,8 +55,9 @@ export default function Admin() {
       const response = await fetch("/api/admin/semesters", {
         method: "GET",
       });
-      const data = await response.json();
-      setSemesterOptions(data);
+      const data: Semester[] = await response.json();
+      // Chronologisch, neuestes Semester zuerst.
+      setSemesterOptions(sortSemestersDesc(data));
     }
     fetchSemesterOptions();
   }, []);

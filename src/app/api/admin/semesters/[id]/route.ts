@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { parseDatumInput, validateZeitraum } from "@/lib/semester-datum";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -25,6 +26,35 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
   }
   if (typeof body?.isSelectable === "boolean") {
     data.isSelectable = body.isSelectable;
+  }
+
+  const hasStart = Boolean(body) && "startDatum" in body;
+  const hasEnd = Boolean(body) && "endDatum" in body;
+
+  if (hasStart || hasEnd) {
+    const startDatum = hasStart ? parseDatumInput(body.startDatum) : undefined;
+    const endDatum = hasEnd ? parseDatumInput(body.endDatum) : undefined;
+
+    // Bei Teil-Updates gegen den gespeicherten Zeitraum prüfen, damit
+    // Start/Ende auch einzeln nicht in die falsche Reihenfolge geraten.
+    const current = await prisma.semester.findUnique({
+      where: { id: semesterId },
+      select: { startDatum: true, endDatum: true },
+    });
+    if (!current) {
+      return NextResponse.json({ error: "Semester nicht gefunden." }, { status: 404 });
+    }
+
+    const fehler = validateZeitraum(
+      hasStart ? startDatum : current.startDatum,
+      hasEnd ? endDatum : current.endDatum,
+    );
+    if (fehler) {
+      return NextResponse.json({ error: fehler }, { status: 400 });
+    }
+
+    if (hasStart) data.startDatum = startDatum ?? null;
+    if (hasEnd) data.endDatum = endDatum ?? null;
   }
 
   try {

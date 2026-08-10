@@ -45,6 +45,9 @@ export type SemesterDto = {
   isSelectable: boolean;
   crawlUrl: string | null;
   modulCrawlUrl: string | null;
+  /** Vorlesungszeitraum als ISO-Datum („2026-05-06“) oder null. */
+  startDatum: string | null;
+  endDatum: string | null;
   veranstaltungenCount: number;
   modulCount: number;
 };

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { sortSemestersDesc } from "@/lib/semester-sort";
 import type { CrawlJobDto, CrawlJobTyp, SemesterDto } from "@/types/crawl";
 
 const POLL_ACTIVE_MS = 2000;
@@ -24,7 +25,8 @@ export function useCrawlJobs() {
   const loadSemesters = useCallback(async () => {
     const response = await fetch("/api/admin/semesters");
     if (response.ok) {
-      setSemesters(await response.json());
+      // Chronologisch, neuestes Semester zuerst.
+      setSemesters(sortSemestersDesc(await response.json()));
     }
   }, []);
 

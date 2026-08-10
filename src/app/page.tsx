@@ -24,11 +24,15 @@ import { toast } from "sonner";
 import { Onboarding } from "@/components/onboarding";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { MobileWarning } from "@/components/mobile-warning";
+import { newestSemester, sortSemestersDesc } from "@/lib/semester-sort";
 
 type Semester = {
   id: number;
   name: string;
   isSelectable: boolean;
+  /** Vorlesungszeitraum als ISO-Datum, siehe /api/semesters. */
+  startDatum: string | null;
+  endDatum: string | null;
 };
 
 export default function Planer() {
@@ -77,8 +81,9 @@ export default function Planer() {
     async function loadSemesters() {
       try {
         const response = await fetch("/api/semesters");
-        const data = await response.json();
-        setSemesters(data);
+        const data: Semester[] = await response.json();
+        // Die API liefert bereits chronologisch, hier nur zur Sicherheit.
+        setSemesters(sortSemestersDesc(data));
       } catch (error) {
         console.error("Fehler beim Laden der Semester:", error);
       }
@@ -89,8 +94,10 @@ export default function Planer() {
   // Erstelle automatisch einen Stundenplan, wenn keiner existiert
   useEffect(() => {
     if (semesters.length > 0 && stundenplaene.length === 0 && !currentStundenplan) {
-      const neuestesSemester = semesters[0];
-      createStundenplan(`Stundenplan ${neuestesSemester.name}`, neuestesSemester.id);
+      const neuestesSemester = newestSemester(semesters);
+      if (neuestesSemester) {
+        createStundenplan(`Stundenplan ${neuestesSemester.name}`, neuestesSemester.id);
+      }
     }
   }, [semesters, stundenplaene.length, currentStundenplan, createStundenplan]);
 
@@ -163,7 +170,8 @@ export default function Planer() {
   };
 
   const handleExport = () => {
-    const icsContent = exportICS(events, semesters.find((s) => s.id === currentStundenplan?.semesterId)?.name || "");
+    const semester = semesters.find((s) => s.id === currentStundenplan?.semesterId);
+    const icsContent = exportICS(events, semester);
     const blob = new Blob([icsContent], {
       type: "text/calendar;charset=utf-8",
     });

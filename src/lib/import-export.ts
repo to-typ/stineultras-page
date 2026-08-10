@@ -2,10 +2,16 @@ import { Stundenplan } from "@/hooks/use-stundenplan";
 import { Event, SearchResult, Visibility } from "../types/planner";
 import { DAYS } from "./planner-utils";
 import { NewEventData } from "@/components/add-event-modal";
+import { toLocalDate } from "./semester-datum";
 
-const semesterZeit = new Map([
-  ["SoSe 26", [new Date(2026, 4, 6), new Date(2026, 7, 18)]],
-]);
+/** Vorlesungszeitraum, wie ihn `/api/semesters` liefert. */
+export type SemesterZeitraum = {
+  startDatum?: string | Date | null;
+  endDatum?: string | Date | null;
+};
+
+/** Fallback, wenn für das Semester kein Zeitraum hinterlegt ist. */
+const FALLBACK_WOCHEN = 16;
 
 function decodeBase64(base64: string): string {
   try {
@@ -252,30 +258,37 @@ function getExternalDateRange(
   return { weekStart, weekEnd };
 }
 
+// Wochenraster aus dem Vorlesungszeitraum des Semesters. Fehlt er (oder ist
+// nur halb gepflegt), wird ab heute bzw. ab Start über FALLBACK_WOCHEN gerechnet.
+function getSemesterWeekRange(semester?: SemesterZeitraum | null): {
+  weekStart: Date;
+  weekEnd: Date;
+} {
+  const start = toLocalDate(semester?.startDatum) ?? new Date();
+  const end =
+    toLocalDate(semester?.endDatum) ??
+    new Date(start.getTime() + FALLBACK_WOCHEN * 7 * 24 * 60 * 60 * 1000);
+
+  const weekStart = getMondayOfWeek(start);
+  const weekEnd = getMondayOfWeek(end);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+  return { weekStart, weekEnd };
+}
+
 const pad2 = (n: number) => String(n).padStart(2, "0");
 const formatDatePart = (d: Date) =>
   `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`;
 
 const makeVEvent = (lines: string[]) => lines.filter(Boolean).join("\r\n");
 
-export function exportICS(events: Event[], semester: string) {
+export function exportICS(events: Event[], semester?: SemesterZeitraum | null) {
   const dtstamp = toICSDTSTAMP(new Date());
 
-  // Datumsbereich für eigene Events aus externen Terminen ableiten
-  const externalRange = getExternalDateRange(events);
+  // Datumsbereich für eigene Events aus externen Terminen ableiten, sonst aus
+  // dem am Semester hinterlegten Vorlesungszeitraum.
   const { weekStart, weekEnd } =
-    externalRange ??
-    (() => {
-      const semBase = semesterZeit.get(semester)?.[0] || new Date();
-      const ws = getMondayOfWeek(semBase);
-      const semEnd =
-        semesterZeit.get(semester)?.[1] ||
-        new Date(semBase.getTime() + 1000 * 60 * 60 * 24 * 7 * 16);
-      const we = getMondayOfWeek(semEnd);
-      we.setDate(we.getDate() + 6);
-      we.setHours(23, 59, 59, 999);
-      return { weekStart: ws, weekEnd: we };
-    })();
+    getExternalDateRange(events) ?? getSemesterWeekRange(semester);
 
   const icsEvents = events.flatMap((e) => {
     // Komplett ausgeblendete Events überspringen
