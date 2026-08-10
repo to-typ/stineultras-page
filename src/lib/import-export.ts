@@ -367,12 +367,15 @@ export function exportICS(events: Event[], semester?: SemesterZeitraum | null) {
               : e.icsName || e.name;
 
             const result: string[] = [];
+            // Über setDate weiterzählen statt über feste Millisekunden: eine
+            // Woche mit Zeitumstellung hat 167 bzw. 169 Stunden, sonst rutscht
+            // der Termin ab der Umstellung auf den Vor- oder Folgetag.
             for (
-              let weekMs = weekStart.getTime();
-              weekMs <= weekEnd.getTime();
-              weekMs += 7 * 24 * 60 * 60 * 1000
+              const week = new Date(weekStart);
+              week.getTime() <= weekEnd.getTime();
+              week.setDate(week.getDate() + 7)
             ) {
-              const targetDay = new Date(weekMs);
+              const targetDay = new Date(week);
               targetDay.setDate(targetDay.getDate() + dayOffset);
               const dtDate = formatDatePart(targetDay);
               const dtstart = `${dtDate}T${pad2(startHour)}${pad2(startMinute)}00`;
