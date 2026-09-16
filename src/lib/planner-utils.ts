@@ -1,4 +1,5 @@
 import { Termin } from "@prisma/client";
+import { Event, EventDate, SearchResult } from "@/types/planner";
 
 export const DAYS = ["Mo", "Di", "Mi", "Do", "Fr"];
 export const LOCAL_STORAGE_KEY = "planer-events";
@@ -84,4 +85,46 @@ export function getContrastColor(hexColor: string) {
  */
 export function generateRandomColor() {
   return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+
+/** Termin der Datenbank in einen Kalendereintrag des Stundenplans übersetzen. */
+function terminToEventDate(termin: Termin): EventDate {
+  const { tag, start, end, room } = getInterval([termin]);
+  return { day: tag, start, end, room };
+}
+
+/**
+ * Entfernt einen einzelnen Termin aus einer importierten Veranstaltung.
+ *
+ * Gearbeitet wird nur auf der lokalen Kopie im Stundenplan (localStorage) —
+ * die Datenbank bleibt unberührt. Termin-IDs sind global eindeutig, deshalb
+ * genügt die ID: Sie wird aus den Terminen der Veranstaltung und aus allen
+ * Übungsgruppen entfernt. Anschließend werden die Kalendereinträge der
+ * SubEvents aus den verbliebenen Terminen neu aufgebaut, damit Wochenansicht,
+ * ICS- und PDF-Export dasselbe zeigen.
+ */
+export function removeTerminFromEvent(event: Event, terminId: number): Event {
+  if (!event.info) return event;
+
+  const info = event.info;
+  const termine = info.termine?.filter((t) => t.id !== terminId) ?? null;
+  const uebungsgruppen =
+    info.uebungsgruppen?.map((ug) => ({
+      ...ug,
+      termine: ug.termine.filter((t) => t.id !== terminId),
+    })) ?? null;
+
+  const nextInfo: SearchResult = { ...info, termine, uebungsgruppen };
+
+  const subEvents = event.events.map((sub) => {
+    // Ein SubEvent stammt entweder von einer Übungsgruppe oder von den
+    // Terminen der Veranstaltung selbst.
+    const quelle =
+      uebungsgruppen?.find((ug) => ug.uebungsgruppe.name === sub.name)?.termine ??
+      (sub.name === info.veranstaltung.name ? termine : null);
+    if (!quelle) return sub;
+    return { ...sub, dates: quelle.map(terminToEventDate) };
+  });
+
+  return { ...event, info: nextInfo, events: subEvents };
 }

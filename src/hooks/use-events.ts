@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Event, SearchResult, Visibility } from "@/types/planner";
-import { LOCAL_STORAGE_KEY, getInterval, getContrastColor, generateRandomColor } from "@/lib/planner-utils";
+import {
+  LOCAL_STORAGE_KEY,
+  getInterval,
+  getContrastColor,
+  generateRandomColor,
+  removeTerminFromEvent,
+} from "@/lib/planner-utils";
 import { toast } from "sonner";
 import { NewEventData } from "@/components/add-event-modal";
 
@@ -208,6 +214,30 @@ export function useEvents(initialEvents: Event[] = [], useLocalStorage: boolean 
       }),
     );
   }, []);
+
+  /**
+   * Entfernt einen einzelnen Termin einer importierten Veranstaltung aus dem
+   * Stundenplan. Das betrifft nur die lokale Kopie im Browser — in STiNE und
+   * in der Datenbank bleibt der Termin bestehen.
+   */
+  const removeTermin = useCallback(
+    (eventId: number, terminId: number) => {
+      const target = events.find((ev) => ev.id === eventId);
+      if (!target) return;
+
+      setEvents((evs) => evs.map((ev) => (ev.id === eventId ? removeTerminFromEvent(ev, terminId) : ev)));
+
+      // `target` ist der unveränderte Stand vor dem Löschen — removeTerminFromEvent
+      // arbeitet ohne Mutation, deshalb genügt die Referenz zum Wiederherstellen.
+      toast.success("Termin aus deinem Stundenplan entfernt", {
+        action: {
+          label: "Rückgängig",
+          onClick: () => setEvents((evs) => evs.map((ev) => (ev.id === eventId ? target : ev))),
+        },
+      });
+    },
+    [events],
+  );
 
   const clearAllEvents = useCallback(() => {
     setEvents([]);
@@ -522,6 +552,7 @@ export function useEvents(initialEvents: Event[] = [], useLocalStorage: boolean 
     toggleEvent,
     removeEvent,
     toggleSubEvent,
+    removeTermin,
     clearAllEvents,
     changeEventColor,
     prioritizeEvent,

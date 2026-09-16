@@ -66,6 +66,7 @@ export default function Planer() {
     toggleEvent,
     removeEvent,
     toggleSubEvent,
+    removeTermin,
     clearAllEvents,
     changeEventColor,
     setEvents,
@@ -377,6 +378,7 @@ export default function Planer() {
         onClose={() => setShowEventDetailsModal(false)}
         onChangeEventIcsName={(name) => selectedEvent && changeEventIcsName(selectedEvent.id, name)}
         onChangeSubIcsName={(subName, name) => selectedEvent && changeSubEventIcsName(selectedEvent.id, subName, name)}
+        onRemoveTermin={(terminId) => selectedEvent && removeTermin(selectedEvent.id, terminId)}
       />
 
       {/* Mobile-Warnung */}

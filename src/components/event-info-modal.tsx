@@ -6,6 +6,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Event } from "@/types/planner";
+import { Termin } from "@prisma/client";
+import { Trash2 } from "lucide-react";
 
 type EventInfoModalProps = {
   open: boolean;
@@ -13,7 +15,45 @@ type EventInfoModalProps = {
   onClose: () => void;
   onChangeEventIcsName: (name: string) => void;
   onChangeSubIcsName: (subName: string, name: string) => void;
+  onRemoveTermin: (terminId: number) => void;
 };
+
+/** Ein einzelner Termin mit Datum, Uhrzeit, Raum und Löschen-Button. */
+function TerminRow({ termin, onRemove }: { termin: Termin; onRemove: () => void }) {
+  return (
+    <div className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
+      <span className="text-sm font-medium">{termin.nummer}</span>
+      <span className="text-sm">
+        {new Date(termin.tag).toLocaleDateString("de-DE", {
+          weekday: "short",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })}
+        :{" "}
+        {new Date(termin.startZeit).toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}{" "}
+        -{" "}
+        {new Date(termin.endZeit).toLocaleTimeString("de-DE", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </span>
+      <span className="text-sm font-medium">{termin.raum}</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onRemove}
+        className="ml-auto h-7 w-7 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        title="Diesen Termin aus deinem Stundenplan entfernen"
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+}
 
 export default function EventInfoModal({
   open,
@@ -21,6 +61,7 @@ export default function EventInfoModal({
   onClose,
   onChangeEventIcsName,
   onChangeSubIcsName,
+  onRemoveTermin,
 }: EventInfoModalProps) {
   const [eventIcsName, setEventIcsName] = useState("");
   const [subIcsNames, setSubIcsNames] = useState<Record<string, string>>({});
@@ -126,6 +167,9 @@ export default function EventInfoModal({
             <>
               <Separator />
               {/* Gruppen & Termine */}
+              <p className="text-xs text-muted-foreground">
+                Gelöschte Termine verschwinden nur aus deinem lokalen Stundenplan — in STiNE bleiben sie bestehen.
+              </p>
               <ScrollArea className="h-[280px] pr-4">
                 <div className="space-y-4">
                   {event.info.uebungsgruppen?.map((group, groupIndex) => (
@@ -141,30 +185,12 @@ export default function EventInfoModal({
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
-                        {group.termine.map((date, dateIndex) => (
-                          <div key={dateIndex} className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
-                            <span className="text-sm font-medium">{date.nummer}</span>
-                            <span className="text-sm">
-                              {new Date(date.tag).toLocaleDateString("de-DE", {
-                                weekday: "short",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
-                              :{" "}
-                              {new Date(date.startZeit).toLocaleTimeString("de-DE", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}{" "}
-                              -{" "}
-                              {new Date(date.endZeit).toLocaleTimeString("de-DE", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                            <span className="text-sm font-medium">{date.raum}</span>
-                          </div>
+                        {group.termine.map((termin) => (
+                          <TerminRow key={termin.id} termin={termin} onRemove={() => onRemoveTermin(termin.id)} />
                         ))}
+                        {group.termine.length === 0 && (
+                          <p className="text-xs text-muted-foreground">Keine Termine mehr in deinem Stundenplan.</p>
+                        )}
                       </CardContent>
                     </Card>
                   ))}
@@ -176,30 +202,12 @@ export default function EventInfoModal({
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-2">
-                        {event.info.termine.map((date, dateIndex) => (
-                          <div key={dateIndex} className="flex items-center gap-2 p-2 rounded-md bg-accent/30">
-                            <span className="text-sm font-medium">{date.nummer}</span>
-                            <span className="text-sm">
-                              {new Date(date.tag).toLocaleDateString("de-DE", {
-                                weekday: "short",
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
-                              :{" "}
-                              {new Date(date.startZeit).toLocaleTimeString("de-DE", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}{" "}
-                              -{" "}
-                              {new Date(date.endZeit).toLocaleTimeString("de-DE", {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                            <span className="text-sm font-medium">{date.raum}</span>
-                          </div>
+                        {event.info.termine.map((termin) => (
+                          <TerminRow key={termin.id} termin={termin} onRemove={() => onRemoveTermin(termin.id)} />
                         ))}
+                        {event.info.termine.length === 0 && (
+                          <p className="text-xs text-muted-foreground">Keine Termine mehr in deinem Stundenplan.</p>
+                        )}
                       </CardContent>
                     </Card>
                   )}
