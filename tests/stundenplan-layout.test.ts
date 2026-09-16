@@ -4,8 +4,8 @@ import { Visibility, type Event, type SearchResult, type SubEvent } from "@/type
 
 type DateSpec = { day: string; start: string; end: string };
 
-function sub(name: string, dates: DateSpec[], active = Visibility.Visible): SubEvent {
-  return { name, shortname: name, active, dates };
+function sub(name: string, dates: DateSpec[], active = Visibility.Visible, icsName?: string): SubEvent {
+  return { name, shortname: name, active, dates, icsName };
 }
 
 /** Veranstaltung aus STiNE — `info` unterscheidet sie von eigenen Events. */
@@ -146,5 +146,71 @@ describe("buildPlanGrid", () => {
     // Nur noch eine sichtbare Gruppe: fester Termin, deshalb schwarz und ohne Anzahl.
     expect(di[0].muted).toBe(false);
     expect(blockText(di[0])).toBe("Gruppe 2");
+  });
+});
+
+describe("Kalenderbezeichnungen im PDF", () => {
+  const slot = [{ day: "Mo", start: "10:00", end: "12:00" }];
+
+  test("nutzt die Bezeichnung der Veranstaltung statt des STiNE-Kürzels", () => {
+    const event = { ...stineEvent("DM", [sub("Vorlesung", slot)]), icsName: "Mathe I" };
+    expect(blockText(blocksOf([event], "Mo")[0])).toBe("Mathe I");
+  });
+
+  test("fällt ohne Bezeichnung auf das Kürzel zurück", () => {
+    const event = { ...stineEvent("DM", [sub("Vorlesung", slot)]), icsName: "" };
+    expect(blockText(blocksOf([event], "Mo")[0])).toBe("Vorlesung");
+  });
+
+  test("nutzt bei Alternativen die Bezeichnung der einzelnen Gruppe", () => {
+    const blocks = blocksOf(
+      [
+        {
+          ...stineEvent("DM-Ü", [
+            sub("Gruppe 1", slot, Visibility.Visible, "Übung mit Anna"),
+            sub("Gruppe 2", [{ day: "Di", start: "10:00", end: "12:00" }]),
+          ]),
+          icsName: "DM-Übung",
+        },
+      ],
+      "Mo",
+    );
+    expect(blockText(blocks[0])).toBe("Übung mit Anna");
+    // Die Gruppe ohne eigene Bezeichnung erbt die der Veranstaltung.
+    expect(blockText(blocksOf([{ ...stineEvent("DM-Ü", [
+      sub("Gruppe 1", slot),
+      sub("Gruppe 2", [{ day: "Di", start: "10:00", end: "12:00" }]),
+    ]), icsName: "DM-Übung" }], "Mo")[0])).toBe("DM-Übung");
+  });
+
+  test("nutzt bei mehreren Gruppen im selben Slot die Bezeichnung der Veranstaltung", () => {
+    const event = {
+      ...stineEvent("DM-Ü", [
+        sub("Gruppe 1", slot, Visibility.Visible, "Übung mit Anna"),
+        sub("Gruppe 2", slot, Visibility.Visible, "Übung mit Ben"),
+      ]),
+      icsName: "DM-Übung",
+    };
+    expect(blockText(blocksOf([event], "Mo")[0])).toBe("DM-Übung (2)");
+  });
+
+  test("zählt gleich benannte Gruppen einzeln", () => {
+    const event = stineEvent("DM-Ü", [
+      sub("Gruppe 1", slot, Visibility.Visible, "Übung"),
+      sub("Gruppe 2", slot, Visibility.Visible, "Übung"),
+    ]);
+    expect(blocksOf([event], "Mo")[0].count).toBe(2);
+  });
+
+  test("nutzt bei eigenen Events mit mehreren Gruppen die Gruppen-Bezeichnung", () => {
+    const event = {
+      ...eigenesEvent("Sport", [
+        sub("Montags", slot, Visibility.Visible, "Schwimmen"),
+        sub("Mittwochs", [{ day: "Mi", start: "10:00", end: "12:00" }]),
+      ]),
+      icsName: "Sportkurs",
+    };
+    expect(blockText(blocksOf([event], "Mo")[0])).toBe("Schwimmen");
+    expect(blockText(blocksOf([event], "Mi")[0])).toBe("Mittwochs");
   });
 });

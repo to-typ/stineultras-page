@@ -76,12 +76,14 @@ function collectBlocks(events: Event[]): RawBlock[] {
     // dem gemeinsamen Namen der Veranstaltung. Eigene Events sind dagegen
     // immer feste Termine.
     const isAlternative = ev.info != null && visibleSubs.length > 1;
+    const hasMultipleSubs = visibleSubs.length > 1;
+    // Im Info-Dialog gesetzte Kalenderbezeichnung — dieselbe wie im ICS-Export.
+    const eventLabel = ev.icsName || ev.shortname || ev.name;
 
-    // Slot-Key -> Namen der Gruppen, die in diesem Slot liegen.
-    const slots = new Map<string, { day: string; startMin: number; endMin: number; subs: Set<string> }>();
+    // Slot-Key -> Gruppen, die in diesem Slot liegen, nach Gruppenname.
+    const slots = new Map<string, { day: string; startMin: number; endMin: number; subs: Map<string, SubLabel> }>();
 
     for (const sub of visibleSubs) {
-      const subName = sub.shortname || sub.name;
       for (const date of sub.dates) {
         if (!DAYS.includes(date.day)) continue;
         const startMin = timeToMinutes(date.start);
@@ -89,26 +91,45 @@ function collectBlocks(events: Event[]): RawBlock[] {
         if (startMin == null || endMin == null || endMin <= startMin) continue;
 
         const key = `${date.day}|${startMin}|${endMin}`;
-        const slot = slots.get(key) ?? { day: date.day, startMin, endMin, subs: new Set<string>() };
-        // Set: Wöchentlich wiederholte Termine derselben Gruppe zählen einmal.
-        slot.subs.add(subName);
+        const slot = slots.get(key) ?? { day: date.day, startMin, endMin, subs: new Map<string, SubLabel>() };
+        // Map nach Gruppenname: Wöchentlich wiederholte Termine derselben
+        // Gruppe zählen einmal.
+        slot.subs.set(sub.name, { icsName: sub.icsName, label: sub.shortname || sub.name });
         slots.set(key, slot);
       }
     }
 
     for (const slot of slots.values()) {
+      const subs = [...slot.subs.values()];
       blocks.push({
         day: slot.day,
         startMin: slot.startMin,
         endMin: slot.endMin,
-        label: isAlternative ? ev.shortname || ev.name : [...slot.subs][0],
-        count: slot.subs.size,
+        label: slotLabel(subs, { eventLabel, eventIcsName: ev.icsName, isAlternative, hasMultipleSubs }),
+        count: subs.length,
         muted: isAlternative,
       });
     }
   }
 
   return blocks;
+}
+
+type SubLabel = { icsName?: string; label: string };
+
+/**
+ * Beschriftung eines Slots. Selbst gesetzte Kalenderbezeichnungen gewinnen
+ * immer — mit derselben Rangfolge wie im ICS-Export: bei einer einzelnen
+ * Gruppe zählt die Bezeichnung der Veranstaltung, bei mehreren die der Gruppe.
+ */
+function slotLabel(
+  subs: SubLabel[],
+  ev: { eventLabel: string; eventIcsName?: string; isAlternative: boolean; hasMultipleSubs: boolean },
+): string {
+  // Mehrere Gruppen im selben Slot teilen sich den Namen der Veranstaltung.
+  if (subs.length > 1) return ev.eventLabel;
+  if (!ev.hasMultipleSubs) return ev.eventIcsName || subs[0].label;
+  return subs[0].icsName || (ev.isAlternative ? ev.eventLabel : subs[0].label);
 }
 
 /**
