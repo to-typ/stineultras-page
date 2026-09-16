@@ -54,7 +54,7 @@ const STEPS: TourStep[] = [
   {
     selector: '[data-tour="share-export"]',
     title: "Teilen & Exportieren",
-    text: "Hier kannst du deinen Stundenplan als Link teilen oder als ICS-Datei exportieren — kompatibel mit Google Calendar, Outlook und Apple Calendar.",
+    text: "Hier kannst du deinen Stundenplan als Link teilen, als ICS-Datei exportieren — kompatibel mit Google Calendar, Outlook und Apple Calendar — oder als PDF zum Ausdrucken herunterladen.",
   },
   {
     selector: null,

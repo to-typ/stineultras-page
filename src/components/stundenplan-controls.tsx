@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Pencil, CalendarArrowDown, Upload } from "lucide-react";
+import { Plus, Trash2, Pencil, CalendarArrowDown, FileDown, Upload } from "lucide-react";
 import { Stundenplan } from "@/hooks/use-stundenplan";
 import { sortSemestersDesc } from "@/lib/semester-sort";
 import { Separator } from "./ui/separator";
@@ -37,6 +37,7 @@ type StundenplanControlsProps = {
   onRenameStundenplan: (id: string, newName: string) => void;
   onShareStundenplan: () => void;
   onExportStundenplan: () => void;
+  onExportStundenplanPdf: () => void;
 };
 
 export function StundenplanControls({
@@ -50,6 +51,7 @@ export function StundenplanControls({
   onRenameStundenplan,
   onShareStundenplan,
   onExportStundenplan,
+  onExportStundenplanPdf,
 }: StundenplanControlsProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
@@ -303,14 +305,25 @@ export function StundenplanControls({
         </Button>
         <Separator orientation="vertical" className="h-6" />
 
-        {/* Exportieren Button */}
+        {/* ICS-Export Button */}
+        <Button
+          variant="outline"
+          className="border-0 rounded-[0px] shadow-none"
+          onClick={() => onExportStundenplan()}
+          title="Stundenplan als Kalenderdatei (.ics) exportieren"
+        >
+          <CalendarArrowDown className="h-4 w-4" />
+        </Button>
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* PDF-Export Button */}
         <Button
           variant="outline"
           className="border-0 rounded-l-[0px] shadow-none"
-          onClick={() => onExportStundenplan()}
-          title="Stundenplan exportieren"
+          onClick={() => onExportStundenplanPdf()}
+          title="Stundenplan als PDF exportieren"
         >
-          <CalendarArrowDown className="h-4 w-4" />
+          <FileDown className="h-4 w-4" />
         </Button>
       </div>
     </div>

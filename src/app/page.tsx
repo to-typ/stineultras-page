@@ -20,6 +20,7 @@ import Image from "next/image";
 import betterStine from "/public/icons/betterstine.svg";
 import logo from "/public/stineultras.svg";
 import { createShareLink, exportICS, importStundeplan } from "@/lib/import-export";
+import { exportPDF } from "@/lib/pdf-export";
 import { toast } from "sonner";
 import { Onboarding } from "@/components/onboarding";
 import { useOnboarding } from "@/hooks/use-onboarding";
@@ -186,6 +187,16 @@ export default function Planer() {
     toast.success("Stundenplan wurde als ICS-Datei heruntergeladen!");
   };
 
+  const handleExportPdf = async () => {
+    try {
+      await exportPDF(events, currentStundenplan?.name);
+      toast.success("Stundenplan wurde als PDF heruntergeladen!");
+    } catch (error) {
+      console.error("Fehler beim PDF-Export:", error);
+      toast.error("PDF konnte nicht erstellt werden");
+    }
+  };
+
   const handleLoadStundenplan = (id: string) => {
     loadStundenplan(id);
   };
@@ -292,6 +303,7 @@ export default function Planer() {
               onRenameStundenplan={renameStundenplan}
               onShareStundenplan={handleShare}
               onExportStundenplan={handleExport}
+              onExportStundenplanPdf={handleExportPdf}
             />
           </div>
         </div>
